@@ -42,6 +42,12 @@ kotlin {
 }
 
 dependencies {
+
+    implementation(project(":core:common"))
+    implementation(project(":core:network"))
+    implementation(project(":core:database"))
+    implementation(project(":core:datastore"))
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -56,21 +62,7 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
-    // Room
-    implementation(libs.room.runtime)
-    implementation(libs.room.ktx)
-    ksp(libs.room.compiler)
-
-    // Retrofit
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.converter.gson)
-    implementation(libs.okhttp.logging)
-
-    // Coil
     implementation(libs.coil.compose)
-
-    // Timber
-    implementation(libs.timber)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
