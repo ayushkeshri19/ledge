@@ -24,3 +24,11 @@ dependencyResolutionManagement {
 
 rootProject.name = "ledge"
 include(":app")
+include(":core")
+include(":core:database")
+include(":core:datastore")
+include(":core:common")
+include(":core:network")
+include(":feature")
+include(":feature:auth")
+include(":core:ui")
