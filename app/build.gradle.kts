@@ -39,7 +39,6 @@ android {
         buildConfig = true
         compose = true
     }
-    @Suppress("UnstableApiUsage")
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
