@@ -1,6 +1,8 @@
 package com.ayush.network.di
 
 import com.ayush.network.BuildConfig
+import com.ayush.network.data.repository.AuthRepositoryImpl
+import com.ayush.network.domain.repository.AuthRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,7 +12,6 @@ import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.storage.Storage
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -31,8 +32,8 @@ object NetworkModule {
     }
 
     @Provides
-    @Named("google_web_client_id")
-    fun provideGoogleWebClientId(): String {
-        return BuildConfig.GOOGLE_WEB_CLIENT_ID
+    @Singleton
+    fun provideAuthRepository(supabaseClient: SupabaseClient): AuthRepository {
+        return AuthRepositoryImpl(supabaseClient)
     }
 }
