@@ -4,9 +4,7 @@ plugins {
 
 android {
     namespace = "com.ayush.feature"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 30

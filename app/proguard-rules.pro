@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Credential Manager (native Google Sign-In)
+-if class androidx.credentials.CredentialManager
+-keep class androidx.credentials.playservices.** { *; }

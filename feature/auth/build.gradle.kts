@@ -38,7 +38,7 @@ kotlin {
 }
 
 dependencies {
-    // Core modules: data/domain use common, network, datastore; presentation uses ui
+
     implementation(project(":core:common"))
     implementation(project(":core:network"))
     implementation(project(":core:datastore"))
@@ -46,6 +46,10 @@ dependencies {
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
