@@ -68,9 +68,7 @@ internal fun LedgeNavGraph(
             }
 
             entry<MainRoute.MainScreen> {
-                MainScreenStub(
-                    title = "Add Transaction",
-                    onNavigate = { route -> backStack.add(route) },
+                MainNavGraph(
                     onSignOut = {
                         backStack.clear()
                         backStack.add(AuthRoute.Auth)
@@ -80,13 +78,4 @@ internal fun LedgeNavGraph(
         },
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }
     )
-}
-
-@Composable
-private fun MainScreenStub(
-    title: String,
-    onNavigate: (LedgeRoute) -> Unit,
-    onSignOut: () -> Unit,
-) {
-    androidx.compose.material3.Text("$title — stub")
 }

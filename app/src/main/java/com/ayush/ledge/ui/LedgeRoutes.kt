@@ -14,4 +14,12 @@ sealed interface AuthRoute : LedgeRoute {
 
 sealed interface MainRoute : LedgeRoute {
     @Serializable data object MainScreen : MainRoute
+    @Serializable
+    data object Home : MainRoute
+    @Serializable
+    data object Transactions : MainRoute
+    @Serializable
+    data object Budget : MainRoute
+    @Serializable
+    data object More : MainRoute
 }

@@ -10,13 +10,7 @@ import androidx.compose.ui.unit.sp
 import com.ayush.ui.R
 
 
-val SyneFontFamily = FontFamily(
-    Font(R.font.syne_regular,   FontWeight.Normal),
-    Font(R.font.syne_medium,    FontWeight.Medium),
-    Font(R.font.syne_semibold,  FontWeight.SemiBold),
-    Font(R.font.syne_bold,      FontWeight.Bold),
-    Font(R.font.syne_extrabold, FontWeight.ExtraBold),
-)
+val DmSerifFontFamily = FontFamily(Font(R.font.dm_serif_regular))
 
 val DmSansFontFamily = FontFamily(
     Font(R.font.dm_sans_light,      FontWeight.Light),
@@ -35,7 +29,7 @@ val DmMonoFontFamily = FontFamily(
 object LedgeTextStyle {
     /** Hero balance figures — 42 sp, Syne ExtraBold, tracking -2 */
     val BalanceHero = TextStyle(
-        fontFamily  = SyneFontFamily,
+        fontFamily = DmSansFontFamily,
         fontWeight  = FontWeight.ExtraBold,
         fontSize    = 42.sp,
         lineHeight  = 42.sp,
@@ -44,7 +38,7 @@ object LedgeTextStyle {
 
     /** Section amounts / stats — 22 sp, Syne Bold */
     val AmountLarge = TextStyle(
-        fontFamily    = SyneFontFamily,
+        fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 22.sp,
         letterSpacing = (-0.5).sp,
@@ -52,7 +46,7 @@ object LedgeTextStyle {
 
     /** Card amounts / prices — 18 sp, Syne Bold */
     val AmountMedium = TextStyle(
-        fontFamily    = SyneFontFamily,
+        fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 18.sp,
         letterSpacing = (-0.5).sp,
@@ -67,7 +61,7 @@ object LedgeTextStyle {
 
     /** Screen / section headers — Syne Bold 20 sp */
     val HeadingScreen = TextStyle(
-        fontFamily    = SyneFontFamily,
+        fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 20.sp,
         letterSpacing = (-0.3).sp,
@@ -75,7 +69,7 @@ object LedgeTextStyle {
 
     /** Card titles / section labels — Syne Bold 15 sp */
     val HeadingCard = TextStyle(
-        fontFamily    = SyneFontFamily,
+        fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 15.sp,
         letterSpacing = (-0.2).sp,
@@ -83,7 +77,7 @@ object LedgeTextStyle {
 
     /** ALL-CAPS micro labels — Syne SemiBold 11 sp, +3 tracking */
     val LabelCaps = TextStyle(
-        fontFamily    = SyneFontFamily,
+        fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.SemiBold,
         fontSize      = 11.sp,
         letterSpacing = 3.sp,
@@ -129,7 +123,7 @@ val LedgeTypography = Typography(
     headlineLarge  = LedgeTextStyle.HeadingScreen,
     headlineMedium = LedgeTextStyle.HeadingCard,
     headlineSmall  = TextStyle(
-        fontFamily = SyneFontFamily,
+        fontFamily = DmSansFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize   = 13.sp,
     ),
