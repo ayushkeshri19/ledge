@@ -16,11 +16,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,9 +31,6 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -46,12 +41,11 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.ui.R
-import com.ayush.ui.theme.BgDeep
+import com.ayush.ui.components.FabButton
 import com.ayush.ui.theme.BgSurface
 import com.ayush.ui.theme.BorderSubtle
 import com.ayush.ui.theme.DmSansFontFamily
 import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldLight
 import com.ayush.ui.theme.TextMuted
 import com.ayush.ui.theme.TextPrimary
 import kotlinx.serialization.Serializable
@@ -251,48 +245,6 @@ private fun BottomNavItem(
             color = tintColor,
             style = NavLabelStyle,
         )
-    }
-}
-
-@Composable
-private fun FabButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.TopCenter,
-    ) {
-        Box(
-            modifier = Modifier
-                .shadow(
-                    elevation = 12.dp,
-                    shape = CircleShape,
-                    ambientColor = Gold.copy(alpha = 0.2f),
-                    spotColor = Gold.copy(alpha = 0.4f),
-                )
-                .size(52.dp)
-                .background(BgSurface, CircleShape)
-                .padding(3.dp)
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(GoldLight, Gold),
-                        start = Offset.Zero,
-                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
-                    ),
-                    shape = CircleShape,
-                )
-                .clip(CircleShape)
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = "Add Transaction",
-                tint = BgDeep,
-                modifier = Modifier.size(24.dp),
-            )
-        }
     }
 }
 
