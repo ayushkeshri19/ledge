@@ -40,6 +40,7 @@ kotlin {
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
+    implementation(project(":core:network"))
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
