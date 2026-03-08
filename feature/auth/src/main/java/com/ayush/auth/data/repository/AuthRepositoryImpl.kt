@@ -1,7 +1,10 @@
 package com.ayush.auth.data.repository
 
+import android.content.Context
 import com.ayush.common.models.User
 import com.ayush.common.result.ApiResult
+import com.ayush.common.utils.toast
+import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
@@ -14,7 +17,8 @@ import kotlinx.serialization.json.put
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val supabaseClient: SupabaseClient
+    private val supabaseClient: SupabaseClient,
+    @param:ApplicationContext private val context: Context
 ) : AuthRepository {
 
     companion object {
@@ -99,5 +103,14 @@ class AuthRepositoryImpl @Inject constructor(
             onSuccess = { ApiResult.Success(Unit) },
             onFailure = { ApiResult.Error(it.message ?: "Password reset failed", it) }
         )
+    }
+
+    override suspend fun signOut() {
+        withContext(Dispatchers.Main) {
+            "Signed out successfully".toast(context)
+            withContext(Dispatchers.IO) {
+                supabaseClient.auth.signOut()
+            }
+        }
     }
 }

@@ -13,16 +13,16 @@ sealed interface AuthRoute : LedgeRoute {
     @Serializable data object ForgotPassword : AuthRoute
 }
 
-sealed interface MainRoute : LedgeRoute {
+sealed interface DashboardRoute : LedgeRoute {
     @Serializable
-    data object Dashboard : MainRoute
+    data object Dashboard : DashboardRoute
 
     @Serializable
-    data object Home : MainRoute
+    data object Home : DashboardRoute
     @Serializable
-    data object Transactions : MainRoute
+    data object Transactions : DashboardRoute
     @Serializable
-    data object Budget : MainRoute
+    data object Budget : DashboardRoute
     @Serializable
-    data object More : MainRoute
+    data object More : DashboardRoute
 }

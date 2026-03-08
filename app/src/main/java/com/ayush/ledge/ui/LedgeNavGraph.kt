@@ -16,10 +16,9 @@ import androidx.navigation3.ui.NavDisplay
 import com.ayush.common.auth.AuthState
 
 @Composable
-internal fun LedgeNavGraph(
-    rootViewModel: RootViewModel = hiltViewModel(),
-) {
-    val authState by rootViewModel.authState.collectAsState()
+internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
+
+    val authState by mainViewModel.authState.collectAsState()
 
     if (authState == AuthState.Loading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -29,7 +28,7 @@ internal fun LedgeNavGraph(
     }
 
     val startDestination: LedgeRoute = when (authState) {
-        AuthState.Authenticated -> MainRoute.Dashboard
+        AuthState.Authenticated -> DashboardRoute.Dashboard
         else -> AuthRoute.Auth
     }
 
@@ -38,9 +37,9 @@ internal fun LedgeNavGraph(
     LaunchedEffect(authState) {
         when (authState) {
             AuthState.Authenticated -> {
-                if (backStack.lastOrNull() !is MainRoute) {
+                if (backStack.lastOrNull() !is DashboardRoute) {
                     backStack.clear()
-                    backStack.add(MainRoute.Dashboard)
+                    backStack.add(DashboardRoute.Dashboard)
                 }
             }
 
@@ -62,16 +61,18 @@ internal fun LedgeNavGraph(
                 AuthNavGraph(
                     onAuthSuccess = {
                         backStack.clear()
-                        backStack.add(MainRoute.Dashboard)
+                        backStack.add(DashboardRoute.Dashboard)
                     },
                 )
             }
 
-            entry<MainRoute.Dashboard> {
-                MainNavGraph(
+            entry<DashboardRoute.Dashboard> {
+                DashboardNavGraph(
                     onSignOut = {
                         backStack.clear()
                         backStack.add(AuthRoute.Auth)
+
+                        mainViewModel.signOut()
                     },
                 )
             }
