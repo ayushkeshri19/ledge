@@ -1,0 +1,372 @@
+package com.ayush.ledge.ui
+
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
+import com.ayush.ui.R
+import com.ayush.ui.theme.BgDeep
+import com.ayush.ui.theme.BgSurface
+import com.ayush.ui.theme.BorderSubtle
+import com.ayush.ui.theme.DmSansFontFamily
+import com.ayush.ui.theme.Gold
+import com.ayush.ui.theme.GoldLight
+import com.ayush.ui.theme.TextMuted
+import com.ayush.ui.theme.TextPrimary
+import kotlinx.serialization.Serializable
+
+sealed interface DashboardBottomNavItems {
+    @get:DrawableRes
+    val icon: Int
+    val label: String
+    val route: DashboardRoute
+
+    @Serializable
+    data object Home : DashboardBottomNavItems {
+        override val label: String get() = "Home"
+        override val icon: Int get() = R.drawable.ic_home
+        override val route: DashboardRoute get() = DashboardRoute.Home
+    }
+
+    @Serializable
+    data object Transactions : DashboardBottomNavItems {
+        override val label: String get() = "Txns"
+        override val icon: Int get() = R.drawable.ic_transaction
+        override val route: DashboardRoute get() = DashboardRoute.Transactions
+    }
+
+    @Serializable
+    data object Budget : DashboardBottomNavItems {
+        override val label: String get() = "Budget"
+        override val icon: Int get() = R.drawable.ic_budget
+        override val route: DashboardRoute get() = DashboardRoute.Budget
+    }
+
+    @Serializable
+    data object More : DashboardBottomNavItems {
+        override val label: String get() = "More"
+        override val icon: Int get() = R.drawable.ic_more
+        override val route: DashboardRoute get() = DashboardRoute.More
+    }
+
+    companion object {
+        val items: List<DashboardBottomNavItems> = listOf(Home, Transactions, Budget, More)
+        val Saver: Saver<DashboardBottomNavItems, String> = Saver(
+            save = { it::class.qualifiedName },
+            restore = { name -> items.firstOrNull { it::class.qualifiedName == name } ?: Home }
+        )
+    }
+}
+
+@Composable
+internal fun DashboardNavGraph(onSignOut: () -> Unit) {
+    val backStack = rememberNavBackStack(DashboardRoute.Home)
+
+    val selectedTab = when (backStack.firstOrNull()) {
+        DashboardRoute.Home -> DashboardBottomNavItems.Home
+        DashboardRoute.Transactions -> DashboardBottomNavItems.Transactions
+        DashboardRoute.Budget -> DashboardBottomNavItems.Budget
+        DashboardRoute.More -> DashboardBottomNavItems.More
+        else -> DashboardBottomNavItems.Home
+    }
+
+    fun selectTab(tab: DashboardBottomNavItems) {
+        while (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+        if (backStack.lastOrNull() != tab.route) {
+            backStack[backStack.lastIndex] = tab.route
+        }
+    }
+
+    fun pop() {
+        if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+    }
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            LedgeBottomBar(
+                selectedTab = selectedTab,
+                onTabSelected = ::selectTab,
+                onFabClick = { /* TODO: navigate to add-transaction */ },
+            )
+        },
+    ) { padding ->
+        Box(Modifier.padding(padding)) {
+            NavDisplay(
+                backStack = backStack,
+                entryProvider = entryProvider {
+                    entry<DashboardRoute.Home> { HomeScreen() }
+                    entry<DashboardRoute.Transactions> { TransactionsScreen() }
+                    entry<DashboardRoute.Budget> { BudgetScreen() }
+                    entry<DashboardRoute.More> { MoreScreen(onSignOut = onSignOut) }
+                },
+                onBack = ::pop,
+            )
+        }
+    }
+}
+
+private val NavLabelStyle = TextStyle(
+    fontFamily = DmSansFontFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 9.sp,
+    letterSpacing = 0.4.sp,
+)
+
+@Composable
+private fun LedgeBottomBar(
+    selectedTab: DashboardBottomNavItems,
+    onTabSelected: (DashboardBottomNavItems) -> Unit,
+    onFabClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val leftTabs = DashboardBottomNavItems.items.take(2)
+    val rightTabs = DashboardBottomNavItems.items.drop(2)
+
+    Box(
+        modifier = modifier.fillMaxWidth(),
+        contentAlignment = Alignment.BottomCenter,
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            HorizontalDivider(thickness = 1.dp, color = BorderSubtle)
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BgSurface.copy(alpha = 0.95f))
+                    .padding(top = 14.dp, bottom = 10.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.Top,
+            ) {
+                leftTabs.forEach { tab ->
+                    BottomNavItem(
+                        tab = tab,
+                        isSelected = selectedTab == tab,
+                        onClick = { onTabSelected(tab) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+
+                FabButton(
+                    onClick = onFabClick,
+                    modifier = Modifier
+                        .weight(1f)
+                        .offset(y = (-30).dp),
+                )
+
+                rightTabs.forEach { tab ->
+                    BottomNavItem(
+                        tab = tab,
+                        isSelected = selectedTab == tab,
+                        onClick = { onTabSelected(tab) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BottomNavItem(
+    tab: DashboardBottomNavItems,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val tintColor = if (isSelected) Gold else TextMuted
+
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onClick,
+            )
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .width(24.dp)
+                .height(2.dp)
+                .background(
+                    color = if (isSelected) Gold else Color.Transparent,
+                    shape = RoundedCornerShape(2.dp),
+                ),
+        )
+
+        Icon(
+            painter = painterResource(id = tab.icon),
+            contentDescription = tab.label,
+            tint = tintColor,
+            modifier = Modifier.size(22.dp),
+        )
+
+        Text(
+            text = tab.label.uppercase(),
+            color = tintColor,
+            style = NavLabelStyle,
+        )
+    }
+}
+
+@Composable
+private fun FabButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.TopCenter,
+    ) {
+        Box(
+            modifier = Modifier
+                .shadow(
+                    elevation = 12.dp,
+                    shape = CircleShape,
+                    ambientColor = Gold.copy(alpha = 0.2f),
+                    spotColor = Gold.copy(alpha = 0.4f),
+                )
+                .size(52.dp)
+                .background(BgSurface, CircleShape)
+                .padding(3.dp)
+                .background(
+                    brush = Brush.linearGradient(
+                        colors = listOf(GoldLight, Gold),
+                        start = Offset.Zero,
+                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
+                    ),
+                    shape = CircleShape,
+                )
+                .clip(CircleShape)
+                .clickable(onClick = onClick),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Add,
+                contentDescription = "Add Transaction",
+                tint = BgDeep,
+                modifier = Modifier.size(24.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun HomeScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "Home",
+            style = MaterialTheme.typography.headlineLarge,
+            color = TextPrimary,
+        )
+    }
+}
+
+@Composable
+private fun TransactionsScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "Transactions",
+            style = MaterialTheme.typography.headlineLarge,
+            color = TextPrimary,
+        )
+    }
+}
+
+@Composable
+private fun BudgetScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "Budget",
+            style = MaterialTheme.typography.headlineLarge,
+            color = TextPrimary,
+        )
+    }
+}
+
+@Composable
+private fun MoreScreen(onSignOut: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(
+            text = "More",
+            style = MaterialTheme.typography.headlineLarge,
+            color = TextPrimary,
+        )
+
+        Spacer(Modifier.height(32.dp))
+
+        OutlinedButton(onClick = onSignOut) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.Logout,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text("Sign Out")
+            }
+        }
+    }
+}

@@ -2,13 +2,13 @@ package com.ayush.auth.presentation
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
+import com.ayush.auth.domain.usecase.AuthEligibilityResult
+import com.ayush.auth.domain.usecase.AuthEligibilityUseCase
+import com.ayush.auth.domain.usecase.AuthFlow
+import com.ayush.auth.domain.usecase.SignInWithEmailUseCase
+import com.ayush.auth.domain.usecase.SignInWithGoogleIdToken
+import com.ayush.auth.domain.usecase.SignUpWithEmailUseCase
 import com.ayush.common.result.ApiResult
-import com.ayush.network.domain.usecase.AuthEligibilityResult
-import com.ayush.network.domain.usecase.AuthEligibilityUseCase
-import com.ayush.network.domain.usecase.AuthFlow
-import com.ayush.network.domain.usecase.SignInWithEmailUseCase
-import com.ayush.network.domain.usecase.SignInWithGoogleIdToken
-import com.ayush.network.domain.usecase.SignUpWithEmailUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

@@ -2,8 +2,8 @@ package com.ayush.auth.presentation
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
+import com.ayush.auth.domain.usecase.SendPasswordResetEmailUseCase
 import com.ayush.common.result.ApiResult
-import com.ayush.network.domain.usecase.SendPasswordResetEmailUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

@@ -6,9 +6,6 @@ import com.ayush.common.deeplink.DeepLinkHandler
 import com.ayush.network.BuildConfig
 import com.ayush.network.data.auth.SupabaseAuthStateProvider
 import com.ayush.network.data.deeplink.SupabaseDeepLinkHandler
-import com.ayush.network.data.repository.AuthRepositoryImpl
-import com.ayush.network.domain.repository.AuthRepository
-import com.ayush.network.domain.usecase.AuthEligibilityUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -45,12 +42,6 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(supabaseClient: SupabaseClient): AuthRepository {
-        return AuthRepositoryImpl(supabaseClient)
-    }
-
-    @Provides
-    @Singleton
     fun provideDeepLinkHandler(supabaseClient: SupabaseClient): DeepLinkHandler {
         return SupabaseDeepLinkHandler(supabaseClient)
     }
@@ -66,7 +57,4 @@ object NetworkModule {
             context = context
         )
     }
-
-    @Provides
-    fun providesAuthEligibilityUseCase(): AuthEligibilityUseCase = AuthEligibilityUseCase()
 }

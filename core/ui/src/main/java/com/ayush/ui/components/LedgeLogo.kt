@@ -17,10 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ayush.ui.theme.BgCard2
 import com.ayush.ui.theme.BorderFocus
+import com.ayush.ui.theme.DmSerifFontFamily
 import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.GoldGlow
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.SyneFontFamily
 import com.ayush.ui.theme.TextPrimary
 
 @Composable
@@ -54,7 +54,7 @@ fun LedgeLogo(
                 Text(
                     text = "L",
                     style = LedgeTextStyle.HeadingScreen.copy(
-                        fontFamily = SyneFontFamily,
+                        fontFamily = DmSerifFontFamily,
                         fontSize = 28.sp,
                         color = Gold,
                     ),

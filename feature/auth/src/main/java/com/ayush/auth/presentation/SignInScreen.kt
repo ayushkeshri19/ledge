@@ -33,10 +33,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.auth.di.GoogleSignInProviderEntryPoint
-import com.ayush.network.domain.usecase.AuthEligibilityResult
-import com.ayush.network.domain.usecase.AuthFlow
-import com.ayush.network.domain.usecase.emailError
-import com.ayush.network.domain.usecase.passwordError
+import com.ayush.auth.domain.usecase.AuthEligibilityResult
+import com.ayush.auth.domain.usecase.AuthFlow
+import com.ayush.auth.domain.usecase.emailError
+import com.ayush.auth.domain.usecase.passwordError
 import com.ayush.ui.components.LedgeAuthScaffold
 import com.ayush.ui.components.LedgeDivider
 import com.ayush.ui.components.LedgeLogo
