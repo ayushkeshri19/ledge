@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.ayush.home.presentation.HomeScreen
 import com.ayush.ui.R
 import com.ayush.ui.components.FabButton
 import com.ayush.ui.theme.BgSurface
@@ -244,20 +245,6 @@ private fun BottomNavItem(
             text = tab.label.uppercase(),
             color = tintColor,
             style = NavLabelStyle,
-        )
-    }
-}
-
-@Composable
-private fun HomeScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "Home",
-            style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
         )
     }
 }

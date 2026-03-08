@@ -58,7 +58,10 @@ kotlin {
 dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
+
     implementation(project(":feature:auth"))
+    implementation(project(":feature:dashboard"))
+    implementation(project(":feature:dashboard:home"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
