@@ -1,8 +1,11 @@
 package com.ayush.transactions.presentation
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -35,6 +38,8 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -57,6 +62,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.transactions.domain.models.Category
+import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.ui.components.LedgePrimaryButton
 import com.ayush.ui.components.LedgeTextField
@@ -265,6 +271,82 @@ private fun AddTransactionContent(
                         )
                     },
                 )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(LedgeRadius.medium))
+                .background(BgCard)
+                .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Column {
+                Text(
+                    text = "REPEATS",
+                    style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+                )
+                Text(
+                    text = if (state.isRecurring) "Recurring transaction" else "One-time transaction",
+                    style = LedgeTextStyle.BodySmall,
+                    color = TextPrimary,
+                )
+            }
+            Switch(
+                checked = state.isRecurring,
+                onCheckedChange = { onEvent(AddTransactionEvent.RecurringToggled(it)) },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = BgDeep,
+                    checkedTrackColor = Gold,
+                    uncheckedThumbColor = TextMuted,
+                    uncheckedTrackColor = BgSurface,
+                    uncheckedBorderColor = BorderSubtle,
+                ),
+            )
+        }
+
+        AnimatedVisibility(
+            visible = state.isRecurring,
+            enter = expandVertically(),
+            exit = shrinkVertically(),
+        ) {
+            Column {
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    RecurrenceType.entries.forEach { type ->
+                        val isSelected = state.recurrenceType == type
+                        val borderColor by animateColorAsState(
+                            targetValue = if (isSelected) Gold else BorderSubtle,
+                            animationSpec = tween(200),
+                            label = "recurrenceBorder",
+                        )
+                        val bgColor by animateColorAsState(
+                            targetValue = if (isSelected) GoldDim else BgCard,
+                            animationSpec = tween(200),
+                            label = "recurrenceBg",
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(LedgeRadius.pill))
+                                .background(bgColor)
+                                .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
+                                .clickable { onEvent(AddTransactionEvent.RecurrenceTypeChanged(type)) }
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = type.value.replaceFirstChar { it.uppercase() },
+                                style = LedgeTextStyle.BodySmall,
+                                color = if (isSelected) Gold else TextPrimary,
+                            )
+                        }
+                    }
+                }
             }
         }
 

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
 import com.ayush.common.result.ApiResult
 import com.ayush.transactions.domain.models.Category
+import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.transactions.domain.usecase.AddTransactionUseCase
 import com.ayush.transactions.domain.usecase.GetCategoriesUseCase
@@ -49,6 +50,19 @@ class AddTransactionViewModel @Inject constructor(
                 setState { copy(hour = event.hour, minute = event.minute) }
             }
 
+            is AddTransactionEvent.RecurringToggled -> {
+                setState {
+                    copy(
+                        isRecurring = event.enabled,
+                        recurrenceType = if (event.enabled) recurrenceType ?: RecurrenceType.MONTHLY else null,
+                    )
+                }
+            }
+
+            is AddTransactionEvent.RecurrenceTypeChanged -> {
+                setState { copy(recurrenceType = event.recurrenceType) }
+            }
+
             is AddTransactionEvent.Submit -> submitTransaction()
         }
     }
@@ -82,6 +96,8 @@ class AddTransactionViewModel @Inject constructor(
                 categoryId = state.selectedCategory?.id,
                 note = state.note.trim(),
                 date = state.combinedDateTimeMillis(),
+                isRecurring = state.isRecurring,
+                recurrenceType = state.recurrenceType?.value,
             )
             when (result) {
                 is ApiResult.Success -> {
@@ -108,6 +124,8 @@ data class AddTransactionState(
     val hour: Int = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY),
     val minute: Int = java.util.Calendar.getInstance().get(java.util.Calendar.MINUTE),
     val categories: List<Category> = emptyList(),
+    val isRecurring: Boolean = false,
+    val recurrenceType: RecurrenceType? = null,
     val isSubmitting: Boolean = false,
     val amountError: String? = null,
     val noteError: String? = null,
@@ -131,6 +149,8 @@ sealed interface AddTransactionEvent {
     data class CategorySelected(val category: Category?) : AddTransactionEvent
     data class DateChanged(val dateMillis: Long) : AddTransactionEvent
     data class TimeChanged(val hour: Int, val minute: Int) : AddTransactionEvent
+    data class RecurringToggled(val enabled: Boolean) : AddTransactionEvent
+    data class RecurrenceTypeChanged(val recurrenceType: RecurrenceType) : AddTransactionEvent
     data object Submit : AddTransactionEvent
 }
 
