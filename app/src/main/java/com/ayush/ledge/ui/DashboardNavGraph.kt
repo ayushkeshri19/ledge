@@ -37,10 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -50,8 +47,8 @@ import com.ayush.ui.R
 import com.ayush.ui.components.FabButton
 import com.ayush.ui.theme.BgSurface
 import com.ayush.ui.theme.BorderSubtle
-import com.ayush.ui.theme.DmSansFontFamily
 import com.ayush.ui.theme.Gold
+import com.ayush.ui.theme.NavLabelStyle
 import com.ayush.ui.theme.TextMuted
 import com.ayush.ui.theme.TextPrimary
 import kotlinx.serialization.Serializable
@@ -161,13 +158,6 @@ internal fun DashboardNavGraph(onSignOut: () -> Unit) {
     }
 }
 
-private val NavLabelStyle = TextStyle(
-    fontFamily = DmSansFontFamily,
-    fontWeight = FontWeight.SemiBold,
-    fontSize = 9.sp,
-    letterSpacing = 0.4.sp,
-)
-
 @Composable
 private fun LedgeBottomBar(
     selectedTab: DashboardBottomNavItems,
@@ -269,7 +259,7 @@ private fun BottomNavItem(
         Text(
             text = tab.label.uppercase(),
             color = tintColor,
-            style = NavLabelStyle,
+            style = NavLabelStyle
         )
     }
 }

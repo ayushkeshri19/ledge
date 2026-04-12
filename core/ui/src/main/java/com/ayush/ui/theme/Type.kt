@@ -150,3 +150,11 @@ val LedgeTypography = Typography(
     labelMedium = LedgeTextStyle.LabelCaps,
     labelSmall  = LedgeTextStyle.Caption,
 )
+
+
+val NavLabelStyle = TextStyle(
+    fontFamily = DmSansFontFamily,
+    fontWeight = FontWeight.SemiBold,
+    fontSize = 9.sp,
+    letterSpacing = 0.4.sp,
+)
