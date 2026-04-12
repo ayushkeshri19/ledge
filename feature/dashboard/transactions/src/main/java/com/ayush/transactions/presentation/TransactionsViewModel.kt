@@ -28,6 +28,7 @@ class TransactionsViewModel @Inject constructor(
     init {
         ensureCategories()
         loadTransactions()
+        syncFromRemote()
     }
 
     override fun onEvent(event: TransactionsEvent) {
@@ -73,6 +74,12 @@ class TransactionsViewModel @Inject constructor(
                     setState { copy(transactions = results) }
                 }
             }
+        }
+    }
+
+    private fun syncFromRemote() {
+        viewModelScope.launch {
+            repository.syncFromRemote()
         }
     }
 

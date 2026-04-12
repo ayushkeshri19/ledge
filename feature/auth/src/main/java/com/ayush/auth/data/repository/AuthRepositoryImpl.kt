@@ -81,10 +81,12 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun signInWithGoogleIdToken(idToken: String): ApiResult<User> = withContext(Dispatchers.IO) {
+    override suspend fun signInWithGoogleIdToken(idToken: String, rawNonce: String): ApiResult<User> =
+        withContext(Dispatchers.IO) {
         runCatching {
             supabaseClient.auth.signInWith(IDToken) {
                 this.idToken = idToken
+                this.nonce = rawNonce
                 provider = Google
             }
             getCurrentUser()

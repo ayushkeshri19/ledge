@@ -23,7 +23,7 @@ object DatabaseModule {
             context,
             LedgeDatabase::class.java,
             "ledge_db",
-        ).build()
+        ).fallbackToDestructiveMigration(true).build()
     }
 
     @Provides

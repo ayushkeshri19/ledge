@@ -42,4 +42,5 @@ interface TransactionRepository {
     suspend fun deleteTransaction(id: Long)
     fun getAllCategories(): Flow<List<Category>>
     suspend fun ensureDefaultCategories()
+    suspend fun syncFromRemote()
 }

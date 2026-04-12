@@ -4,15 +4,21 @@ import com.ayush.database.dao.CategoryDao
 import com.ayush.database.dao.TransactionDao
 import com.ayush.database.data.DefaultCategories
 import com.ayush.database.data.TransactionEntity
+import com.ayush.transactions.data.remote.SupabaseTransactionDataSource
+import com.ayush.transactions.data.remote.SupabaseTransactionDto
 import com.ayush.transactions.domain.models.Category
+import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.transactions.domain.models.toDomain
 import com.ayush.transactions.domain.repository.TransactionRepository
+import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,6 +26,8 @@ import javax.inject.Singleton
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDao,
     private val categoryDao: CategoryDao,
+    private val supabaseDataSource: SupabaseTransactionDataSource,
+    private val supabaseClient: SupabaseClient,
 ) : TransactionRepository {
 
     override fun getAllTransactions(): Flow<List<Transaction>> {
@@ -64,7 +72,7 @@ class TransactionRepositoryImpl @Inject constructor(
                     note = entity.note,
                     date = entity.date,
                     isRecurring = entity.isRecurring,
-                    recurrenceType = com.ayush.transactions.domain.models.RecurrenceType.fromValue(entity.recurrenceType),
+                    recurrenceType = RecurrenceType.fromValue(entity.recurrenceType),
                 )
             }
         }
@@ -79,7 +87,8 @@ class TransactionRepositoryImpl @Inject constructor(
         isRecurring: Boolean,
         recurrenceType: String?,
     ): Long = withContext(Dispatchers.IO) {
-        transactionDao.insert(
+        val userId = currentUserId()
+        val localId = transactionDao.insert(
             TransactionEntity(
                 amount = amount,
                 type = type.value,
@@ -88,8 +97,35 @@ class TransactionRepositoryImpl @Inject constructor(
                 date = date,
                 isRecurring = isRecurring,
                 recurrenceType = recurrenceType,
+                userId = userId,
             )
         )
+
+        if (userId.isNotEmpty()) {
+            try {
+                val categoryName = categoryId?.let { categoryDao.getCategoryById(it)?.name }
+                val dto = supabaseDataSource.insert(
+                    SupabaseTransactionDto(
+                        userId = userId,
+                        amount = amount,
+                        type = type.value,
+                        categoryName = categoryName,
+                        note = note,
+                        date = date,
+                        isRecurring = isRecurring,
+                        recurrenceType = recurrenceType,
+                        createdAt = System.currentTimeMillis(),
+                    )
+                )
+                transactionDao.update(
+                    transactionDao.getTransactionById(localId)!!.copy(remoteId = dto.id)
+                )
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to sync new transaction to Supabase")
+            }
+        }
+
+        localId
     }
 
     override suspend fun updateTransaction(
@@ -117,6 +153,14 @@ class TransactionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteTransaction(id: Long) = withContext(Dispatchers.IO) {
+        val entity = transactionDao.getTransactionById(id)
+        entity?.remoteId?.let { remoteId ->
+            try {
+                supabaseDataSource.delete(remoteId)
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to delete transaction from Supabase")
+            }
+        }
         transactionDao.deleteById(id)
     }
 
@@ -130,5 +174,38 @@ class TransactionRepositoryImpl @Inject constructor(
         if (categoryDao.count() == 0) {
             categoryDao.insertAll(DefaultCategories.entries)
         }
+    }
+
+    override suspend fun syncFromRemote() = withContext(Dispatchers.IO) {
+        val userId = currentUserId().takeIf { it.isNotEmpty() } ?: return@withContext
+        try {
+            val remoteTransactions = supabaseDataSource.fetchAllForUser(userId)
+            remoteTransactions.forEach { dto ->
+                val remoteId = dto.id ?: return@forEach
+                if (transactionDao.getByRemoteId(remoteId) == null) {
+                    val category = dto.categoryName?.let { categoryDao.getCategoryByName(it) }
+                    transactionDao.insert(
+                        TransactionEntity(
+                            amount = dto.amount,
+                            type = dto.type,
+                            categoryId = category?.id,
+                            note = dto.note,
+                            date = dto.date,
+                            isRecurring = dto.isRecurring,
+                            recurrenceType = dto.recurrenceType,
+                            createdAt = dto.createdAt,
+                            remoteId = remoteId,
+                            userId = dto.userId,
+                        )
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to sync transactions from Supabase")
+        }
+    }
+
+    private fun currentUserId(): String {
+        return supabaseClient.auth.currentSessionOrNull()?.user?.id ?: ""
     }
 }

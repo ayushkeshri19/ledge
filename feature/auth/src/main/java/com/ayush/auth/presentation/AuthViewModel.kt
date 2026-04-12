@@ -77,7 +77,7 @@ class AuthViewModel @Inject constructor(
 
             is AuthUiEvent.OnGoogleIdTokenReceived -> {
                 viewModelScope.launch {
-                    signInWithGoogle(event.idToken)
+                    signInWithGoogle(event.idToken, event.rawNonce)
                 }
             }
 
@@ -172,15 +172,8 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private suspend fun signInWithGoogle(idToken: String?) {
-        if (idToken == null) {
-            setState { copy(isGoogleLoading = false) }
-            sendSideEffect(AuthUiSideEffect.ShowToast("Google sign-in failed"))
-            Timber.tag(TAG).e("Google sign-in failed — id token was null")
-            return
-        }
-
-        when (val result = signInWithGoogleIdTokenUseCase(idToken)) {
+    private suspend fun signInWithGoogle(idToken: String, rawNonce: String) {
+        when (val result = signInWithGoogleIdTokenUseCase(idToken, rawNonce)) {
             is ApiResult.Success -> {
                 setState { copy(isGoogleLoading = false) }
                 sendSideEffect(
@@ -203,7 +196,7 @@ sealed interface AuthUiEvent {
     data class PasswordChanged(val password: String) : AuthUiEvent
     data class FullNameChanged(val fullName: String) : AuthUiEvent
     data class ConfirmPasswordChanged(val confirmPassword: String) : AuthUiEvent
-    data class OnGoogleIdTokenReceived(val idToken: String) : AuthUiEvent
+    data class OnGoogleIdTokenReceived(val idToken: String, val rawNonce: String) : AuthUiEvent
     data class GoogleIdTokenFailed(val cause: Throwable) : AuthUiEvent
 
     data object SignUpWithEmailClicked : AuthUiEvent

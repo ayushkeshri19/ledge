@@ -31,4 +31,6 @@ data class TransactionEntity(
     val isRecurring: Boolean = false,
     val recurrenceType: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
+    val remoteId: String? = null,
+    val userId: String = "",
 )

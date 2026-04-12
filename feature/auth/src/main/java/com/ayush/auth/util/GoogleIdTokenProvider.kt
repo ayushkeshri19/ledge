@@ -17,15 +17,19 @@ class GoogleIdTokenProvider(
     private val serverClientId: String
 ) {
 
-    suspend fun getIdToken(activity: Activity): Result<String> = withContext(Dispatchers.Main.immediate) {
+    suspend fun getIdToken(activity: Activity): Result<Pair<String, String>> = withContext(Dispatchers.Main.immediate) {
         runCatching {
-            val nonce = generateNonce()
+            val rawNonce = ByteArray(32).also { SecureRandom().nextBytes(it) }
+                .joinToString("") { "%02x".format(it) }
+            val hashedNonce = MessageDigest.getInstance("SHA-256")
+                .digest(rawNonce.toByteArray())
+                .joinToString("") { "%02x".format(it) }
 
             val googleIdOption = GetGoogleIdOption.Builder()
                 .setServerClientId(serverClientId)
                 .setFilterByAuthorizedAccounts(false)
                 .setAutoSelectEnabled(false)
-                .setNonce(nonce)
+                .setNonce(hashedNonce)
                 .build()
 
             val request = GetCredentialRequest.Builder()
@@ -34,7 +38,7 @@ class GoogleIdTokenProvider(
 
             val result = credentialManager.getCredential(activity, request)
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
-            googleIdTokenCredential.idToken
+            Pair(googleIdTokenCredential.idToken, rawNonce)
         }.recover { e ->
             when (e) {
                 is GetCredentialCancellationException -> throw Exception("Sign-in cancelled")
@@ -42,11 +46,5 @@ class GoogleIdTokenProvider(
                 else -> throw Exception("Google sign-in failed. Please try again.")
             }
         }
-    }
-
-    private fun generateNonce(): String {
-        val raw = ByteArray(32).also { SecureRandom().nextBytes(it) }
-        return MessageDigest.getInstance("SHA-256").digest(raw)
-            .joinToString("") { "%02x".format(it) }
     }
 }
