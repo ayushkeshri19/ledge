@@ -7,14 +7,18 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -119,17 +123,27 @@ internal fun DashboardNavGraph(onSignOut: () -> Unit) {
         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
     }
 
+    val showBottomBar = backStack.lastOrNull() != DashboardRoute.AddTransaction
+
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            LedgeBottomBar(
-                selectedTab = selectedTab,
-                onTabSelected = ::selectTab,
-                onFabClick = { backStack.add(DashboardRoute.AddTransaction) },
-            )
+            if (showBottomBar) {
+                LedgeBottomBar(
+                    selectedTab = selectedTab,
+                    onTabSelected = ::selectTab,
+                    onFabClick = { backStack.add(DashboardRoute.AddTransaction) },
+                )
+            }
         },
     ) { padding ->
-        Box(Modifier.padding(padding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(if (showBottomBar) padding else PaddingValues())
+        ) {
             NavDisplay(
                 backStack = backStack,
                 entryProvider = entryProvider {
@@ -171,37 +185,43 @@ private fun LedgeBottomBar(
         Column(modifier = Modifier.fillMaxWidth()) {
             HorizontalDivider(thickness = 1.dp, color = BorderSubtle)
 
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgSurface.copy(alpha = 0.95f))
-                    .padding(top = 14.dp, bottom = 10.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
+                    .background(BgSurface.copy(alpha = 0.95f)),
             ) {
-                leftTabs.forEach { tab ->
-                    BottomNavItem(
-                        tab = tab,
-                        isSelected = selectedTab == tab,
-                        onClick = { onTabSelected(tab) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                FabButton(
-                    onClick = onFabClick,
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .offset(y = (-30).dp),
-                )
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(top = 14.dp, bottom = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    leftTabs.forEach { tab ->
+                        BottomNavItem(
+                            tab = tab,
+                            isSelected = selectedTab == tab,
+                            onClick = { onTabSelected(tab) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
 
-                rightTabs.forEach { tab ->
-                    BottomNavItem(
-                        tab = tab,
-                        isSelected = selectedTab == tab,
-                        onClick = { onTabSelected(tab) },
-                        modifier = Modifier.weight(1f),
+                    FabButton(
+                        onClick = onFabClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .offset(y = (-30).dp),
                     )
+
+                    rightTabs.forEach { tab ->
+                        BottomNavItem(
+                            tab = tab,
+                            isSelected = selectedTab == tab,
+                            onClick = { onTabSelected(tab) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }

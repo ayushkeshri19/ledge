@@ -9,16 +9,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,6 +45,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -81,13 +84,14 @@ fun AddTransactionScreen(
     val viewModel: AddTransactionViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val currentOnBack by rememberUpdatedState(onBack)
 
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
                 is AddTransactionSideEffect.TransactionAdded -> {
                     Toast.makeText(context, "Transaction added", Toast.LENGTH_SHORT).show()
-                    onBack()
+                    currentOnBack()
                 }
 
                 is AddTransactionSideEffect.ShowToast -> {
@@ -100,11 +104,11 @@ fun AddTransactionScreen(
     AddTransactionContent(
         state = state,
         onEvent = viewModel::onEvent,
-        onBack = onBack,
+        onBack = currentOnBack,
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddTransactionContent(
     state: AddTransactionState,
@@ -118,6 +122,8 @@ private fun AddTransactionContent(
         modifier = Modifier
             .fillMaxSize()
             .background(BgDeep)
+            .navigationBarsPadding()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
     ) {
@@ -125,7 +131,7 @@ private fun AddTransactionContent(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 16.dp, bottom = 24.dp),
+                .padding(top = 16.dp, bottom = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack) {
@@ -147,7 +153,7 @@ private fun AddTransactionContent(
             onTypeChanged = { onEvent(AddTransactionEvent.TypeChanged(it)) },
         )
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
 
         LedgeTextField(
             value = state.amount,
@@ -167,7 +173,7 @@ private fun AddTransactionContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         LedgeTextField(
             value = state.note,
@@ -179,7 +185,7 @@ private fun AddTransactionContent(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(Modifier.height(16.dp))
+        Spacer(Modifier.height(12.dp))
 
         Text(
             text = "DATE & TIME",
@@ -194,19 +200,19 @@ private fun AddTransactionContent(
                     .background(BgCard)
                     .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
                     .clickable { showDatePicker = true }
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Filled.CalendarMonth,
                         contentDescription = null,
                         tint = Gold,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(16.dp),
                     )
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = formatDate(state.dateMillis),
-                        style = LedgeTextStyle.Body,
+                        style = LedgeTextStyle.BodySmall,
                         color = TextPrimary,
                     )
                 }
@@ -218,38 +224,36 @@ private fun AddTransactionContent(
                     .background(BgCard)
                     .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
                     .clickable { showTimePicker = true }
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Filled.Schedule,
                         contentDescription = null,
                         tint = Gold,
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(16.dp),
                     )
-                    Spacer(Modifier.width(10.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = formatTime(state.hour, state.minute),
-                        style = LedgeTextStyle.Body,
+                        style = LedgeTextStyle.BodySmall,
                         color = TextPrimary,
                     )
                 }
             }
         }
 
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(16.dp))
 
         Text(
             text = "CATEGORY",
             style = LedgeTextStyle.Caption.copy(color = TextMuted2),
-            modifier = Modifier.padding(bottom = 10.dp),
+            modifier = Modifier.padding(bottom = 8.dp),
         )
-        FlowRow(
+        LazyRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth(),
         ) {
-            state.categories.forEach { category ->
+            items(state.categories) { category ->
                 CategoryChip(
                     category = category,
                     isSelected = state.selectedCategory?.id == category.id,
@@ -264,7 +268,7 @@ private fun AddTransactionContent(
             }
         }
 
-        Spacer(Modifier.height(32.dp))
+        Spacer(Modifier.height(24.dp))
 
         LedgePrimaryButton(
             text = "Add Transaction",
@@ -386,8 +390,7 @@ private fun TypeToggle(
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
-                    text = type.name.lowercase()
-                        .replaceFirstChar { it.uppercase() },
+                    text = type.name.lowercase().replaceFirstChar { it.uppercase() },
                     style = LedgeTextStyle.Button,
                     color = textColor,
                 )
