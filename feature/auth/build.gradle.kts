@@ -41,11 +41,13 @@ dependencies {
 
     implementation(project(":core:common"))
     implementation(project(":core:network"))
+    implementation(project(":core:database"))
     implementation(project(":core:datastore"))
     implementation(project(":core:ui"))
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation(libs.work.runtime)
 
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)

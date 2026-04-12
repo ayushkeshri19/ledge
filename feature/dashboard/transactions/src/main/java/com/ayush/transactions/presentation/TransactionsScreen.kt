@@ -1,7 +1,10 @@
 package com.ayush.transactions.presentation
 
-import android.widget.Toast
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,27 +14,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,16 +49,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ayush.common.utils.toast
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
+import com.ayush.ui.components.LedgeFilterChip
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.theme.BgCard
+import com.ayush.ui.theme.BgDeep
 import com.ayush.ui.theme.BgSurface
+import com.ayush.ui.theme.BorderSubtle
+import com.ayush.ui.theme.Gold
+import com.ayush.ui.theme.GoldDim
 import com.ayush.ui.theme.GreenDim
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
@@ -60,11 +74,9 @@ import com.ayush.ui.theme.RedDim
 import com.ayush.ui.theme.SemanticGreen
 import com.ayush.ui.theme.SemanticRed
 import com.ayush.ui.theme.TextMuted
+import com.ayush.ui.theme.TextMuted2
 import com.ayush.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun TransactionsScreen() {
@@ -75,9 +87,7 @@ fun TransactionsScreen() {
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { effect ->
             when (effect) {
-                is TransactionsSideEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
-                }
+                is TransactionsSideEffect.ShowToast -> effect.message.toast(context)
             }
         }
     }
@@ -95,16 +105,56 @@ private fun TransactionsContent(
     onEvent: (TransactionsEvent) -> Unit,
 ) {
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    var transactionToEdit by remember { mutableStateOf<Transaction?>(null) }
+    var showFilterSheet by remember { mutableStateOf(false) }
+    val deleteSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val editSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val filterSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "Transactions",
-            style = LedgeTextStyle.HeadingScreen,
-            color = TextPrimary,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-        )
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = "Transactions",
+                style = LedgeTextStyle.HeadingScreen,
+                color = TextPrimary,
+            )
+            Box {
+                IconButton(onClick = { showFilterSheet = true }) {
+                    Icon(
+                        Icons.Filled.Tune,
+                        contentDescription = "Filter",
+                        tint = if (state.filterState.isActive) Gold else TextMuted,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+                if (state.filterState.isActive) {
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape)
+                            .background(Gold)
+                            .align(Alignment.TopEnd),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = state.filterState.activeCount.toString(),
+                            style = LedgeTextStyle.Caption.copy(color = BgDeep),
+                        )
+                    }
+                }
+            }
+        }
 
         LedgeTextField(
             value = state.searchQuery,
@@ -134,16 +184,80 @@ private fun TransactionsContent(
                 .padding(horizontal = 20.dp),
         )
 
-        Spacer(Modifier.height(16.dp))
+        if (state.filterState.isActive) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                state.filterState.type?.let { type ->
+                    item {
+                        LedgeFilterChip(
+                            label = type.name.lowercase().replaceFirstChar { it.uppercase() },
+                            onRemove = {
+                                onEvent(TransactionsEvent.ApplyFilters(state.filterState.copy(type = null)))
+                            },
+                        )
+                    }
+                }
+                if (state.filterState.dateRange != DateRangeOption.ALL_TIME) {
+                    item {
+                        LedgeFilterChip(
+                            label = state.filterState.dateRange.label,
+                            onRemove = {
+                                onEvent(
+                                    TransactionsEvent.ApplyFilters(
+                                        state.filterState.copy(dateRange = DateRangeOption.ALL_TIME),
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+                state.filterState.categoryName?.let { name ->
+                    item {
+                        LedgeFilterChip(
+                            label = name,
+                            onRemove = {
+                                onEvent(
+                                    TransactionsEvent.ApplyFilters(
+                                        state.filterState.copy(categoryId = null, categoryName = null),
+                                    ),
+                                )
+                            },
+                        )
+                    }
+                }
+                if (state.filterState.activeCount > 1) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(LedgeRadius.pill))
+                                .background(BgSurface)
+                                .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.pill))
+                                .clickable { onEvent(TransactionsEvent.ClearFilters) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                text = "Clear all",
+                                style = LedgeTextStyle.Caption,
+                                color = TextMuted,
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            Spacer(Modifier.height(16.dp))
+        }
 
         when {
-            state.isLoading -> {
+            state.isLoading || state.isSyncing -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
-                        color = com.ayush.ui.theme.Gold,
+                        color = Gold,
                         modifier = Modifier.size(32.dp),
                         strokeWidth = 2.dp,
                     )
@@ -156,36 +270,59 @@ private fun TransactionsContent(
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = if (state.searchQuery.isNotEmpty()) "No results found" else "No transactions yet",
-                            style = LedgeTextStyle.HeadingCard,
-                            color = TextMuted,
-                        )
+                        val heading = when {
+                            state.searchQuery.isNotEmpty() -> "No results found"
+                            state.filterState.isActive -> "No matching transactions"
+                            else -> "No transactions yet"
+                        }
+                        val sub = when {
+                            state.searchQuery.isNotEmpty() -> "Try a different search"
+                            state.filterState.isActive -> "Try adjusting your filters"
+                            else -> "Tap + to add your first transaction"
+                        }
+                        Text(text = heading, style = LedgeTextStyle.HeadingCard, color = TextMuted)
                         Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = if (state.searchQuery.isNotEmpty()) "Try a different search" else "Tap + to add your first transaction",
-                            style = LedgeTextStyle.BodySmall,
-                            color = TextMuted,
-                        )
+                        Text(text = sub, style = LedgeTextStyle.BodySmall, color = TextMuted)
+                        if (state.filterState.isActive) {
+                            Spacer(Modifier.height(16.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(LedgeRadius.pill))
+                                    .background(BgCard)
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.pill))
+                                    .clickable { onEvent(TransactionsEvent.ClearFilters) }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                            ) {
+                                Text(text = "Clear filters", style = LedgeTextStyle.BodySmall, color = Gold)
+                            }
+                        }
                     }
                 }
             }
 
             else -> {
+                val grouped = remember(state.transactions) {
+                    state.transactions.groupBy { formatDateHeader(it.date) }
+                }
                 LazyColumn(
-                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 4.dp),
+                    contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    items(
-                        items = state.transactions,
-                        key = { it.id },
-                    ) { transaction ->
-                        TransactionItem(
-                            transaction = transaction,
-                            onDelete = { transactionToDelete = transaction },
-                        )
+                    grouped.forEach { (dateHeader, txns) ->
+                        stickyHeader(key = "header_$dateHeader") {
+                            DateSectionHeader(label = dateHeader)
+                        }
+                        items(
+                            items = txns,
+                            key = { it.id },
+                        ) { transaction ->
+                            SwipeableTransactionItem(
+                                transaction = transaction,
+                                onEdit = { transactionToEdit = transaction },
+                                onDelete = { transactionToDelete = transaction },
+                            )
+                        }
                     }
-                    item { Spacer(Modifier.height(80.dp)) }
                 }
             }
         }
@@ -194,22 +331,74 @@ private fun TransactionsContent(
     transactionToDelete?.let { transaction ->
         ModalBottomSheet(
             onDismissRequest = { transactionToDelete = null },
-            sheetState = sheetState,
+            sheetState = deleteSheetState,
             containerColor = BgSurface,
         ) {
             DeleteConfirmationSheet(
                 transaction = transaction,
                 onConfirm = {
                     scope.launch {
-                        sheetState.hide()
+                        deleteSheetState.hide()
                         onEvent(TransactionsEvent.DeleteTransaction(transaction.id))
                         transactionToDelete = null
                     }
                 },
                 onDismiss = {
                     scope.launch {
-                        sheetState.hide()
+                        deleteSheetState.hide()
                         transactionToDelete = null
+                    }
+                },
+            )
+        }
+    }
+
+    transactionToEdit?.let { transaction ->
+        ModalBottomSheet(
+            onDismissRequest = { transactionToEdit = null },
+            sheetState = editSheetState,
+            containerColor = BgSurface,
+        ) {
+            EditTransactionSheet(
+                transaction = transaction,
+                categories = state.categories,
+                onSave = { event ->
+                    scope.launch {
+                        editSheetState.hide()
+                        onEvent(event)
+                        transactionToEdit = null
+                    }
+                },
+                onDismiss = {
+                    scope.launch {
+                        editSheetState.hide()
+                        transactionToEdit = null
+                    }
+                },
+            )
+        }
+    }
+
+    if (showFilterSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterSheet = false },
+            sheetState = filterSheetState,
+            containerColor = BgSurface,
+        ) {
+            FilterSheet(
+                currentFilters = state.filterState,
+                categories = state.categories,
+                onApply = { newFilters ->
+                    scope.launch {
+                        filterSheetState.hide()
+                        onEvent(TransactionsEvent.ApplyFilters(newFilters))
+                        showFilterSheet = false
+                    }
+                },
+                onDismiss = {
+                    scope.launch {
+                        filterSheetState.hide()
+                        showFilterSheet = false
                     }
                 },
             )
@@ -218,110 +407,108 @@ private fun TransactionsContent(
 }
 
 @Composable
-private fun DeleteConfirmationSheet(
-    transaction: Transaction,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val isExpense = transaction.type == TransactionType.EXPENSE
-    val amountPrefix = if (isExpense) "-" else "+"
-    val amountColor = if (isExpense) SemanticRed else SemanticGreen
-
-    Column(
+private fun DateSectionHeader(label: String) {
+    Box(
         modifier = Modifier
             .fillMaxWidth()
-            .navigationBarsPadding()
-            .padding(horizontal = 24.dp, vertical = 8.dp),
+            .background(BgDeep)
+            .padding(top = 8.dp, bottom = 4.dp),
     ) {
         Text(
-            text = "Delete Transaction",
-            style = LedgeTextStyle.HeadingScreen,
-            color = TextPrimary,
+            text = label,
+            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
         )
+    }
+}
 
-        Spacer(Modifier.height(4.dp))
-
-        Text(
-            text = "This action cannot be undone.",
-            style = LedgeTextStyle.BodySmall,
-            color = TextMuted,
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableTransactionItem(
+    transaction: Transaction,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    val density = LocalDensity.current
+    val dismissState = remember {
+        SwipeToDismissBoxState(
+            initialValue = SwipeToDismissBoxValue.Settled,
+            density = density,
+            confirmValueChange = { value ->
+                when (value) {
+                    SwipeToDismissBoxValue.EndToStart -> {
+                        onDelete()
+                        false
+                    }
+                    SwipeToDismissBoxValue.StartToEnd -> {
+                        onEdit()
+                        false
+                    }
+                    else -> false
+                }
+            },
+            positionalThreshold = { totalDistance -> totalDistance * 0.35f },
         )
+    }
 
-        Spacer(Modifier.height(20.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(LedgeRadius.medium))
-                .background(BgCard)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = transaction.note,
-                    style = LedgeTextStyle.HeadingCard,
-                    color = TextPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    text = "${formatDate(transaction.date)}, ${formatTime(transaction.date)}",
-                    style = LedgeTextStyle.Caption,
-                    color = TextMuted,
-                )
-            }
-
-            Text(
-                text = "$amountPrefix\u20B9${formatAmount(transaction.amount)}",
-                style = LedgeTextStyle.AmountMono,
-                color = amountColor,
+    SwipeToDismissBox(
+        state = dismissState,
+        enableDismissFromStartToEnd = true,
+        enableDismissFromEndToStart = true,
+        backgroundContent = {
+            val direction = dismissState.dismissDirection
+            val bgColor by animateColorAsState(
+                targetValue = when (direction) {
+                    SwipeToDismissBoxValue.EndToStart -> SemanticRed.copy(alpha = 0.12f)
+                    SwipeToDismissBoxValue.StartToEnd -> GoldDim
+                    else -> Color.Transparent
+                },
+                animationSpec = tween(150),
+                label = "swipeBg",
             )
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        HorizontalDivider(color = BgCard)
-
-        Spacer(Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.End,
-        ) {
-            TextButton(
-                onClick = onDismiss,
-                colors = ButtonDefaults.textButtonColors(contentColor = TextMuted),
+            val iconTint by animateColorAsState(
+                targetValue = when (direction) {
+                    SwipeToDismissBoxValue.EndToStart -> SemanticRed
+                    SwipeToDismissBoxValue.StartToEnd -> Gold
+                    else -> Color.Transparent
+                },
+                animationSpec = tween(150),
+                label = "swipeIcon",
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(LedgeRadius.medium))
+                    .background(bgColor)
+                    .padding(horizontal = 24.dp),
+                contentAlignment = when (direction) {
+                    SwipeToDismissBoxValue.EndToStart -> Alignment.CenterEnd
+                    else -> Alignment.CenterStart
+                },
             ) {
-                Text(
-                    text = "Cancel",
-                    style = LedgeTextStyle.Button,
-                )
+                when (direction) {
+                    SwipeToDismissBoxValue.EndToStart -> Icon(
+                        Icons.Filled.Delete,
+                        contentDescription = "Delete",
+                        tint = iconTint,
+                        modifier = Modifier.size(22.dp),
+                    )
+                    SwipeToDismissBoxValue.StartToEnd -> Icon(
+                        Icons.Filled.Edit,
+                        contentDescription = "Edit",
+                        tint = iconTint,
+                        modifier = Modifier.size(22.dp),
+                    )
+                    else -> {}
+                }
             }
-
-            Spacer(Modifier.width(8.dp))
-
-            TextButton(
-                onClick = onConfirm,
-                colors = ButtonDefaults.textButtonColors(contentColor = SemanticRed),
-            ) {
-                Text(
-                    text = "Delete",
-                    style = LedgeTextStyle.Button,
-                )
-            }
-        }
-
-        Spacer(Modifier.height(8.dp))
+        },
+    ) {
+        TransactionItem(transaction = transaction)
     }
 }
 
 @Composable
-private fun TransactionItem(
-    transaction: Transaction,
-    onDelete: () -> Unit,
-) {
+private fun TransactionItem(transaction: Transaction) {
     val isExpense = transaction.type == TransactionType.EXPENSE
     val amountColor = if (isExpense) SemanticRed else SemanticGreen
     val amountPrefix = if (isExpense) "-" else "+"
@@ -375,49 +562,28 @@ private fun TransactionItem(
                     )
                 }
                 Text(
-                    text = "${formatDate(transaction.date)}, ${formatTime(transaction.date)}",
+                    text = formatTime(transaction.date),
                     style = LedgeTextStyle.Caption,
                     color = TextMuted,
                 )
             }
         }
 
-        Text(
-            text = "$amountPrefix\u20B9${formatAmount(transaction.amount)}",
-            style = LedgeTextStyle.AmountMono,
-            color = amountColor,
-        )
+        Spacer(Modifier.width(12.dp))
 
-        Spacer(Modifier.width(4.dp))
-
-        IconButton(
-            onClick = onDelete,
-            modifier = Modifier.size(32.dp),
-        ) {
-            Icon(
-                Icons.Filled.Delete,
-                contentDescription = "Delete",
-                tint = TextMuted,
-                modifier = Modifier.size(16.dp),
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = "$amountPrefix\u20B9${formatAmount(transaction.amount)}",
+                style = LedgeTextStyle.AmountMono,
+                color = amountColor,
             )
+            if (transaction.isRecurring) {
+                Text(
+                    text = transaction.recurrenceType?.value?.replaceFirstChar { it.uppercase() } ?: "Recurring",
+                    style = LedgeTextStyle.Caption,
+                    color = Gold,
+                )
+            }
         }
-    }
-}
-
-private fun formatDate(millis: Long): String {
-    val formatter = SimpleDateFormat("dd MMM", Locale.getDefault())
-    return formatter.format(Date(millis))
-}
-
-private fun formatTime(millis: Long): String {
-    val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
-    return formatter.format(Date(millis))
-}
-
-private fun formatAmount(amount: Double): String {
-    return if (amount == amount.toLong().toDouble()) {
-        String.format(Locale.getDefault(), "%,d", amount.toLong())
-    } else {
-        String.format(Locale.getDefault(), "%,.2f", amount)
     }
 }

@@ -21,6 +21,11 @@ class SupabaseTransactionDataSource @Inject constructor(
             .decodeSingle()
     }
 
+    suspend fun update(remoteId: String, dto: SupabaseTransactionDto) {
+        supabaseClient.from("transactions")
+            .update(dto) { filter { eq("id", remoteId) } }
+    }
+
     suspend fun delete(remoteId: String) {
         supabaseClient.from("transactions")
             .delete { filter { eq("id", remoteId) } }

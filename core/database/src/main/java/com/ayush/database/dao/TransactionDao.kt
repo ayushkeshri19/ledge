@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.ayush.database.data.SyncStatus
 import com.ayush.database.data.TransactionEntity
 import com.ayush.database.data.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +19,7 @@ interface TransactionDao {
     @Query(
         """
         SELECT * FROM transactions
+        WHERE syncStatus != 'PENDING_DELETE'
         ORDER BY date DESC, createdAt DESC
         """
     )
@@ -28,6 +30,7 @@ interface TransactionDao {
         """
         SELECT * FROM transactions
         WHERE date BETWEEN :startDate AND :endDate
+        AND syncStatus != 'PENDING_DELETE'
         ORDER BY date DESC, createdAt DESC
         """
     )
@@ -41,6 +44,7 @@ interface TransactionDao {
         """
         SELECT * FROM transactions
         WHERE categoryId = :categoryId
+        AND syncStatus != 'PENDING_DELETE'
         ORDER BY date DESC, createdAt DESC
         """
     )
@@ -51,6 +55,7 @@ interface TransactionDao {
         """
         SELECT * FROM transactions
         WHERE type = :type
+        AND syncStatus != 'PENDING_DELETE'
         ORDER BY date DESC, createdAt DESC
         """
     )
@@ -61,12 +66,13 @@ interface TransactionDao {
         """
         SELECT * FROM transactions
         WHERE note LIKE '%' || :query || '%'
+        AND syncStatus != 'PENDING_DELETE'
         ORDER BY date DESC, createdAt DESC
         """
     )
     fun searchTransactions(query: String): Flow<List<TransactionWithCategory>>
 
-    @Query("SELECT * FROM transactions WHERE id = :id")
+    @Query("SELECT * FROM transactions WHERE id = :id AND syncStatus != 'PENDING_DELETE'")
     suspend fun getTransactionById(id: Long): TransactionEntity?
 
     @Query("SELECT * FROM transactions WHERE remoteId = :remoteId LIMIT 1")
@@ -88,6 +94,7 @@ interface TransactionDao {
         """
         SELECT SUM(amount) FROM transactions
         WHERE type = :type AND date BETWEEN :startDate AND :endDate
+        AND syncStatus != 'PENDING_DELETE'
         """
     )
     suspend fun getTotalByTypeAndDateRange(
@@ -105,6 +112,7 @@ interface TransactionDao {
         AND (:categoryId IS NULL OR categoryId = :categoryId)
         AND (:minAmount IS NULL OR amount >= :minAmount)
         AND (:maxAmount IS NULL OR amount <= :maxAmount)
+        AND syncStatus != 'PENDING_DELETE'
         ORDER BY date DESC, createdAt DESC
         """
     )
@@ -116,4 +124,10 @@ interface TransactionDao {
         minAmount: Double? = null,
         maxAmount: Double? = null,
     ): Flow<List<TransactionWithCategory>>
+
+    @Query("SELECT * FROM transactions WHERE syncStatus != 'SYNCED' ORDER BY createdAt ASC")
+    suspend fun getPendingSyncTransactions(): List<TransactionEntity>
+
+    @Query("UPDATE transactions SET syncStatus = :status WHERE id = :id")
+    suspend fun updateSyncStatus(id: Long, status: SyncStatus)
 }
