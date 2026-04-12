@@ -58,6 +58,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.common.utils.toast
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
+import com.ayush.ui.components.LedgeFilterChip
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.theme.BgCard
 import com.ayush.ui.theme.BgDeep
@@ -185,7 +186,7 @@ private fun TransactionsContent(
             ) {
                 state.filterState.type?.let { type ->
                     item {
-                        ActiveFilterChip(
+                        LedgeFilterChip(
                             label = type.name.lowercase().replaceFirstChar { it.uppercase() },
                             onRemove = {
                                 onEvent(TransactionsEvent.ApplyFilters(state.filterState.copy(type = null)))
@@ -195,7 +196,7 @@ private fun TransactionsContent(
                 }
                 if (state.filterState.dateRange != DateRangeOption.ALL_TIME) {
                     item {
-                        ActiveFilterChip(
+                        LedgeFilterChip(
                             label = state.filterState.dateRange.label,
                             onRemove = {
                                 onEvent(
@@ -209,7 +210,7 @@ private fun TransactionsContent(
                 }
                 state.filterState.categoryName?.let { name ->
                     item {
-                        ActiveFilterChip(
+                        LedgeFilterChip(
                             label = name,
                             onRemove = {
                                 onEvent(

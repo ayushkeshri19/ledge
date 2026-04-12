@@ -1,10 +1,7 @@
 package com.ayush.transactions.presentation
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,11 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -44,13 +39,15 @@ import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.ui.components.LedgePrimaryButton
+import com.ayush.ui.components.LedgeSegmentedToggle
+import com.ayush.ui.components.LedgeSelectableChip
 import com.ayush.ui.components.LedgeTextField
+import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.theme.BgCard
 import com.ayush.ui.theme.BgDeep
 import com.ayush.ui.theme.BgSurface
 import com.ayush.ui.theme.BorderSubtle
 import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldDim
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.SemanticGreen
@@ -131,43 +128,14 @@ internal fun EditTransactionSheet(
 
         Spacer(Modifier.height(16.dp))
 
-        // Type toggle
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(LedgeRadius.medium))
-                .background(BgDeep)
-                .padding(4.dp),
-        ) {
-            TransactionType.entries.forEach { t ->
-                val isSelected = form.type == t
-                val bgColor by animateColorAsState(
-                    targetValue = if (isSelected) BgCard else BgDeep,
-                    animationSpec = tween(200),
-                    label = "editTypeBg",
-                )
-                val textColor = when {
-                    isSelected && t == TransactionType.EXPENSE -> SemanticRed
-                    isSelected && t == TransactionType.INCOME -> SemanticGreen
-                    else -> TextMuted
-                }
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(LedgeRadius.small))
-                        .background(bgColor)
-                        .clickable { form = form.copy(type = t) }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = t.name.lowercase().replaceFirstChar { it.uppercase() },
-                        style = LedgeTextStyle.Button,
-                        color = textColor,
-                    )
-                }
-            }
-        }
+        LedgeSegmentedToggle(
+            options = listOf(
+                SegmentOption(TransactionType.EXPENSE, "Expense", SemanticRed),
+                SegmentOption(TransactionType.INCOME, "Income", SemanticGreen),
+            ),
+            selectedValue = form.type,
+            onSelect = { form = form.copy(type = it) },
+        )
 
         Spacer(Modifier.height(16.dp))
 
@@ -235,40 +203,17 @@ internal fun EditTransactionSheet(
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(categories) { category ->
                 val isSelected = form.selectedCategory?.id == category.id
-                val borderColor by animateColorAsState(
-                    if (isSelected) Gold else BorderSubtle, tween(200), label = "editCatBorder",
+                LedgeSelectableChip(
+                    label = category.name,
+                    isSelected = isSelected,
+                    onClick = { form = form.copy(selectedCategory = if (isSelected) null else category) },
+                    leadingDotColor = category.color,
                 )
-                val bgColor by animateColorAsState(
-                    if (isSelected) GoldDim else BgCard, tween(200), label = "editCatBg",
-                )
-                Row(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(LedgeRadius.pill))
-                        .background(bgColor)
-                        .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
-                        .clickable { form = form.copy(selectedCategory = if (isSelected) null else category) }
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(category.color),
-                    )
-                    Text(
-                        text = category.name,
-                        style = LedgeTextStyle.BodySmall,
-                        color = if (isSelected) Gold else TextPrimary,
-                    )
-                }
             }
         }
 
         Spacer(Modifier.height(12.dp))
 
-        // Recurring toggle
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -309,28 +254,11 @@ internal fun EditTransactionSheet(
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 RecurrenceType.entries.forEach { rt ->
-                    val isSelected = form.recurrenceType == rt
-                    val borderColor by animateColorAsState(
-                        if (isSelected) Gold else BorderSubtle, tween(200), label = "editRecurrenceBorder",
+                    LedgeSelectableChip(
+                        label = rt.value.replaceFirstChar { it.uppercase() },
+                        isSelected = form.recurrenceType == rt,
+                        onClick = { form = form.copy(recurrenceType = rt) },
                     )
-                    val bgColor by animateColorAsState(
-                        if (isSelected) GoldDim else BgCard, tween(200), label = "editRecurrenceBg",
-                    )
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(LedgeRadius.pill))
-                            .background(bgColor)
-                            .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
-                            .clickable { form = form.copy(recurrenceType = rt) }
-                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = rt.value.replaceFirstChar { it.uppercase() },
-                            style = LedgeTextStyle.BodySmall,
-                            color = if (isSelected) Gold else TextPrimary,
-                        )
-                    }
                 }
             }
         }

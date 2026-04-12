@@ -1,8 +1,6 @@
 package com.ayush.transactions.presentation
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
@@ -24,7 +22,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -61,17 +58,18 @@ import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.common.utils.toast
-import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.ui.components.LedgePrimaryButton
+import com.ayush.ui.components.LedgeSegmentedToggle
+import com.ayush.ui.components.LedgeSelectableChip
 import com.ayush.ui.components.LedgeTextField
+import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.theme.BgCard
 import com.ayush.ui.theme.BgDeep
 import com.ayush.ui.theme.BgSurface
 import com.ayush.ui.theme.BorderSubtle
 import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldDim
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.SemanticGreen
@@ -151,9 +149,14 @@ private fun AddTransactionContent(
             )
         }
 
-        TypeToggle(
-            selected = state.type,
-            onTypeChanged = { onEvent(AddTransactionEvent.TypeChanged(it)) },
+        LedgeSegmentedToggle(
+            options = listOf(
+                SegmentOption(TransactionType.EXPENSE, "Expense", SemanticRed),
+                SegmentOption(TransactionType.INCOME, "Income", SemanticGreen),
+            ),
+            selectedValue = state.type,
+            onSelect = { onEvent(AddTransactionEvent.TypeChanged(it)) },
+            containerColor = BgSurface,
         )
 
         Spacer(Modifier.height(16.dp))
@@ -257,8 +260,8 @@ private fun AddTransactionContent(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(state.categories) { category ->
-                CategoryChip(
-                    category = category,
+                LedgeSelectableChip(
+                    label = category.name,
                     isSelected = state.selectedCategory?.id == category.id,
                     onClick = {
                         onEvent(
@@ -267,6 +270,7 @@ private fun AddTransactionContent(
                             )
                         )
                     },
+                    leadingDotColor = category.color,
                 )
             }
         }
@@ -316,32 +320,11 @@ private fun AddTransactionContent(
                 Spacer(Modifier.height(10.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     RecurrenceType.entries.forEach { type ->
-                        val isSelected = state.recurrenceType == type
-                        val borderColor by animateColorAsState(
-                            targetValue = if (isSelected) Gold else BorderSubtle,
-                            animationSpec = tween(200),
-                            label = "recurrenceBorder",
+                        LedgeSelectableChip(
+                            label = type.value.replaceFirstChar { it.uppercase() },
+                            isSelected = state.recurrenceType == type,
+                            onClick = { onEvent(AddTransactionEvent.RecurrenceTypeChanged(type)) },
                         )
-                        val bgColor by animateColorAsState(
-                            targetValue = if (isSelected) GoldDim else BgCard,
-                            animationSpec = tween(200),
-                            label = "recurrenceBg",
-                        )
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(LedgeRadius.pill))
-                                .background(bgColor)
-                                .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
-                                .clickable { onEvent(AddTransactionEvent.RecurrenceTypeChanged(type)) }
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = type.value.replaceFirstChar { it.uppercase() },
-                                style = LedgeTextStyle.BodySmall,
-                                color = if (isSelected) Gold else TextPrimary,
-                            )
-                        }
                     }
                 }
             }
@@ -434,88 +417,4 @@ private fun AddTransactionContent(
     }
 }
 
-@Composable
-private fun TypeToggle(
-    selected: TransactionType,
-    onTypeChanged: (TransactionType) -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(LedgeRadius.medium))
-            .background(BgSurface)
-            .padding(4.dp),
-    ) {
-        TransactionType.entries.forEach { type ->
-            val isSelected = selected == type
-            val bgColor by animateColorAsState(
-                targetValue = if (isSelected) BgCard else BgSurface,
-                animationSpec = tween(200),
-                label = "typeBg",
-            )
-            val textColor = when {
-                isSelected && type == TransactionType.EXPENSE -> SemanticRed
-                isSelected && type == TransactionType.INCOME -> SemanticGreen
-                else -> TextMuted
-            }
-
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .clip(RoundedCornerShape(LedgeRadius.small))
-                    .background(bgColor)
-                    .clickable { onTypeChanged(type) }
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = type.name.lowercase().replaceFirstChar { it.uppercase() },
-                    style = LedgeTextStyle.Button,
-                    color = textColor,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CategoryChip(
-    category: Category,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    val borderColor by animateColorAsState(
-        targetValue = if (isSelected) Gold else BorderSubtle,
-        animationSpec = tween(200),
-        label = "chipBorder",
-    )
-    val bgColor by animateColorAsState(
-        targetValue = if (isSelected) GoldDim else BgCard,
-        animationSpec = tween(200),
-        label = "chipBg",
-    )
-
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(LedgeRadius.pill))
-            .background(bgColor)
-            .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 14.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-    ) {
-        Box(
-            modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(category.color),
-        )
-        Text(
-            text = category.name,
-            style = LedgeTextStyle.BodySmall,
-            color = if (isSelected) Gold else TextPrimary,
-        )
-    }
-}
 
