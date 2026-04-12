@@ -41,6 +41,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.home.presentation.HomeScreen
+import com.ayush.transactions.presentation.AddTransactionScreen
 import com.ayush.ui.R
 import com.ayush.ui.components.FabButton
 import com.ayush.ui.theme.BgSurface
@@ -50,6 +51,7 @@ import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.TextMuted
 import com.ayush.ui.theme.TextPrimary
 import kotlinx.serialization.Serializable
+import com.ayush.transactions.presentation.TransactionsScreen as TransactionsListScreen
 
 sealed interface DashboardBottomNavItems {
     @get:DrawableRes
@@ -123,7 +125,7 @@ internal fun DashboardNavGraph(onSignOut: () -> Unit) {
             LedgeBottomBar(
                 selectedTab = selectedTab,
                 onTabSelected = ::selectTab,
-                onFabClick = { /* TODO: navigate to add-transaction */ },
+                onFabClick = { backStack.add(DashboardRoute.AddTransaction) },
             )
         },
     ) { padding ->
@@ -132,9 +134,12 @@ internal fun DashboardNavGraph(onSignOut: () -> Unit) {
                 backStack = backStack,
                 entryProvider = entryProvider {
                     entry<DashboardRoute.Home> { HomeScreen() }
-                    entry<DashboardRoute.Transactions> { TransactionsScreen() }
+                    entry<DashboardRoute.Transactions> { TransactionsListScreen() }
                     entry<DashboardRoute.Budget> { BudgetScreen() }
                     entry<DashboardRoute.More> { MoreScreen(onSignOut = onSignOut) }
+                    entry<DashboardRoute.AddTransaction> {
+                        AddTransactionScreen(onBack = ::pop)
+                    }
                 },
                 onBack = ::pop,
             )
@@ -245,20 +250,6 @@ private fun BottomNavItem(
             text = tab.label.uppercase(),
             color = tintColor,
             style = NavLabelStyle,
-        )
-    }
-}
-
-@Composable
-private fun TransactionsScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "Transactions",
-            style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
         )
     }
 }
