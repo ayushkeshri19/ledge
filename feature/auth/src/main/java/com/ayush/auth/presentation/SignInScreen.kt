@@ -1,7 +1,6 @@
 package com.ayush.auth.presentation
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -37,6 +36,7 @@ import com.ayush.auth.domain.usecase.AuthEligibilityResult
 import com.ayush.auth.domain.usecase.AuthFlow
 import com.ayush.auth.domain.usecase.emailError
 import com.ayush.auth.domain.usecase.passwordError
+import com.ayush.common.utils.toast
 import com.ayush.ui.components.LedgeAuthScaffold
 import com.ayush.ui.components.LedgeDivider
 import com.ayush.ui.components.LedgeLogo
@@ -97,7 +97,7 @@ fun SignInScreen(
                 }
 
                 is AuthUiSideEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                    effect.message.toast(context)
                 }
             }
         }

@@ -1,6 +1,5 @@
 package com.ayush.transactions.presentation
 
-import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -61,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ayush.common.utils.toast
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.TransactionType
@@ -93,12 +93,12 @@ fun AddTransactionScreen(
         viewModel.sideEffect.collect { effect ->
             when (effect) {
                 is AddTransactionSideEffect.TransactionAdded -> {
-                    Toast.makeText(context, "Transaction added", Toast.LENGTH_SHORT).show()
+                    "Transaction added".toast(context)
                     currentOnBack()
                 }
 
                 is AddTransactionSideEffect.ShowToast -> {
-                    Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
+                    effect.message.toast(context)
                 }
             }
         }

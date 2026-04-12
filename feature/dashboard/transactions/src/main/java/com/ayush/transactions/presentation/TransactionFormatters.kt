@@ -34,3 +34,19 @@ internal fun formatAmountForInput(amount: Double): String =
     } else {
         amount.toString()
     }
+
+internal fun formatDateHeader(millis: Long): String {
+    fun Calendar.clearTime() {
+        set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+    }
+
+    val date = Calendar.getInstance().apply { timeInMillis = millis; clearTime() }
+    val today = Calendar.getInstance().apply { clearTime() }
+    val yesterday = Calendar.getInstance().apply { add(Calendar.DAY_OF_YEAR, -1); clearTime() }
+    return when (date.timeInMillis) {
+        today.timeInMillis -> "Today"
+        yesterday.timeInMillis -> "Yesterday"
+        else -> formatDate(millis, showYear = true)
+    }
+}
