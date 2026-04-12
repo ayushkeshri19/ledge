@@ -1,4 +1,4 @@
-package com.ayush.transactions.di
+package com.ayush.ledge.di
 
 import android.content.Context
 import androidx.work.WorkManager

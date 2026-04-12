@@ -47,6 +47,7 @@ dependencies {
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation(libs.work.runtime)
 
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)

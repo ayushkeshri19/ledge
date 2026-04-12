@@ -19,6 +19,7 @@ import androidx.room.PrimaryKey
         Index("categoryId"),
         Index("date"),
         Index("type"),
+        Index("syncStatus")
     ],
 )
 data class TransactionEntity(
@@ -33,4 +34,5 @@ data class TransactionEntity(
     val createdAt: Long = System.currentTimeMillis(),
     val remoteId: String? = null,
     val userId: String = "",
+    val syncStatus: SyncStatus = SyncStatus.SYNCED,
 )
