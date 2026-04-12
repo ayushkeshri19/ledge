@@ -45,6 +45,9 @@ class AddTransactionViewModel @Inject constructor(
             is AddTransactionEvent.DateChanged -> {
                 setState { copy(dateMillis = event.dateMillis) }
             }
+            is AddTransactionEvent.TimeChanged -> {
+                setState { copy(hour = event.hour, minute = event.minute) }
+            }
 
             is AddTransactionEvent.Submit -> submitTransaction()
         }
@@ -78,7 +81,7 @@ class AddTransactionViewModel @Inject constructor(
                 type = state.type,
                 categoryId = state.selectedCategory?.id,
                 note = state.note.trim(),
-                date = state.dateMillis,
+                date = state.combinedDateTimeMillis(),
             )
             when (result) {
                 is ApiResult.Success -> {
@@ -101,11 +104,24 @@ data class AddTransactionState(
     val type: TransactionType = TransactionType.EXPENSE,
     val selectedCategory: Category? = null,
     val dateMillis: Long = System.currentTimeMillis(),
+    val hour: Int = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY),
+    val minute: Int = java.util.Calendar.getInstance().get(java.util.Calendar.MINUTE),
     val categories: List<Category> = emptyList(),
     val isSubmitting: Boolean = false,
     val amountError: String? = null,
     val noteError: String? = null,
-)
+) {
+    fun combinedDateTimeMillis(): Long {
+        val cal = java.util.Calendar.getInstance().apply {
+            timeInMillis = dateMillis
+            set(java.util.Calendar.HOUR_OF_DAY, hour)
+            set(java.util.Calendar.MINUTE, minute)
+            set(java.util.Calendar.SECOND, 0)
+            set(java.util.Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
+}
 
 sealed interface AddTransactionEvent {
     data class AmountChanged(val amount: String) : AddTransactionEvent
@@ -113,6 +129,7 @@ sealed interface AddTransactionEvent {
     data class TypeChanged(val type: TransactionType) : AddTransactionEvent
     data class CategorySelected(val category: Category?) : AddTransactionEvent
     data class DateChanged(val dateMillis: Long) : AddTransactionEvent
+    data class TimeChanged(val hour: Int, val minute: Int) : AddTransactionEvent
     data object Submit : AddTransactionEvent
 }
 

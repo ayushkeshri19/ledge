@@ -27,6 +27,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,7 +35,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.transactions.domain.models.Category
@@ -108,6 +112,7 @@ private fun AddTransactionContent(
     onBack: () -> Unit,
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -116,7 +121,7 @@ private fun AddTransactionContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
     ) {
-        // Top bar
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -137,7 +142,6 @@ private fun AddTransactionContent(
             )
         }
 
-        // Type toggle
         TypeToggle(
             selected = state.type,
             onTypeChanged = { onEvent(AddTransactionEvent.TypeChanged(it)) },
@@ -145,7 +149,6 @@ private fun AddTransactionContent(
 
         Spacer(Modifier.height(24.dp))
 
-        // Amount
         LedgeTextField(
             value = state.amount,
             onValueChange = { onEvent(AddTransactionEvent.AmountChanged(it)) },
@@ -166,7 +169,6 @@ private fun AddTransactionContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // Note
         LedgeTextField(
             value = state.note,
             onValueChange = { onEvent(AddTransactionEvent.NoteChanged(it)) },
@@ -179,40 +181,64 @@ private fun AddTransactionContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // Date
         Text(
-            text = "DATE",
+            text = "DATE & TIME",
             style = LedgeTextStyle.Caption.copy(color = TextMuted2),
             modifier = Modifier.padding(bottom = 6.dp),
         )
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(LedgeRadius.medium))
-                .background(BgCard)
-                .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
-                .clickable { showDatePicker = true }
-                .padding(horizontal = 16.dp, vertical = 16.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Filled.CalendarMonth,
-                    contentDescription = null,
-                    tint = Gold,
-                    modifier = Modifier.size(20.dp),
-                )
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    text = formatDate(state.dateMillis),
-                    style = LedgeTextStyle.Body,
-                    color = TextPrimary,
-                )
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(LedgeRadius.medium))
+                    .background(BgCard)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                    .clickable { showDatePicker = true }
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Filled.CalendarMonth,
+                        contentDescription = null,
+                        tint = Gold,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = formatDate(state.dateMillis),
+                        style = LedgeTextStyle.Body,
+                        color = TextPrimary,
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(LedgeRadius.medium))
+                    .background(BgCard)
+                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                    .clickable { showTimePicker = true }
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Filled.Schedule,
+                        contentDescription = null,
+                        tint = Gold,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text(
+                        text = formatTime(state.hour, state.minute),
+                        style = LedgeTextStyle.Body,
+                        color = TextPrimary,
+                    )
+                }
             }
         }
 
         Spacer(Modifier.height(24.dp))
 
-        // Categories
         Text(
             text = "CATEGORY",
             style = LedgeTextStyle.Caption.copy(color = TextMuted2),
@@ -240,7 +266,6 @@ private fun AddTransactionContent(
 
         Spacer(Modifier.height(32.dp))
 
-        // Submit
         LedgePrimaryButton(
             text = "Add Transaction",
             onClick = { onEvent(AddTransactionEvent.Submit) },
@@ -274,6 +299,54 @@ private fun AddTransactionContent(
             },
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState(
+            initialHour = state.hour,
+            initialMinute = state.minute,
+            is24Hour = false,
+        )
+        Dialog(onDismissRequest = { showTimePicker = false }) {
+            Column(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(LedgeRadius.xxl))
+                    .background(BgCard)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = "Select Time",
+                    style = LedgeTextStyle.HeadingCard,
+                    color = TextPrimary,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 20.dp),
+                )
+                TimePicker(state = timePickerState)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 12.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    TextButton(onClick = { showTimePicker = false }) {
+                        Text("Cancel", color = TextMuted)
+                    }
+                    TextButton(
+                        onClick = {
+                            onEvent(
+                                AddTransactionEvent.TimeChanged(
+                                    hour = timePickerState.hour,
+                                    minute = timePickerState.minute,
+                                )
+                            )
+                            showTimePicker = false
+                        },
+                    ) { Text("OK", color = Gold) }
+                }
+            }
         }
     }
 }
@@ -365,6 +438,14 @@ private fun CategoryChip(
 }
 
 private fun formatDate(millis: Long): String {
-    val formatter = SimpleDateFormat("EEE, dd MMM yyyy", Locale.getDefault())
+    val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
+}
+
+private fun formatTime(hour: Int, minute: Int): String {
+    val cal = java.util.Calendar.getInstance().apply {
+        set(java.util.Calendar.HOUR_OF_DAY, hour)
+        set(java.util.Calendar.MINUTE, minute)
+    }
+    return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(cal.time)
 }

@@ -81,7 +81,6 @@ private fun TransactionsContent(
     onEvent: (TransactionsEvent) -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        // Header
         Text(
             text = "Transactions",
             style = LedgeTextStyle.HeadingScreen,
@@ -89,7 +88,6 @@ private fun TransactionsContent(
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
         )
 
-        // Search bar
         LedgeTextField(
             value = state.searchQuery,
             onValueChange = { onEvent(TransactionsEvent.SearchQueryChanged(it)) },
@@ -120,7 +118,6 @@ private fun TransactionsContent(
 
         Spacer(Modifier.height(16.dp))
 
-        // Content
         when {
             state.isLoading -> {
                 Box(
@@ -195,7 +192,6 @@ private fun TransactionItem(
             .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Category indicator
         Box(
             modifier = Modifier
                 .size(40.dp)
@@ -213,7 +209,6 @@ private fun TransactionItem(
 
         Spacer(Modifier.width(12.dp))
 
-        // Details
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = transaction.note,
@@ -237,14 +232,13 @@ private fun TransactionItem(
                     )
                 }
                 Text(
-                    text = formatDate(transaction.date),
+                    text = "${formatDate(transaction.date)}, ${formatTime(transaction.date)}",
                     style = LedgeTextStyle.Caption,
                     color = TextMuted,
                 )
             }
         }
 
-        // Amount
         Text(
             text = "$amountPrefix\u20B9${formatAmount(transaction.amount)}",
             style = LedgeTextStyle.AmountMono,
@@ -253,7 +247,6 @@ private fun TransactionItem(
 
         Spacer(Modifier.width(4.dp))
 
-        // Delete
         IconButton(
             onClick = onDelete,
             modifier = Modifier.size(32.dp),
@@ -270,6 +263,11 @@ private fun TransactionItem(
 
 private fun formatDate(millis: Long): String {
     val formatter = SimpleDateFormat("dd MMM", Locale.getDefault())
+    return formatter.format(Date(millis))
+}
+
+private fun formatTime(millis: Long): String {
+    val formatter = SimpleDateFormat("hh:mm a", Locale.getDefault())
     return formatter.format(Date(millis))
 }
 

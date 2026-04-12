@@ -114,7 +114,7 @@ object LedgeTextStyle {
     )
 }
 
-// ── Material 3 Typography mapping ───────────────
+/** ── Material 3 Typography mapping ─────────────── */
 val LedgeTypography = Typography(
     displayLarge = LedgeTextStyle.BalanceHero,
     displayMedium = LedgeTextStyle.AmountLarge,

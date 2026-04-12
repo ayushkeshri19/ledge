@@ -22,7 +22,7 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             LedgeDatabase::class.java,
-            "ledge_database",
+            "ledge_db",
         ).build()
     }
 
