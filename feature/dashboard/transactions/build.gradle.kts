@@ -43,6 +43,10 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:database"))
 
+    implementation(libs.work.runtime)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.work.compiler)
+
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.postgrest)
     implementation(libs.supabase.auth)

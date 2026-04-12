@@ -70,6 +70,10 @@ dependencies {
     ksp(libs.hilt.compiler)
     implementation(libs.timber)
 
+    implementation(libs.work.runtime)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.work.compiler)
+
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.ui)
