@@ -137,19 +137,45 @@ class TransactionRepositoryImpl @Inject constructor(
         date: Long,
         isRecurring: Boolean,
         recurrenceType: String?,
-    ) = withContext(Dispatchers.IO) {
-        val existing = transactionDao.getTransactionById(id) ?: return@withContext
-        transactionDao.update(
-            existing.copy(
-                amount = amount,
-                type = type.value,
-                categoryId = categoryId,
-                note = note,
-                date = date,
-                isRecurring = isRecurring,
-                recurrenceType = recurrenceType,
+    ) {
+        withContext(Dispatchers.IO) {
+            val existing = transactionDao.getTransactionById(id) ?: return@withContext
+            transactionDao.update(
+                existing.copy(
+                    amount = amount,
+                    type = type.value,
+                    categoryId = categoryId,
+                    note = note,
+                    date = date,
+                    isRecurring = isRecurring,
+                    recurrenceType = recurrenceType,
+                )
             )
-        )
+            existing.remoteId?.let { remoteId ->
+                try {
+                    val userId = currentUserId()
+                    if (userId.isNotEmpty()) {
+                        val categoryName = categoryId?.let { categoryDao.getCategoryById(it)?.name }
+                        supabaseDataSource.update(
+                            remoteId = remoteId,
+                            dto = SupabaseTransactionDto(
+                                userId = userId,
+                                amount = amount,
+                                type = type.value,
+                                categoryName = categoryName,
+                                note = note,
+                                date = date,
+                                isRecurring = isRecurring,
+                                recurrenceType = recurrenceType,
+                                createdAt = existing.createdAt,
+                            ),
+                        )
+                    }
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to sync updated transaction to Supabase")
+                }
+            }
+        }
     }
 
     override suspend fun deleteTransaction(id: Long) = withContext(Dispatchers.IO) {

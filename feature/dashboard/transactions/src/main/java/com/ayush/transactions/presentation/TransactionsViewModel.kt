@@ -3,10 +3,14 @@ package com.ayush.transactions.presentation
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
 import com.ayush.common.result.ApiResult
+import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.Transaction
+import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.transactions.domain.repository.TransactionRepository
 import com.ayush.transactions.domain.usecase.DeleteTransactionUseCase
+import com.ayush.transactions.domain.usecase.GetCategoriesUseCase
 import com.ayush.transactions.domain.usecase.GetTransactionsUseCase
+import com.ayush.transactions.domain.usecase.UpdateTransactionUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -18,6 +22,8 @@ import javax.inject.Inject
 class TransactionsViewModel @Inject constructor(
     private val getTransactionsUseCase: GetTransactionsUseCase,
     private val deleteTransactionUseCase: DeleteTransactionUseCase,
+    private val updateTransactionUseCase: UpdateTransactionUseCase,
+    private val getCategoriesUseCase: GetCategoriesUseCase,
     private val repository: TransactionRepository,
 ) : BaseMviViewModel<TransactionsEvent, TransactionsState, TransactionsSideEffect>(
     initialState = TransactionsState()
@@ -28,6 +34,7 @@ class TransactionsViewModel @Inject constructor(
     init {
         ensureCategories()
         loadTransactions()
+        loadCategories()
         syncFromRemote()
     }
 
@@ -35,6 +42,7 @@ class TransactionsViewModel @Inject constructor(
         when (event) {
             is TransactionsEvent.SearchQueryChanged -> onSearchChanged(event.query)
             is TransactionsEvent.DeleteTransaction -> deleteTransaction(event.id)
+            is TransactionsEvent.UpdateTransaction -> updateTransaction(event)
             is TransactionsEvent.ClearSearch -> {
                 setState { copy(searchQuery = "") }
                 loadTransactions()
@@ -58,6 +66,14 @@ class TransactionsViewModel @Inject constructor(
                         isLoading = false,
                     )
                 }
+            }
+        }
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            getCategoriesUseCase().collect { categories ->
+                setState { copy(categories = categories) }
             }
         }
     }
@@ -96,11 +112,37 @@ class TransactionsViewModel @Inject constructor(
             }
         }
     }
+
+    private fun updateTransaction(event: TransactionsEvent.UpdateTransaction) {
+        viewModelScope.launch {
+            when (
+                val result = updateTransactionUseCase(
+                    id = event.id,
+                    amount = event.amount,
+                    type = event.type,
+                    categoryId = event.categoryId,
+                    note = event.note,
+                    date = event.date,
+                    isRecurring = event.isRecurring,
+                    recurrenceType = event.recurrenceType,
+                )
+            ) {
+                is ApiResult.Success -> {
+                    sendSideEffect(TransactionsSideEffect.ShowToast("Transaction updated"))
+                }
+
+                is ApiResult.Error -> {
+                    sendSideEffect(TransactionsSideEffect.ShowToast(result.message))
+                }
+            }
+        }
+    }
 }
 
 @Stable
 data class TransactionsState(
     val transactions: List<Transaction> = emptyList(),
+    val categories: List<Category> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
 )
@@ -108,6 +150,16 @@ data class TransactionsState(
 sealed interface TransactionsEvent {
     data class SearchQueryChanged(val query: String) : TransactionsEvent
     data class DeleteTransaction(val id: Long) : TransactionsEvent
+    data class UpdateTransaction(
+        val id: Long,
+        val amount: Double,
+        val type: TransactionType,
+        val categoryId: Long?,
+        val note: String,
+        val date: Long,
+        val isRecurring: Boolean,
+        val recurrenceType: String?,
+    ) : TransactionsEvent
     data object ClearSearch : TransactionsEvent
 }
 
