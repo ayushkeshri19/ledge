@@ -101,7 +101,7 @@ class AddTransactionViewModel @Inject constructor(
             )
             when (result) {
                 is ApiResult.Success -> {
-                    setState { copy(isSubmitting = false) }
+                    resetState()
                     sendSideEffect(AddTransactionSideEffect.TransactionAdded)
                 }
 
