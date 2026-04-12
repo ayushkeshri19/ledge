@@ -79,9 +79,6 @@ import com.ayush.ui.theme.SemanticRed
 import com.ayush.ui.theme.TextMuted
 import com.ayush.ui.theme.TextMuted2
 import com.ayush.ui.theme.TextPrimary
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun AddTransactionScreen(
@@ -217,7 +214,7 @@ private fun AddTransactionContent(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = formatDate(state.dateMillis),
+                        text = formatDate(state.dateMillis, showYear = true),
                         style = LedgeTextStyle.BodySmall,
                         color = TextPrimary,
                     )
@@ -522,15 +519,3 @@ private fun CategoryChip(
     }
 }
 
-private fun formatDate(millis: Long): String {
-    val formatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
-    return formatter.format(Date(millis))
-}
-
-private fun formatTime(hour: Int, minute: Int): String {
-    val cal = java.util.Calendar.getInstance().apply {
-        set(java.util.Calendar.HOUR_OF_DAY, hour)
-        set(java.util.Calendar.MINUTE, minute)
-    }
-    return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(cal.time)
-}

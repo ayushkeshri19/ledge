@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -40,26 +41,26 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -87,10 +88,7 @@ import com.ayush.ui.theme.TextMuted
 import com.ayush.ui.theme.TextMuted2
 import com.ayush.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 @Composable
 fun TransactionsScreen() {
@@ -122,17 +120,52 @@ private fun TransactionsContent(
 ) {
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
     var transactionToEdit by remember { mutableStateOf<Transaction?>(null) }
+    var showFilterSheet by remember { mutableStateOf(false) }
     val deleteSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val editSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val filterSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text(
-            text = "Transactions",
-            style = LedgeTextStyle.HeadingScreen,
-            color = TextPrimary,
-            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp),
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = "Transactions",
+                style = LedgeTextStyle.HeadingScreen,
+                color = TextPrimary,
+            )
+            Box {
+                IconButton(onClick = { showFilterSheet = true }) {
+                    Icon(
+                        Icons.Filled.Tune,
+                        contentDescription = "Filter",
+                        tint = if (state.filterState.isActive) Gold else TextMuted,
+                        modifier = Modifier.size(22.dp),
+                    )
+                }
+
+                if (state.filterState.isActive) {
+                    Box(
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape)
+                            .background(Gold)
+                            .align(Alignment.TopEnd),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = state.filterState.activeCount.toString(),
+                            style = LedgeTextStyle.Caption.copy(color = BgDeep),
+                        )
+                    }
+                }
+            }
+        }
 
         LedgeTextField(
             value = state.searchQuery,
@@ -162,7 +195,67 @@ private fun TransactionsContent(
                 .padding(horizontal = 20.dp),
         )
 
-        Spacer(Modifier.height(16.dp))
+        if (state.filterState.isActive) {
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                state.filterState.type?.let { type ->
+                    item {
+                        ActiveFilterChip(
+                            label = type.name.lowercase().replaceFirstChar { it.uppercase() },
+                            onRemove = {
+                                onEvent(TransactionsEvent.ApplyFilters(state.filterState.copy(type = null)))
+                            },
+                        )
+                    }
+                }
+                if (state.filterState.dateRange != DateRangeOption.ALL_TIME) {
+                    item {
+                        ActiveFilterChip(
+                            label = state.filterState.dateRange.label,
+                            onRemove = {
+                                onEvent(TransactionsEvent.ApplyFilters(state.filterState.copy(dateRange = DateRangeOption.ALL_TIME)))
+                            },
+                        )
+                    }
+                }
+                state.filterState.categoryName?.let { name ->
+                    item {
+                        ActiveFilterChip(
+                            label = name,
+                            onRemove = {
+                                onEvent(
+                                    TransactionsEvent.ApplyFilters(
+                                        state.filterState.copy(categoryId = null, categoryName = null)
+                                    )
+                                )
+                            },
+                        )
+                    }
+                }
+                if (state.filterState.activeCount > 1) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(LedgeRadius.pill))
+                                .background(BgSurface)
+                                .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.pill))
+                                .clickable { onEvent(TransactionsEvent.ClearFilters) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                text = "Clear all",
+                                style = LedgeTextStyle.Caption,
+                                color = TextMuted,
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            Spacer(Modifier.height(16.dp))
+        }
 
         when {
             state.isLoading -> {
@@ -184,17 +277,32 @@ private fun TransactionsContent(
                     contentAlignment = Alignment.Center,
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = if (state.searchQuery.isNotEmpty()) "No results found" else "No transactions yet",
-                            style = LedgeTextStyle.HeadingCard,
-                            color = TextMuted,
-                        )
+                        val heading = when {
+                            state.searchQuery.isNotEmpty() -> "No results found"
+                            state.filterState.isActive -> "No matching transactions"
+                            else -> "No transactions yet"
+                        }
+                        val sub = when {
+                            state.searchQuery.isNotEmpty() -> "Try a different search"
+                            state.filterState.isActive -> "Try adjusting your filters"
+                            else -> "Tap + to add your first transaction"
+                        }
+                        Text(text = heading, style = LedgeTextStyle.HeadingCard, color = TextMuted)
                         Spacer(Modifier.height(8.dp))
-                        Text(
-                            text = if (state.searchQuery.isNotEmpty()) "Try a different search" else "Tap + to add your first transaction",
-                            style = LedgeTextStyle.BodySmall,
-                            color = TextMuted,
-                        )
+                        Text(text = sub, style = LedgeTextStyle.BodySmall, color = TextMuted)
+                        if (state.filterState.isActive) {
+                            Spacer(Modifier.height(16.dp))
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(LedgeRadius.pill))
+                                    .background(BgCard)
+                                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.pill))
+                                    .clickable { onEvent(TransactionsEvent.ClearFilters) }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                            ) {
+                                Text(text = "Clear filters", style = LedgeTextStyle.BodySmall, color = Gold)
+                            }
+                        }
                     }
                 }
             }
@@ -270,6 +378,247 @@ private fun TransactionsContent(
             )
         }
     }
+
+    if (showFilterSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilterSheet = false },
+            sheetState = filterSheetState,
+            containerColor = BgSurface,
+        ) {
+            FilterSheet(
+                currentFilters = state.filterState,
+                categories = state.categories,
+                onApply = { newFilters ->
+                    scope.launch {
+                        filterSheetState.hide()
+                        onEvent(TransactionsEvent.ApplyFilters(newFilters))
+                        showFilterSheet = false
+                    }
+                },
+                onDismiss = {
+                    scope.launch {
+                        filterSheetState.hide()
+                        showFilterSheet = false
+                    }
+                },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActiveFilterChip(label: String, onRemove: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(LedgeRadius.pill))
+            .background(GoldDim)
+            .border(1.dp, Gold, RoundedCornerShape(LedgeRadius.pill))
+            .padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Text(text = label, style = LedgeTextStyle.Caption, color = Gold)
+        IconButton(
+            onClick = onRemove,
+            modifier = Modifier.size(18.dp),
+        ) {
+            Icon(
+                Icons.Filled.Close,
+                contentDescription = "Remove filter",
+                tint = Gold,
+                modifier = Modifier.size(12.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun FilterSheet(
+    currentFilters: FilterState,
+    categories: List<Category>,
+    onApply: (FilterState) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var tempFilters by remember { mutableStateOf(currentFilters) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp),
+    ) {
+        Spacer(Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(text = "Filters", style = LedgeTextStyle.HeadingScreen, color = TextPrimary)
+            TextButton(
+                onClick = { tempFilters = FilterState() },
+                enabled = tempFilters.isActive,
+            ) {
+                Text(
+                    text = "Reset",
+                    style = LedgeTextStyle.Button,
+                    color = if (tempFilters.isActive) SemanticRed else TextMuted,
+                )
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Text(
+            text = "TYPE",
+            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            modifier = Modifier.padding(bottom = 10.dp),
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(LedgeRadius.medium))
+                .background(BgDeep)
+                .padding(4.dp),
+        ) {
+            val allSelected = tempFilters.type == null
+            val allBg by animateColorAsState(
+                if (allSelected) BgCard else BgDeep, tween(200), label = "allBg",
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(LedgeRadius.small))
+                    .background(allBg)
+                    .clickable { tempFilters = tempFilters.copy(type = null) }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "All",
+                    style = LedgeTextStyle.Button,
+                    color = if (allSelected) TextPrimary else TextMuted,
+                )
+            }
+            TransactionType.entries.forEach { type ->
+                val isSelected = tempFilters.type == type
+                val bg by animateColorAsState(
+                    if (isSelected) BgCard else BgDeep, tween(200), label = "typeBg${type.name}",
+                )
+                val textColor = when {
+                    isSelected && type == TransactionType.EXPENSE -> SemanticRed
+                    isSelected && type == TransactionType.INCOME -> SemanticGreen
+                    else -> TextMuted
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(LedgeRadius.small))
+                        .background(bg)
+                        .clickable { tempFilters = tempFilters.copy(type = type) }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = type.name.lowercase().replaceFirstChar { it.uppercase() },
+                        style = LedgeTextStyle.Button,
+                        color = textColor,
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Text(
+            text = "DATE RANGE",
+            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            modifier = Modifier.padding(bottom = 10.dp),
+        )
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(DateRangeOption.entries) { option ->
+                val isSelected = tempFilters.dateRange == option
+                val borderColor by animateColorAsState(
+                    if (isSelected) Gold else BorderSubtle, tween(200), label = "dateChipBorder",
+                )
+                val bgColor by animateColorAsState(
+                    if (isSelected) GoldDim else BgCard, tween(200), label = "dateChipBg",
+                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(LedgeRadius.pill))
+                        .background(bgColor)
+                        .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
+                        .clickable { tempFilters = tempFilters.copy(dateRange = option) }
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    Text(
+                        text = option.label,
+                        style = LedgeTextStyle.BodySmall,
+                        color = if (isSelected) Gold else TextPrimary,
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        if (categories.isNotEmpty()) {
+            Text(
+                text = "CATEGORY",
+                style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+                modifier = Modifier.padding(bottom = 10.dp),
+            )
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(categories) { category ->
+                    val isSelected = tempFilters.categoryId == category.id
+                    val borderColor by animateColorAsState(
+                        if (isSelected) Gold else BorderSubtle, tween(200), label = "catBorder",
+                    )
+                    val bgColor by animateColorAsState(
+                        if (isSelected) GoldDim else BgCard, tween(200), label = "catBg",
+                    )
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(LedgeRadius.pill))
+                            .background(bgColor)
+                            .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
+                            .clickable {
+                                tempFilters = if (isSelected) {
+                                    tempFilters.copy(categoryId = null, categoryName = null)
+                                } else {
+                                    tempFilters.copy(categoryId = category.id, categoryName = category.name)
+                                }
+                            }
+                            .padding(horizontal = 14.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(category.color),
+                        )
+                        Text(
+                            text = category.name,
+                            style = LedgeTextStyle.BodySmall,
+                            color = if (isSelected) Gold else TextPrimary,
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(20.dp))
+        }
+
+        LedgePrimaryButton(
+            text = if (tempFilters.isActive) "Apply Filters (${tempFilters.activeCount})" else "Apply Filters",
+            onClick = { onApply(tempFilters) },
+        )
+
+        Spacer(Modifier.height(16.dp))
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -279,24 +628,29 @@ private fun SwipeableTransactionItem(
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onDelete()
-                    false // sheet handles it — don't auto-dismiss the card
-                }
+    val density = LocalDensity.current
+    val dismissState = remember {
+        SwipeToDismissBoxState(
+            initialValue = SwipeToDismissBoxValue.Settled,
+            density = density,
+            confirmValueChange = { value ->
+                when (value) {
+                    SwipeToDismissBoxValue.EndToStart -> {
+                        onDelete()
+                        false
+                    }
 
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onEdit()
-                    false // snap back after opening sheet
-                }
+                    SwipeToDismissBoxValue.StartToEnd -> {
+                        onEdit()
+                        false
+                    }
 
-                else -> false
-            }
-        },
-        positionalThreshold = { totalDistance -> totalDistance * 0.35f },
-    )
+                    else -> false
+                }
+            },
+            positionalThreshold = { totalDistance -> totalDistance * 0.35f },
+        )
+    }
 
     SwipeToDismissBox(
         state = dismissState,
@@ -438,6 +792,46 @@ private fun TransactionItem(transaction: Transaction) {
     }
 }
 
+private data class EditFormState(
+    val amount: String,
+    val note: String,
+    val type: TransactionType,
+    val selectedCategory: Category?,
+    val dateMillis: Long,
+    val hour: Int,
+    val minute: Int,
+    val isRecurring: Boolean,
+    val recurrenceType: RecurrenceType?,
+    val amountError: String? = null,
+    val noteError: String? = null,
+) {
+    val combinedDateMillis: Long
+        get() = Calendar.getInstance().apply {
+            timeInMillis = dateMillis
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+
+    companion object {
+        fun from(transaction: Transaction): EditFormState {
+            val cal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+            return EditFormState(
+                amount = formatAmountForInput(transaction.amount),
+                note = transaction.note,
+                type = transaction.type,
+                selectedCategory = transaction.category,
+                dateMillis = transaction.date,
+                hour = cal.get(Calendar.HOUR_OF_DAY),
+                minute = cal.get(Calendar.MINUTE),
+                isRecurring = transaction.isRecurring,
+                recurrenceType = transaction.recurrenceType,
+            )
+        }
+    }
+}
+
 @Composable
 private fun EditTransactionSheet(
     transaction: Transaction,
@@ -445,21 +839,7 @@ private fun EditTransactionSheet(
     onSave: (TransactionsEvent.UpdateTransaction) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    // Local editable state — pre-filled from the transaction
-    var amount by rememberSaveable { mutableStateOf(formatAmountForInput(transaction.amount)) }
-    var note by rememberSaveable { mutableStateOf(transaction.note) }
-    var type by rememberSaveable { mutableStateOf(transaction.type) }
-    var selectedCategory by remember { mutableStateOf(transaction.category) }
-    var isRecurring by rememberSaveable { mutableStateOf(transaction.isRecurring) }
-    var recurrenceType by remember { mutableStateOf(transaction.recurrenceType) }
-    var amountError by rememberSaveable { mutableStateOf<String?>(null) }
-    var noteError by rememberSaveable { mutableStateOf<String?>(null) }
-
-    // Date/time split from the stored millis
-    val initialCal = remember { Calendar.getInstance().apply { timeInMillis = transaction.date } }
-    var dateMillis by rememberSaveable { mutableStateOf(transaction.date) }
-    var hour by rememberSaveable { mutableStateOf(initialCal.get(Calendar.HOUR_OF_DAY)) }
-    var minute by rememberSaveable { mutableStateOf(initialCal.get(Calendar.MINUTE)) }
+    var form by remember { mutableStateOf(EditFormState.from(transaction)) }
 
     Column(
         modifier = Modifier
@@ -487,7 +867,6 @@ private fun EditTransactionSheet(
 
         Spacer(Modifier.height(16.dp))
 
-        // Type toggle
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -496,7 +875,7 @@ private fun EditTransactionSheet(
                 .padding(4.dp),
         ) {
             TransactionType.entries.forEach { t ->
-                val isSelected = type == t
+                val isSelected = form.type == t
                 val bgColor by animateColorAsState(
                     targetValue = if (isSelected) BgCard else BgDeep,
                     animationSpec = tween(200),
@@ -512,7 +891,7 @@ private fun EditTransactionSheet(
                         .weight(1f)
                         .clip(RoundedCornerShape(LedgeRadius.small))
                         .background(bgColor)
-                        .clickable { type = t }
+                        .clickable { form = form.copy(type = t) }
                         .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -528,12 +907,12 @@ private fun EditTransactionSheet(
         Spacer(Modifier.height(16.dp))
 
         LedgeTextField(
-            value = amount,
-            onValueChange = { amount = it; amountError = null },
+            value = form.amount,
+            onValueChange = { form = form.copy(amount = it, amountError = null) },
             label = "AMOUNT",
             placeholder = "0.00",
-            isError = amountError != null,
-            errorMessage = amountError,
+            isError = form.amountError != null,
+            errorMessage = form.amountError,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             leadingIcon = {
                 Text(text = "\u20B9", style = LedgeTextStyle.AmountMedium, color = Gold)
@@ -544,12 +923,12 @@ private fun EditTransactionSheet(
         Spacer(Modifier.height(12.dp))
 
         LedgeTextField(
-            value = note,
-            onValueChange = { note = it; noteError = null },
+            value = form.note,
+            onValueChange = { form = form.copy(note = it, noteError = null) },
             label = "NOTE",
             placeholder = "What was this for?",
-            isError = noteError != null,
-            errorMessage = noteError,
+            isError = form.noteError != null,
+            errorMessage = form.noteError,
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -573,7 +952,7 @@ private fun EditTransactionSheet(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
                 Text(
-                    text = formatDate(dateMillis),
+                    text = formatDate(form.dateMillis),
                     style = LedgeTextStyle.BodySmall,
                     color = TextMuted,
                 )
@@ -587,7 +966,7 @@ private fun EditTransactionSheet(
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
                 Text(
-                    text = formatTime(hour, minute),
+                    text = formatTime(form.hour, form.minute),
                     style = LedgeTextStyle.BodySmall,
                     color = TextMuted,
                 )
@@ -603,7 +982,7 @@ private fun EditTransactionSheet(
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(categories) { category ->
-                val isSelected = selectedCategory?.id == category.id
+                val isSelected = form.selectedCategory?.id == category.id
                 val borderColor by animateColorAsState(
                     targetValue = if (isSelected) Gold else BorderSubtle,
                     animationSpec = tween(200),
@@ -620,7 +999,9 @@ private fun EditTransactionSheet(
                         .background(bgColor)
                         .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
                         .clickable {
-                            selectedCategory = if (selectedCategory?.id == category.id) null else category
+                            form = form.copy(
+                                selectedCategory = if (isSelected) null else category
+                            )
                         }
                         .padding(horizontal = 14.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -643,7 +1024,6 @@ private fun EditTransactionSheet(
 
         Spacer(Modifier.height(12.dp))
 
-        // Recurring toggle
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -660,16 +1040,18 @@ private fun EditTransactionSheet(
                     style = LedgeTextStyle.Caption.copy(color = TextMuted2),
                 )
                 Text(
-                    text = if (isRecurring) "Recurring transaction" else "One-time transaction",
+                    text = if (form.isRecurring) "Recurring transaction" else "One-time transaction",
                     style = LedgeTextStyle.BodySmall,
                     color = TextPrimary,
                 )
             }
             Switch(
-                checked = isRecurring,
-                onCheckedChange = {
-                    isRecurring = it
-                    recurrenceType = if (it) recurrenceType ?: RecurrenceType.MONTHLY else null
+                checked = form.isRecurring,
+                onCheckedChange = { enabled ->
+                    form = form.copy(
+                        isRecurring = enabled,
+                        recurrenceType = if (enabled) form.recurrenceType ?: RecurrenceType.MONTHLY else null,
+                    )
                 },
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = BgDeep,
@@ -681,11 +1063,11 @@ private fun EditTransactionSheet(
             )
         }
 
-        if (isRecurring) {
+        if (form.isRecurring) {
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 RecurrenceType.entries.forEach { rt ->
-                    val isSelected = recurrenceType == rt
+                    val isSelected = form.recurrenceType == rt
                     val borderColor by animateColorAsState(
                         targetValue = if (isSelected) Gold else BorderSubtle,
                         animationSpec = tween(200),
@@ -701,7 +1083,7 @@ private fun EditTransactionSheet(
                             .clip(RoundedCornerShape(LedgeRadius.pill))
                             .background(bgColor)
                             .border(1.dp, borderColor, RoundedCornerShape(LedgeRadius.pill))
-                            .clickable { recurrenceType = rt }
+                            .clickable { form = form.copy(recurrenceType = rt) }
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         contentAlignment = Alignment.Center,
                     ) {
@@ -720,32 +1102,25 @@ private fun EditTransactionSheet(
         LedgePrimaryButton(
             text = "Save Changes",
             onClick = {
-                val amountValue = amount.toDoubleOrNull()
+                val amountValue = form.amount.toDoubleOrNull()
                 if (amountValue == null || amountValue <= 0) {
-                    amountError = "Enter a valid amount"
+                    form = form.copy(amountError = "Enter a valid amount")
                     return@LedgePrimaryButton
                 }
-                if (note.isBlank()) {
-                    noteError = "Add a note"
+                if (form.note.isBlank()) {
+                    form = form.copy(noteError = "Add a note")
                     return@LedgePrimaryButton
                 }
-                val combinedDate = Calendar.getInstance().apply {
-                    timeInMillis = dateMillis
-                    set(Calendar.HOUR_OF_DAY, hour)
-                    set(Calendar.MINUTE, minute)
-                    set(Calendar.SECOND, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }.timeInMillis
                 onSave(
                     TransactionsEvent.UpdateTransaction(
                         id = transaction.id,
                         amount = amountValue,
-                        type = type,
-                        categoryId = selectedCategory?.id,
-                        note = note.trim(),
-                        date = combinedDate,
-                        isRecurring = isRecurring,
-                        recurrenceType = recurrenceType?.value,
+                        type = form.type,
+                        categoryId = form.selectedCategory?.id,
+                        note = form.note.trim(),
+                        date = form.combinedDateMillis,
+                        isRecurring = form.isRecurring,
+                        recurrenceType = form.recurrenceType?.value,
                     )
                 )
             },
@@ -848,30 +1223,3 @@ private fun DeleteConfirmationSheet(
     }
 }
 
-private fun formatDate(millis: Long): String =
-    SimpleDateFormat("dd MMM", Locale.getDefault()).format(Date(millis))
-
-private fun formatTime(millis: Long): String =
-    SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(millis))
-
-private fun formatTime(hour: Int, minute: Int): String {
-    val cal = Calendar.getInstance().apply {
-        set(Calendar.HOUR_OF_DAY, hour)
-        set(Calendar.MINUTE, minute)
-    }
-    return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(cal.time)
-}
-
-private fun formatAmount(amount: Double): String =
-    if (amount == amount.toLong().toDouble()) {
-        String.format(Locale.getDefault(), "%,d", amount.toLong())
-    } else {
-        String.format(Locale.getDefault(), "%,.2f", amount)
-    }
-
-private fun formatAmountForInput(amount: Double): String =
-    if (amount == amount.toLong().toDouble()) {
-        amount.toLong().toString()
-    } else {
-        amount.toString()
-    }

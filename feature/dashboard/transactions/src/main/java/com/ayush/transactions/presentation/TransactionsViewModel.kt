@@ -29,6 +29,7 @@ class TransactionsViewModel @Inject constructor(
     initialState = TransactionsState()
 ) {
 
+    private var transactionsJob: Job? = null
     private var searchJob: Job? = null
 
     init {
@@ -43,6 +44,15 @@ class TransactionsViewModel @Inject constructor(
             is TransactionsEvent.SearchQueryChanged -> onSearchChanged(event.query)
             is TransactionsEvent.DeleteTransaction -> deleteTransaction(event.id)
             is TransactionsEvent.UpdateTransaction -> updateTransaction(event)
+            is TransactionsEvent.ApplyFilters -> {
+                setState { copy(filterState = event.filterState, searchQuery = "") }
+                loadTransactions()
+            }
+
+            is TransactionsEvent.ClearFilters -> {
+                setState { copy(filterState = FilterState()) }
+                loadTransactions()
+            }
             is TransactionsEvent.ClearSearch -> {
                 setState { copy(searchQuery = "") }
                 loadTransactions()
@@ -51,21 +61,30 @@ class TransactionsViewModel @Inject constructor(
     }
 
     private fun ensureCategories() {
-        viewModelScope.launch {
-            repository.ensureDefaultCategories()
-        }
+        viewModelScope.launch { repository.ensureDefaultCategories() }
     }
 
     private fun loadTransactions() {
-        viewModelScope.launch {
+        transactionsJob?.cancel()
+        transactionsJob = viewModelScope.launch {
             setState { copy(isLoading = true) }
-            getTransactionsUseCase().collect { transactions ->
-                setState {
-                    copy(
-                        transactions = transactions,
-                        isLoading = false,
+            val state = currentState()
+            val flow = when {
+                state.searchQuery.isNotBlank() -> getTransactionsUseCase.search(state.searchQuery)
+                state.filterState.isActive -> {
+                    val (start, end) = state.filterState.resolvedDateRange()
+                    getTransactionsUseCase.filter(
+                        startDate = start,
+                        endDate = end,
+                        type = state.filterState.type,
+                        categoryId = state.filterState.categoryId,
                     )
                 }
+
+                else -> getTransactionsUseCase()
+            }
+            flow.collect { transactions ->
+                setState { copy(transactions = transactions, isLoading = false) }
             }
         }
     }
@@ -83,32 +102,22 @@ class TransactionsViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(300)
-            if (query.isBlank()) {
-                loadTransactions()
-            } else {
-                getTransactionsUseCase.search(query).collect { results ->
-                    setState { copy(transactions = results) }
-                }
-            }
+            loadTransactions()
         }
     }
 
     private fun syncFromRemote() {
-        viewModelScope.launch {
-            repository.syncFromRemote()
-        }
+        viewModelScope.launch { repository.syncFromRemote() }
     }
 
     private fun deleteTransaction(id: Long) {
         viewModelScope.launch {
             when (val result = deleteTransactionUseCase(id)) {
-                is ApiResult.Success -> {
+                is ApiResult.Success ->
                     sendSideEffect(TransactionsSideEffect.ShowToast("Transaction deleted"))
-                }
 
-                is ApiResult.Error -> {
+                is ApiResult.Error ->
                     sendSideEffect(TransactionsSideEffect.ShowToast(result.message))
-                }
             }
         }
     }
@@ -127,13 +136,11 @@ class TransactionsViewModel @Inject constructor(
                     recurrenceType = event.recurrenceType,
                 )
             ) {
-                is ApiResult.Success -> {
+                is ApiResult.Success ->
                     sendSideEffect(TransactionsSideEffect.ShowToast("Transaction updated"))
-                }
 
-                is ApiResult.Error -> {
+                is ApiResult.Error ->
                     sendSideEffect(TransactionsSideEffect.ShowToast(result.message))
-                }
             }
         }
     }
@@ -143,6 +150,7 @@ class TransactionsViewModel @Inject constructor(
 data class TransactionsState(
     val transactions: List<Transaction> = emptyList(),
     val categories: List<Category> = emptyList(),
+    val filterState: FilterState = FilterState(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
 )
@@ -160,6 +168,8 @@ sealed interface TransactionsEvent {
         val isRecurring: Boolean,
         val recurrenceType: String?,
     ) : TransactionsEvent
+    data class ApplyFilters(val filterState: FilterState) : TransactionsEvent
+    data object ClearFilters : TransactionsEvent
     data object ClearSearch : TransactionsEvent
 }
 
