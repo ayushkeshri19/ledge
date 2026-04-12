@@ -2,6 +2,8 @@ package com.ayush.transactions.presentation
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
+import com.ayush.common.auth.AuthState
+import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.result.ApiResult
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.Transaction
@@ -15,6 +17,7 @@ import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,18 +28,40 @@ class TransactionsViewModel @Inject constructor(
     private val updateTransactionUseCase: UpdateTransactionUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val repository: TransactionRepository,
+    private val authStateProvider: AuthStateProvider,
 ) : BaseMviViewModel<TransactionsEvent, TransactionsState, TransactionsSideEffect>(
     initialState = TransactionsState()
 ) {
 
     private var transactionsJob: Job? = null
+    private var categoriesJob: Job? = null
     private var searchJob: Job? = null
 
     init {
-        ensureCategories()
-        loadTransactions()
-        loadCategories()
-        syncFromRemote()
+        observeAuthState()
+    }
+
+    private fun observeAuthState() {
+        viewModelScope.launch {
+            authStateProvider.authState
+                .distinctUntilChanged()
+                .collect { state ->
+                    if (state == AuthState.Authenticated) {
+                        onAuthenticated()
+                    }
+                }
+        }
+    }
+
+    private fun onAuthenticated() {
+        viewModelScope.launch {
+            repository.ensureDefaultCategories()
+            loadTransactions()
+            loadCategories()
+            setState { copy(isSyncing = true) }
+            repository.syncFromRemote()
+            setState { copy(isSyncing = false) }
+        }
     }
 
     override fun onEvent(event: TransactionsEvent) {
@@ -58,10 +83,6 @@ class TransactionsViewModel @Inject constructor(
                 loadTransactions()
             }
         }
-    }
-
-    private fun ensureCategories() {
-        viewModelScope.launch { repository.ensureDefaultCategories() }
     }
 
     private fun loadTransactions() {
@@ -90,7 +111,8 @@ class TransactionsViewModel @Inject constructor(
     }
 
     private fun loadCategories() {
-        viewModelScope.launch {
+        categoriesJob?.cancel()
+        categoriesJob = viewModelScope.launch {
             getCategoriesUseCase().collect { categories ->
                 setState { copy(categories = categories) }
             }
@@ -104,10 +126,6 @@ class TransactionsViewModel @Inject constructor(
             delay(300)
             loadTransactions()
         }
-    }
-
-    private fun syncFromRemote() {
-        viewModelScope.launch { repository.syncFromRemote() }
     }
 
     private fun deleteTransaction(id: Long) {
@@ -153,6 +171,7 @@ data class TransactionsState(
     val filterState: FilterState = FilterState(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
+    val isSyncing: Boolean = false,
 )
 
 sealed interface TransactionsEvent {

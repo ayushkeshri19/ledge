@@ -122,9 +122,9 @@ private fun AddTransactionContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDeep)
             .navigationBarsPadding()
             .imePadding()
+            .background(BgDeep)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
     ) {
