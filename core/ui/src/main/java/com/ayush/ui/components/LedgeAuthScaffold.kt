@@ -26,7 +26,6 @@ fun LedgeAuthScaffold(
             .fillMaxSize()
             .background(BgDeep),
     ) {
-        // Ambient top glow — mirrors the CSS body::before in the mockup
         Box(
             modifier = Modifier
                 .size(width = 500.dp, height = 400.dp)
@@ -35,7 +34,7 @@ fun LedgeAuthScaffold(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0x12C9A84C), // gold 7 %
+                            Color(0x12C9A84C),
                             Color.Transparent,
                         ),
                         radius = 700f,

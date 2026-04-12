@@ -24,5 +24,5 @@ data class UserDto(
 @Serializable
 data class UserMetadataDto(
     @SerialName("full_name")  val fullName: String?,
-    @SerialName("avatar_url") val avatarUrl: String?   // future use
+    @SerialName("avatar_url") val avatarUrl: String?
 )

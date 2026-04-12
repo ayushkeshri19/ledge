@@ -93,8 +93,8 @@ fun SignUpScreen(
                 AuthUiSideEffect.GetGoogleSignInToken -> {
                     val result = googleSignInProvider.getIdToken(context as Activity)
                     result.fold(
-                        onSuccess = { idToken ->
-                            viewModel.onEvent(AuthUiEvent.OnGoogleIdTokenReceived(idToken))
+                        onSuccess = { (idToken, rawNonce) ->
+                            viewModel.onEvent(AuthUiEvent.OnGoogleIdTokenReceived(idToken, rawNonce))
                         },
                         onFailure = { viewModel.onEvent(AuthUiEvent.GoogleIdTokenFailed(it)) }
                     )

@@ -8,7 +8,7 @@ import javax.inject.Inject
 class SignInWithGoogleIdToken @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    suspend operator fun invoke(googleIdToken: String): ApiResult<User> {
-        return authRepository.signInWithGoogleIdToken(googleIdToken)
+    suspend operator fun invoke(googleIdToken: String, rawNonce: String): ApiResult<User> {
+        return authRepository.signInWithGoogleIdToken(googleIdToken, rawNonce)
     }
 }

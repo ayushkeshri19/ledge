@@ -7,20 +7,22 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -33,9 +35,6 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -45,16 +44,18 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.ayush.home.presentation.HomeScreen
+import com.ayush.transactions.presentation.AddTransactionScreen
 import com.ayush.ui.R
-import com.ayush.ui.theme.BgDeep
+import com.ayush.ui.components.FabButton
 import com.ayush.ui.theme.BgSurface
 import com.ayush.ui.theme.BorderSubtle
 import com.ayush.ui.theme.DmSansFontFamily
 import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldLight
 import com.ayush.ui.theme.TextMuted
 import com.ayush.ui.theme.TextPrimary
 import kotlinx.serialization.Serializable
+import com.ayush.transactions.presentation.TransactionsScreen as TransactionsListScreen
 
 sealed interface DashboardBottomNavItems {
     @get:DrawableRes
@@ -122,24 +123,37 @@ internal fun DashboardNavGraph(onSignOut: () -> Unit) {
         if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
     }
 
+    val showBottomBar = backStack.lastOrNull() != DashboardRoute.AddTransaction
+
     Scaffold(
+        contentWindowInsets = WindowInsets(0.dp),
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            LedgeBottomBar(
-                selectedTab = selectedTab,
-                onTabSelected = ::selectTab,
-                onFabClick = { /* TODO: navigate to add-transaction */ },
-            )
+            if (showBottomBar) {
+                LedgeBottomBar(
+                    selectedTab = selectedTab,
+                    onTabSelected = ::selectTab,
+                    onFabClick = { backStack.add(DashboardRoute.AddTransaction) },
+                )
+            }
         },
     ) { padding ->
-        Box(Modifier.padding(padding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .padding(if (showBottomBar) padding else PaddingValues())
+        ) {
             NavDisplay(
                 backStack = backStack,
                 entryProvider = entryProvider {
                     entry<DashboardRoute.Home> { HomeScreen() }
-                    entry<DashboardRoute.Transactions> { TransactionsScreen() }
+                    entry<DashboardRoute.Transactions> { TransactionsListScreen() }
                     entry<DashboardRoute.Budget> { BudgetScreen() }
                     entry<DashboardRoute.More> { MoreScreen(onSignOut = onSignOut) }
+                    entry<DashboardRoute.AddTransaction> {
+                        AddTransactionScreen(onBack = ::pop)
+                    }
                 },
                 onBack = ::pop,
             )
@@ -171,37 +185,43 @@ private fun LedgeBottomBar(
         Column(modifier = Modifier.fillMaxWidth()) {
             HorizontalDivider(thickness = 1.dp, color = BorderSubtle)
 
-            Row(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgSurface.copy(alpha = 0.95f))
-                    .padding(top = 14.dp, bottom = 10.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.Top,
+                    .background(BgSurface.copy(alpha = 0.95f)),
             ) {
-                leftTabs.forEach { tab ->
-                    BottomNavItem(
-                        tab = tab,
-                        isSelected = selectedTab == tab,
-                        onClick = { onTabSelected(tab) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-
-                FabButton(
-                    onClick = onFabClick,
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .offset(y = (-30).dp),
-                )
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(top = 14.dp, bottom = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.Top,
+                ) {
+                    leftTabs.forEach { tab ->
+                        BottomNavItem(
+                            tab = tab,
+                            isSelected = selectedTab == tab,
+                            onClick = { onTabSelected(tab) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
 
-                rightTabs.forEach { tab ->
-                    BottomNavItem(
-                        tab = tab,
-                        isSelected = selectedTab == tab,
-                        onClick = { onTabSelected(tab) },
-                        modifier = Modifier.weight(1f),
+                    FabButton(
+                        onClick = onFabClick,
+                        modifier = Modifier
+                            .weight(1f)
+                            .offset(y = (-30).dp),
                     )
+
+                    rightTabs.forEach { tab ->
+                        BottomNavItem(
+                            tab = tab,
+                            isSelected = selectedTab == tab,
+                            onClick = { onTabSelected(tab) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }
@@ -250,76 +270,6 @@ private fun BottomNavItem(
             text = tab.label.uppercase(),
             color = tintColor,
             style = NavLabelStyle,
-        )
-    }
-}
-
-@Composable
-private fun FabButton(
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.TopCenter,
-    ) {
-        Box(
-            modifier = Modifier
-                .shadow(
-                    elevation = 12.dp,
-                    shape = CircleShape,
-                    ambientColor = Gold.copy(alpha = 0.2f),
-                    spotColor = Gold.copy(alpha = 0.4f),
-                )
-                .size(52.dp)
-                .background(BgSurface, CircleShape)
-                .padding(3.dp)
-                .background(
-                    brush = Brush.linearGradient(
-                        colors = listOf(GoldLight, Gold),
-                        start = Offset.Zero,
-                        end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
-                    ),
-                    shape = CircleShape,
-                )
-                .clip(CircleShape)
-                .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Add,
-                contentDescription = "Add Transaction",
-                tint = BgDeep,
-                modifier = Modifier.size(24.dp),
-            )
-        }
-    }
-}
-
-@Composable
-private fun HomeScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "Home",
-            style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
-        )
-    }
-}
-
-@Composable
-private fun TransactionsScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "Transactions",
-            style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
         )
     }
 }
