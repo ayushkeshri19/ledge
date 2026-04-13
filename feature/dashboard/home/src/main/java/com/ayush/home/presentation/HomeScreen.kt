@@ -1,5 +1,8 @@
 package com.ayush.home.presentation
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +20,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -31,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,6 +48,7 @@ import com.ayush.home.domain.models.CategorySpend
 import com.ayush.home.domain.models.RecentTransaction
 import com.ayush.home.domain.models.TimePeriod
 import com.ayush.ui.components.AnimatedAmount
+import com.ayush.ui.components.DashboardShimmer
 import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.components.charts.LedgePieChart
@@ -60,6 +66,8 @@ import com.ayush.ui.theme.SemanticRed
 import com.ayush.ui.theme.TextMuted
 import com.ayush.ui.theme.TextMuted2
 import com.ayush.ui.theme.TextPrimary
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -82,63 +90,59 @@ fun HomeScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(
     state: HomeState,
     onEvent: (HomeUiEvent) -> Unit,
 ) {
-    LazyColumn(
+    PullToRefreshBox(
+        isRefreshing = state.isRefreshing,
+        onRefresh = { onEvent(HomeUiEvent.Refresh) },
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item {
-            UserDetailsRow(
-                greeting = state.userDetails.greeting,
-                name = state.userDetails.name,
-                initials = state.userDetails.initials,
-            )
-        }
-
-        item {
-            TimePeriodToggle(
-                selectedPeriod = state.selectedPeriod,
-                onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) },
-            )
-        }
-
-        item {
-            BalanceOverviewCard(state = state.summaryState)
-        }
-
-        if (state.categorySpending.isNotEmpty()) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
             item {
-                SpendingByCategoryCard(spending = state.categorySpending)
-            }
-        }
-
-        if (state.recentTransactions.isNotEmpty()) {
-            item {
-                RecentTransactionsCard(
-                    transactions = state.recentTransactions,
-                    onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) },
+                UserDetailsRow(
+                    greeting = state.userDetails.greeting,
+                    name = state.userDetails.name,
+                    initials = state.userDetails.initials,
                 )
             }
-        }
 
-        if (state.isDashboardLoading) {
             item {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(32.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        color = Gold,
-                        modifier = Modifier.size(28.dp),
-                        strokeWidth = 2.dp,
-                    )
+                TimePeriodToggle(
+                    selectedPeriod = state.selectedPeriod,
+                    onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) },
+                )
+            }
+
+            if (state.isDashboardLoading) {
+                item {
+                    DashboardShimmer()
+                }
+            } else {
+                item {
+                    BalanceOverviewCard(state = state.summaryState)
+                }
+
+                if (state.categorySpending.isNotEmpty()) {
+                    item {
+                        SpendingByCategoryCard(spending = state.categorySpending)
+                    }
+                }
+
+                if (state.recentTransactions.isNotEmpty()) {
+                    item {
+                        RecentTransactionsCard(
+                            transactions = state.recentTransactions,
+                            onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) },
+                        )
+                    }
                 }
             }
         }
@@ -383,9 +387,27 @@ private fun RecentTransactionsCard(
         }
         Spacer(Modifier.height(12.dp))
 
-        transactions.forEach { transaction ->
-            RecentTransactionItem(transaction = transaction)
-            if (transaction != transactions.last()) {
+        transactions.forEachIndexed { index, transaction ->
+            val offsetY = remember { Animatable(30f) }
+            val alpha = remember { Animatable(0f) }
+
+            LaunchedEffect(Unit) {
+                delay(index * 60L)
+                launch { offsetY.animateTo(0f, tween(300, easing = EaseOutCubic)) }
+                launch { alpha.animateTo(1f, tween(300)) }
+            }
+
+            Box(
+                modifier = Modifier
+                    .graphicsLayer {
+                        translationY = offsetY.value
+                        this.alpha = alpha.value
+                    }
+            ) {
+                RecentTransactionItem(transaction = transaction)
+            }
+
+            if (index < transactions.lastIndex) {
                 Spacer(Modifier.height(10.dp))
             }
         }

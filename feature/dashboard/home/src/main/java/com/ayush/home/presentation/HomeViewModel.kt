@@ -27,18 +27,22 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadUserDetails()
-        loadDashboardData()
+        loadDashboardData(showLoading = true)
     }
 
     override fun onEvent(event: HomeUiEvent) {
         when (event) {
             is HomeUiEvent.PeriodChanged -> {
                 setState { copy(selectedPeriod = event.period) }
-                loadDashboardData()
+                loadDashboardData(showLoading = false)
             }
 
             HomeUiEvent.SeeAllTransactionsClicked -> {
                 sendSideEffect(HomeSideEffect.NavigateToTransactions)
+            }
+
+            HomeUiEvent.Refresh -> {
+                loadDashboardData(showLoading = false)
             }
         }
     }
@@ -64,9 +68,10 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    private fun loadDashboardData() {
+    private fun loadDashboardData(showLoading: Boolean = false) {
         viewModelScope.launch {
-            setState { copy(isDashboardLoading = true) }
+            if (showLoading) setState { copy(isDashboardLoading = true) }
+            setState { copy(isRefreshing = true) }
             val period = currentState().selectedPeriod
 
             val summaryDeferred = async { getDashboardSummaryUseCase(period) }
@@ -80,6 +85,7 @@ class HomeViewModel @Inject constructor(
             setState {
                 copy(
                     isDashboardLoading = false,
+                    isRefreshing = false,
                     summaryState = SummaryState(
                         totalIncome = summary.totalIncome,
                         totalExpense = summary.totalExpense,
@@ -99,6 +105,7 @@ data class HomeState(
     val isLoading: Boolean = false,
     val selectedPeriod: TimePeriod = TimePeriod.MONTH,
     val isDashboardLoading: Boolean = false,
+    val isRefreshing: Boolean = false,
     val summaryState: SummaryState = SummaryState(),
     val categorySpending: List<CategorySpend> = emptyList(),
     val recentTransactions: List<RecentTransaction> = emptyList(),
@@ -122,6 +129,7 @@ data class SummaryState(
 sealed interface HomeUiEvent {
     data class PeriodChanged(val period: TimePeriod) : HomeUiEvent
     data object SeeAllTransactionsClicked : HomeUiEvent
+    data object Refresh : HomeUiEvent
 }
 
 sealed interface HomeSideEffect {
