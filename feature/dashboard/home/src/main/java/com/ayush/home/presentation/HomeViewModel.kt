@@ -2,6 +2,8 @@ package com.ayush.home.presentation
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
+import com.ayush.common.auth.AuthStateProvider
+import com.ayush.common.utils.observeAuthState
 import com.ayush.home.domain.models.CategorySpend
 import com.ayush.home.domain.models.RecentTransaction
 import com.ayush.home.domain.models.TimePeriod
@@ -11,50 +13,81 @@ import com.ayush.home.domain.usecase.GetRecentTransactionsUseCase
 import com.ayush.home.domain.usecase.HomeUserDetailsUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userDetailsUseCase: HomeUserDetailsUseCase,
-    private val getCategorySpendingUseCase: GetCategorySpendingUseCase,
     private val getDashboardSummaryUseCase: GetDashboardSummaryUseCase,
-    private val getRecentTransactionsUseCase: GetRecentTransactionsUseCase
+    private val getCategorySpendingUseCase: GetCategorySpendingUseCase,
+    private val getRecentTransactionsUseCase: GetRecentTransactionsUseCase,
+    private val authStateProvider: AuthStateProvider,
 ) : BaseMviViewModel<HomeUiEvent, HomeState, HomeSideEffect>(
     initialState = HomeState()
 ) {
 
+    private val _selectedPeriod = MutableStateFlow(TimePeriod.MONTH)
+
     init {
-        loadUserDetails()
-        loadDashboardData(showLoading = true)
+        observeAuthState(authStateProvider) { loadUserDetails() }
+        observeDashboardData()
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observeDashboardData() {
+        viewModelScope.launch {
+            _selectedPeriod.flatMapLatest { period ->
+                combine(
+                    getDashboardSummaryUseCase(period),
+                    getCategorySpendingUseCase(period),
+                    getRecentTransactionsUseCase(),
+                ) { summary, spending, recent ->
+                    Triple(summary, spending, recent)
+                }.debounce(100)
+            }.collect { (summary, spending, recent) ->
+                setState {
+                    copy(
+                        isDashboardLoading = false,
+                        summaryState = SummaryState(
+                            totalIncome = summary.totalIncome,
+                            totalExpense = summary.totalExpense,
+                            netBalance = summary.netBalance,
+                        ),
+                        categorySpending = spending,
+                        recentTransactions = recent,
+                    )
+                }
+            }
+        }
     }
 
     override fun onEvent(event: HomeUiEvent) {
         when (event) {
             is HomeUiEvent.PeriodChanged -> {
                 setState { copy(selectedPeriod = event.period) }
-                loadDashboardData(showLoading = false)
+                _selectedPeriod.value = event.period
             }
 
             HomeUiEvent.SeeAllTransactionsClicked -> {
                 sendSideEffect(HomeSideEffect.NavigateToTransactions)
-            }
-
-            HomeUiEvent.Refresh -> {
-                loadDashboardData(showLoading = false)
             }
         }
     }
 
     private fun loadUserDetails() {
         viewModelScope.launch {
-            setState { copy(isLoading = true) }
             val details = userDetailsUseCase()
             if (details != null) {
                 setState {
                     copy(
-                        isLoading = false,
                         userDetails = UserDetailsState(
                             name = details.name,
                             initials = details.initials,
@@ -62,38 +95,6 @@ class HomeViewModel @Inject constructor(
                         ),
                     )
                 }
-            } else {
-                setState { copy(isLoading = false) }
-            }
-        }
-    }
-
-    private fun loadDashboardData(showLoading: Boolean = false) {
-        viewModelScope.launch {
-            if (showLoading) setState { copy(isDashboardLoading = true) }
-            setState { copy(isRefreshing = true) }
-            val period = currentState().selectedPeriod
-
-            val summaryDeferred = async { getDashboardSummaryUseCase(period) }
-            val categorySpendingDeferred = async { getCategorySpendingUseCase(period) }
-            val recentTransactionsDeferred = async { getRecentTransactionsUseCase() }
-
-            val summary = summaryDeferred.await()
-            val categorySpending = categorySpendingDeferred.await()
-            val recentTransactions = recentTransactionsDeferred.await()
-
-            setState {
-                copy(
-                    isDashboardLoading = false,
-                    isRefreshing = false,
-                    summaryState = SummaryState(
-                        totalIncome = summary.totalIncome,
-                        totalExpense = summary.totalExpense,
-                        netBalance = summary.netBalance,
-                    ),
-                    categorySpending = categorySpending,
-                    recentTransactions = recentTransactions,
-                )
             }
         }
     }
@@ -102,10 +103,8 @@ class HomeViewModel @Inject constructor(
 @Stable
 data class HomeState(
     val userDetails: UserDetailsState = UserDetailsState(),
-    val isLoading: Boolean = false,
     val selectedPeriod: TimePeriod = TimePeriod.MONTH,
-    val isDashboardLoading: Boolean = false,
-    val isRefreshing: Boolean = false,
+    val isDashboardLoading: Boolean = true,
     val summaryState: SummaryState = SummaryState(),
     val categorySpending: List<CategorySpend> = emptyList(),
     val recentTransactions: List<RecentTransaction> = emptyList(),
@@ -116,7 +115,6 @@ data class UserDetailsState(
     val name: String = "",
     val initials: String = "",
     val greeting: String = "",
-    val hasNotification: Boolean = false
 )
 
 @Stable
@@ -129,7 +127,6 @@ data class SummaryState(
 sealed interface HomeUiEvent {
     data class PeriodChanged(val period: TimePeriod) : HomeUiEvent
     data object SeeAllTransactionsClicked : HomeUiEvent
-    data object Refresh : HomeUiEvent
 }
 
 sealed interface HomeSideEffect {

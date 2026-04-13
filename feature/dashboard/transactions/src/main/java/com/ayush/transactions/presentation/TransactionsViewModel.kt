@@ -6,9 +6,9 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
-import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.result.ApiResult
+import com.ayush.common.utils.observeAuthState
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
@@ -24,7 +24,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -43,10 +42,17 @@ class TransactionsViewModel @Inject constructor(
     initialState = TransactionsState()
 ) {
 
+    init {
+        observeAuthState(
+            authStateProvider = authStateProvider,
+            onAuthenticated = {
+                loadDataAndSyncRemote()
+            }
+        )
+    }
+
     private var categoriesJob: Job? = null
     private var searchJob: Job? = null
-
-    // Trigger to re-create the paging flow when filters/search change
     private val pagingTrigger = MutableStateFlow(0)
 
     val transactionsPagingFlow: Flow<PagingData<TransactionListItem>> =
@@ -87,23 +93,8 @@ class TransactionsViewModel @Inject constructor(
             }
         }.cachedIn(viewModelScope)
 
-    init {
-        observeAuthState()
-    }
 
-    private fun observeAuthState() {
-        viewModelScope.launch {
-            authStateProvider.authState
-                .distinctUntilChanged()
-                .collect { state ->
-                    if (state == AuthState.Authenticated) {
-                        onAuthenticated()
-                    }
-                }
-        }
-    }
-
-    private fun onAuthenticated() {
+    private fun loadDataAndSyncRemote() {
         viewModelScope.launch {
             repository.ensureDefaultCategories()
             loadCategories()
