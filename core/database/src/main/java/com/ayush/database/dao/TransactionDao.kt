@@ -1,5 +1,6 @@
 package com.ayush.database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -16,7 +17,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TransactionDao {
 
-    @Transaction
     @Query(
         """
         SELECT * FROM transactions
@@ -24,7 +24,7 @@ interface TransactionDao {
         ORDER BY date DESC, createdAt DESC
         """
     )
-    fun getAllTransactions(): Flow<List<TransactionWithCategory>>
+    fun getAllTransactions(): PagingSource<Int, TransactionWithCategory>
 
     @Transaction
     @Query(
@@ -62,7 +62,6 @@ interface TransactionDao {
     )
     fun getTransactionsByType(type: String): Flow<List<TransactionWithCategory>>
 
-    @Transaction
     @Query(
         """
         SELECT * FROM transactions
@@ -71,7 +70,7 @@ interface TransactionDao {
         ORDER BY date DESC, createdAt DESC
         """
     )
-    fun searchTransactions(query: String): Flow<List<TransactionWithCategory>>
+    fun searchTransactions(query: String): PagingSource<Int, TransactionWithCategory>
 
     @Query("SELECT * FROM transactions WHERE id = :id AND syncStatus != 'PENDING_DELETE'")
     suspend fun getTransactionById(id: Long): TransactionEntity?
@@ -104,7 +103,6 @@ interface TransactionDao {
         endDate: Long,
     ): Double?
 
-    @Transaction
     @Query(
         """
         SELECT * FROM transactions
@@ -124,7 +122,7 @@ interface TransactionDao {
         categoryId: Long? = null,
         minAmount: Double? = null,
         maxAmount: Double? = null,
-    ): Flow<List<TransactionWithCategory>>
+    ): PagingSource<Int, TransactionWithCategory>
 
     @Query("SELECT * FROM transactions WHERE syncStatus != 'SYNCED' ORDER BY createdAt ASC")
     suspend fun getPendingSyncTransactions(): List<TransactionEntity>

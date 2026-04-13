@@ -43,6 +43,9 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:database"))
 
+    implementation(libs.paging.runtime)
+    implementation(libs.paging.compose)
+
     implementation(libs.work.runtime)
     implementation(libs.hilt.work)
     ksp(libs.hilt.work.compiler)
