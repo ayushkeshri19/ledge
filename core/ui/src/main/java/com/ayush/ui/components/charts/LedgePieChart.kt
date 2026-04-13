@@ -2,6 +2,8 @@ package com.ayush.ui.components.charts
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOutCubic
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -61,16 +63,16 @@ fun LedgePieChart(
     val selectedScale = remember { Animatable(1f) }
     LaunchedEffect(selectedIndex) {
         if (selectedIndex != null) {
-            selectedScale.snapTo(1f)
+            selectedScale.snapTo(0.5f)
             selectedScale.animateTo(
-                targetValue = 1.15f,
-                animationSpec = tween(200),
+                targetValue = 1.2f,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioHighBouncy,
+                    stiffness = Spring.StiffnessHigh
+                )
             )
         } else {
-            selectedScale.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(200),
-            )
+            selectedScale.animateTo(1f, tween(200))
         }
     }
 
@@ -132,7 +134,8 @@ fun LedgePieChart(
             var currentAngle = -90f
 
             segments.forEachIndexed { index, segment ->
-                val sweep = proportions[index] * 360f * progress
+
+            val sweep = proportions[index] * 360f * progress
                 val isSelected = index == selectedIndex
 
                 if (isSelected) {
