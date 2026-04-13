@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.ayush.database.data.CategorySpendTuple
 import com.ayush.database.data.SyncStatus
 import com.ayush.database.data.TransactionEntity
 import com.ayush.database.data.TransactionWithCategory
@@ -130,4 +131,28 @@ interface TransactionDao {
 
     @Query("UPDATE transactions SET syncStatus = :status WHERE id = :id")
     suspend fun updateSyncStatus(id: Long, status: SyncStatus)
+
+    @Query(
+        """
+        SELECT categoryId, SUM(amount) AS totalAmount
+        FROM transactions
+        WHERE type = 'expense'
+        AND date BETWEEN :startDate AND :endDate
+        AND syncStatus != 'PENDING_DELETE'
+        GROUP BY categoryId
+        ORDER BY totalAmount DESC
+        """
+    )
+    suspend fun getExpensesByCategory(startDate: Long, endDate: Long): List<CategorySpendTuple>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM transactions
+        WHERE syncStatus != 'PENDING_DELETE'
+        ORDER BY date DESC, createdAt DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun getRecentTransactions(limit: Int): List<TransactionWithCategory>
 }
