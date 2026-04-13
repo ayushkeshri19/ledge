@@ -5,13 +5,6 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-internal fun formatAmount(amount: Double): String =
-    if (amount == amount.toLong().toDouble()) {
-        String.format(Locale.getDefault(), "%,d", amount.toLong())
-    } else {
-        String.format(Locale.getDefault(), "%,.2f", amount)
-    }
-
 internal fun formatDate(millis: Long): String {
     fun Calendar.clearTime() {
         set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)

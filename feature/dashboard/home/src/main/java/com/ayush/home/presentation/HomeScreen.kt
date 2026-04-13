@@ -38,9 +38,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ayush.common.utils.formatAmount
 import com.ayush.home.domain.models.CategorySpend
 import com.ayush.home.domain.models.RecentTransaction
 import com.ayush.home.domain.models.TimePeriod
+import com.ayush.ui.components.AnimatedAmount
 import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.components.charts.LedgePieChart
@@ -180,8 +182,8 @@ private fun BalanceOverviewCard(state: SummaryState) {
             color = TextMuted,
         )
         Spacer(Modifier.height(4.dp))
-        Text(
-            text = "\u20B9${formatAmount(state.netBalance)}",
+        AnimatedAmount(
+            targetAmount = state.netBalance,
             style = LedgeTextStyle.BalanceHero,
             color = if (state.netBalance >= 0) Gold else SemanticRed,
         )
