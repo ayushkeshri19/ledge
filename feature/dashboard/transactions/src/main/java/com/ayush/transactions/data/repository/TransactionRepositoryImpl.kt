@@ -7,6 +7,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import com.ayush.common.utils.Workers
 import com.ayush.database.dao.CategoryDao
 import com.ayush.database.dao.TransactionDao
 import com.ayush.database.data.DefaultCategories
@@ -225,7 +226,7 @@ class TransactionRepositoryImpl @Inject constructor(
             .build()
 
         workManager.enqueueUniqueWork(
-            "transaction_sync",
+            Workers.TRANSACTION_SYNC,
             ExistingWorkPolicy.KEEP,
             request
         )
