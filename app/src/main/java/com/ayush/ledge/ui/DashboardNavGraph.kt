@@ -144,7 +144,13 @@ internal fun DashboardNavGraph(onSignOut: () -> Unit) {
             NavDisplay(
                 backStack = backStack,
                 entryProvider = entryProvider {
-                    entry<DashboardRoute.Home> { HomeScreen() }
+                    entry<DashboardRoute.Home> {
+                        HomeScreen(
+                            onNavigateToTransactions = {
+                                selectTab(DashboardBottomNavItems.Transactions)
+                            },
+                        )
+                    }
                     entry<DashboardRoute.Transactions> { TransactionsListScreen() }
                     entry<DashboardRoute.Budget> { BudgetScreen() }
                     entry<DashboardRoute.More> { MoreScreen(onSignOut = onSignOut) }
