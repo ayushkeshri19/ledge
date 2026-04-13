@@ -6,6 +6,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -51,7 +52,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -118,12 +121,14 @@ private fun AddTransactionContent(
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .navigationBarsPadding()
             .imePadding()
+            .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
             .background(BgDeep)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),

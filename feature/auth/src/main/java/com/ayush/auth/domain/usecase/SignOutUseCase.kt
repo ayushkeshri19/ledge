@@ -2,6 +2,7 @@ package com.ayush.auth.domain.usecase
 
 import androidx.work.WorkManager
 import com.ayush.auth.data.repository.AuthRepository
+import com.ayush.common.utils.Workers
 import com.ayush.database.LedgeDatabase
 import com.ayush.datastore.domain.repository.AppDataStoreRepository
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +17,7 @@ class SignOutUseCase @Inject constructor(
 ) {
     suspend operator fun invoke() {
         withContext(Dispatchers.IO) {
-            workManager.cancelUniqueWork("transaction_sync")
+            workManager.cancelUniqueWork(Workers.TRANSACTION_SYNC)
             database.clearAllTables()
             dataStore.clearData()
             authRepository.signOut()
