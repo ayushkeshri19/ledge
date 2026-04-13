@@ -8,6 +8,8 @@ import com.ayush.home.domain.repository.HomeRepository
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -15,7 +17,7 @@ import javax.inject.Singleton
 @Singleton
 class HomeRepositoryImpl @Inject constructor(
     private val supabaseClient: SupabaseClient,
-    private val transactionDao: TransactionDao
+    private val transactionDao: TransactionDao,
 ) : HomeRepository {
 
     override suspend fun getCurrentUser(): User? = withContext(Dispatchers.IO) {
@@ -31,40 +33,19 @@ class HomeRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getTotalIncome(startDate: Long, endDate: Long): Double {
-        return withContext(Dispatchers.IO) {
-            transactionDao.getTotalByTypeAndDateRange(
-                type = INCOME,
-                startDate = startDate,
-                endDate = endDate
-            ) ?: 0.0
-        }
-    }
+    override fun observeTotalIncome(startDate: Long, endDate: Long): Flow<Double> =
+        transactionDao.observeTotalByTypeAndDateRange(INCOME, startDate, endDate)
+            .map { it ?: 0.0 }
 
-    override suspend fun getTotalExpense(startDate: Long, endDate: Long): Double {
-        return withContext(Dispatchers.IO) {
-            transactionDao.getTotalByTypeAndDateRange(
-                type = EXPENSE,
-                startDate = startDate,
-                endDate = endDate
-            ) ?: 0.0
-        }
-    }
+    override fun observeTotalExpense(startDate: Long, endDate: Long): Flow<Double> =
+        transactionDao.observeTotalByTypeAndDateRange(EXPENSE, startDate, endDate)
+            .map { it ?: 0.0 }
 
-    override suspend fun getExpensesByCategory(
-        startDate: Long,
-        endDate: Long
-    ): List<CategorySpendTuple> {
-        return withContext(Dispatchers.IO) {
-            transactionDao.getExpensesByCategory(startDate, endDate)
-        }
-    }
+    override fun observeExpensesByCategory(startDate: Long, endDate: Long): Flow<List<CategorySpendTuple>> =
+        transactionDao.observeExpensesByCategory(startDate, endDate)
 
-    override suspend fun getRecentTransactions(limit: Int): List<TransactionWithCategory> {
-        return withContext(Dispatchers.IO) {
-            transactionDao.getRecentTransactions(limit)
-        }
-    }
+    override fun observeRecentTransactions(limit: Int): Flow<List<TransactionWithCategory>> =
+        transactionDao.observeRecentTransactions(limit)
 
     companion object {
         const val INCOME: String = "income"

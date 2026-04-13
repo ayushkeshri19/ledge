@@ -3,11 +3,12 @@ package com.ayush.home.domain.repository
 import com.ayush.common.models.User
 import com.ayush.database.data.CategorySpendTuple
 import com.ayush.database.data.TransactionWithCategory
+import kotlinx.coroutines.flow.Flow
 
 interface HomeRepository {
     suspend fun getCurrentUser(): User?
-    suspend fun getTotalIncome(startDate: Long, endDate: Long): Double
-    suspend fun getTotalExpense(startDate: Long, endDate: Long): Double
-    suspend fun getExpensesByCategory(startDate: Long, endDate: Long): List<CategorySpendTuple>
-    suspend fun getRecentTransactions(limit: Int): List<TransactionWithCategory>
+    fun observeTotalIncome(startDate: Long, endDate: Long): Flow<Double>
+    fun observeTotalExpense(startDate: Long, endDate: Long): Flow<Double>
+    fun observeExpensesByCategory(startDate: Long, endDate: Long): Flow<List<CategorySpendTuple>>
+    fun observeRecentTransactions(limit: Int): Flow<List<TransactionWithCategory>>
 }

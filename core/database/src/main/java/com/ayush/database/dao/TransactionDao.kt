@@ -155,4 +155,45 @@ interface TransactionDao {
         """
     )
     suspend fun getRecentTransactions(limit: Int): List<TransactionWithCategory>
+
+    // ─── Flow variants for reactive dashboard ───
+
+    @Query(
+        """
+        SELECT SUM(amount) FROM transactions
+        WHERE type = :type AND date BETWEEN :startDate AND :endDate
+        AND syncStatus != 'PENDING_DELETE'
+        """
+    )
+    fun observeTotalByTypeAndDateRange(
+        type: String,
+        startDate: Long,
+        endDate: Long,
+    ): Flow<Double?>
+
+    @Query(
+        """
+        SELECT t.categoryId, c.name AS categoryName, c.colorHex AS categoryColorHex,
+               SUM(t.amount) AS totalAmount
+        FROM transactions t
+        LEFT JOIN categories c ON t.categoryId = c.id
+        WHERE t.type = 'expense'
+          AND t.date BETWEEN :startDate AND :endDate
+          AND t.syncStatus != 'PENDING_DELETE'
+        GROUP BY t.categoryId
+        ORDER BY totalAmount DESC
+        """
+    )
+    fun observeExpensesByCategory(startDate: Long, endDate: Long): Flow<List<CategorySpendTuple>>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM transactions
+        WHERE syncStatus != 'PENDING_DELETE'
+        ORDER BY date DESC, createdAt DESC
+        LIMIT :limit
+        """
+    )
+    fun observeRecentTransactions(limit: Int): Flow<List<TransactionWithCategory>>
 }
