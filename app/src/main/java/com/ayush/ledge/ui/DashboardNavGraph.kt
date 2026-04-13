@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.ayush.budget.presentation.BudgetScreen
 import com.ayush.home.presentation.HomeScreen
 import com.ayush.transactions.presentation.AddTransactionScreen
 import com.ayush.ui.R
@@ -266,20 +267,6 @@ private fun BottomNavItem(
             text = tab.label.uppercase(),
             color = tintColor,
             style = NavLabelStyle
-        )
-    }
-}
-
-@Composable
-private fun BudgetScreen() {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            text = "Budget",
-            style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
         )
     }
 }
