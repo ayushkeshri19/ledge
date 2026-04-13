@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,8 +51,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -112,10 +115,15 @@ private fun TransactionsContent(
     val filterSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
+    val focusManager = LocalFocusManager.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .imePadding()
+            .pointerInput(Unit) {
+                detectTapGestures(onTap = { focusManager.clearFocus() })
+            }
     ) {
         Row(
             modifier = Modifier
@@ -130,7 +138,12 @@ private fun TransactionsContent(
                 color = TextPrimary,
             )
             Box {
-                IconButton(onClick = { showFilterSheet = true }) {
+                IconButton(
+                    onClick = {
+                        showFilterSheet = true
+                        focusManager.clearFocus()
+                    }
+                ) {
                     Icon(
                         Icons.Filled.Tune,
                         contentDescription = "Filter",
@@ -318,8 +331,14 @@ private fun TransactionsContent(
                         ) { transaction ->
                             SwipeableTransactionItem(
                                 transaction = transaction,
-                                onEdit = { transactionToEdit = transaction },
-                                onDelete = { transactionToDelete = transaction },
+                                onEdit = {
+                                    transactionToEdit = transaction
+                                    focusManager.clearFocus()
+                                },
+                                onDelete = {
+                                    transactionToDelete = transaction
+                                    focusManager.clearFocus()
+                                },
                             )
                         }
                     }
