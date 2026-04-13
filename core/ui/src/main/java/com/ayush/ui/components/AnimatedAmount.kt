@@ -36,9 +36,9 @@ fun AnimatedAmount(
     }
 
     Text(
-        text = "$prefix₹${formatAmount(animatedAmount.value.toDouble())}",
+        text = "$prefix₹${formatAmount(animatedAmount.value.toLong().toDouble())}",
         style = style,
         color = color,
-        modifier = modifier,
+        modifier = modifier
     )
 }
