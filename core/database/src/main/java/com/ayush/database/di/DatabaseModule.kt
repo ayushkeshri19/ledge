@@ -3,6 +3,7 @@ package com.ayush.database.di
 import android.content.Context
 import androidx.room.Room
 import com.ayush.database.LedgeDatabase
+import com.ayush.database.dao.BudgetDao
 import com.ayush.database.dao.CategoryDao
 import com.ayush.database.dao.TransactionDao
 import dagger.Module
@@ -34,5 +35,10 @@ object DatabaseModule {
     @Provides
     fun provideCategoryDao(database: LedgeDatabase): CategoryDao {
         return database.categoryDao()
+    }
+
+    @Provides
+    fun providesBudgetDao(database: LedgeDatabase): BudgetDao {
+        return database.budgetDao()
     }
 }
