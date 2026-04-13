@@ -47,7 +47,9 @@ fun HomeScreen() {
     LaunchedEffect(Unit) {
         viewModel.sideEffect.collect { sideEffect ->
             when (sideEffect) {
-                else -> {}
+                HomeSideEffect.NavigateToTransactions -> {
+
+                }
             }
         }
     }
