@@ -36,4 +36,10 @@ interface BudgetDao {
 
     @Query("SELECT * FROM budgets WHERE syncStatus != 'SYNCED' ORDER BY createdAt ASC")
     suspend fun getPendingSyncBudgets(): List<BudgetEntity>
+
+    @Query("UPDATE budgets SET warningNotified = :notified WHERE id = :id")
+    suspend fun updateWarningNotified(id: Long, notified: Boolean)
+
+    @Query("UPDATE budgets SET exceededNotified = :notified WHERE id = :id")
+    suspend fun updateExceededNotified(id: Long, notified: Boolean)
 }

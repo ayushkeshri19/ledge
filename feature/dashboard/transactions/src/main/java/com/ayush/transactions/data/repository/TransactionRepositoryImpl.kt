@@ -260,20 +260,38 @@ class TransactionRepositoryImpl @Inject constructor(
                 val categoryName = budget.categoryId?.let { categoryDao.getCategoryById(it)?.name }
 
                 when {
-                    ratio >= 1.0 -> budgetNotificationHelper.notifyExceeded(
-                        budgetId = budget.id,
-                        categoryName = categoryName,
-                        overBy = spent - budget.amount,
-                        limit = budget.amount,
-                    )
+                    ratio >= 1.0 -> {
+                        if (!budget.exceededNotified) {
+                            budgetNotificationHelper.notifyExceeded(
+                                budgetId = budget.id,
+                                categoryName = categoryName,
+                                overBy = spent - budget.amount,
+                                limit = budget.amount,
+                            )
+                            budgetDao.updateExceededNotified(budget.id, true)
+                        }
+                    }
 
-                    ratio >= threshold -> budgetNotificationHelper.notifyWarning(
-                        budgetId = budget.id,
-                        categoryName = categoryName,
-                        thresholdPercent = budget.warningThreshold,
-                        spent = spent,
-                        limit = budget.amount,
-                    )
+                    ratio >= threshold -> {
+                        if (!budget.warningNotified) {
+                            budgetNotificationHelper.notifyWarning(
+                                budgetId = budget.id,
+                                categoryName = categoryName,
+                                thresholdPercent = budget.warningThreshold,
+                                spent = spent,
+                                limit = budget.amount,
+                            )
+                            budgetDao.updateWarningNotified(budget.id, true)
+                        }
+                        if (budget.exceededNotified) {
+                            budgetDao.updateExceededNotified(budget.id, false)
+                        }
+                    }
+
+                    else -> {
+                        if (budget.warningNotified) budgetDao.updateWarningNotified(budget.id, false)
+                        if (budget.exceededNotified) budgetDao.updateExceededNotified(budget.id, false)
+                    }
                 }
             }
         } catch (e: Exception) {

@@ -23,5 +23,7 @@ data class BudgetEntity(
     val userId: String = "",
     val remoteId: String? = null,
     val syncStatus: SyncStatus = SyncStatus.SYNCED,
+    val warningNotified: Boolean = false,
+    val exceededNotified: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
 )

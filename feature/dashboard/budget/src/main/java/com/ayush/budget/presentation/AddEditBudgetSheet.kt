@@ -91,7 +91,6 @@ fun AddEditBudgetSheet(
 
         Spacer(Modifier.height(20.dp))
 
-        // Overall / Category toggle
         if (!isEditing) {
             LedgeSegmentedToggle(
                 options = typeOptions,
@@ -101,7 +100,6 @@ fun AddEditBudgetSheet(
             Spacer(Modifier.height(16.dp))
         }
 
-        // Category picker
         if (budgetType == BudgetType.CATEGORY) {
             Text(
                 text = "CATEGORY",
@@ -125,7 +123,6 @@ fun AddEditBudgetSheet(
             Spacer(Modifier.height(16.dp))
         }
 
-        // Amount
         LedgeTextField(
             value = amountText,
             onValueChange = { amountText = it.filter { ch -> ch.isDigit() || ch == '.' } },
@@ -136,7 +133,6 @@ fun AddEditBudgetSheet(
 
         Spacer(Modifier.height(20.dp))
 
-        // Warning threshold slider
         Text(
             text = "ALERT THRESHOLD",
             style = LedgeTextStyle.LabelCaps,
@@ -153,7 +149,7 @@ fun AddEditBudgetSheet(
             value = threshold,
             onValueChange = { threshold = it },
             valueRange = 50f..95f,
-            steps = 8, // 50, 55, 60, 65, 70, 75, 80, 85, 90, 95
+            steps = 8,
             colors = SliderDefaults.colors(
                 thumbColor = Gold,
                 activeTrackColor = Gold,
@@ -163,7 +159,6 @@ fun AddEditBudgetSheet(
 
         Spacer(Modifier.height(24.dp))
 
-        // Save
         LedgePrimaryButton(
             text = if (isEditing) "Update Budget" else "Save Budget",
             enabled = canSave,
@@ -178,7 +173,6 @@ fun AddEditBudgetSheet(
             },
         )
 
-        // Delete (only when editing)
         if (isEditing && onDelete != null) {
             Spacer(Modifier.height(12.dp))
             LedgeSecondaryButton(
