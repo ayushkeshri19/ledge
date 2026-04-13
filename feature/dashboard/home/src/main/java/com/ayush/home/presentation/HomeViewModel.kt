@@ -11,6 +11,7 @@ import com.ayush.home.domain.usecase.GetRecentTransactionsUseCase
 import com.ayush.home.domain.usecase.HomeUserDetailsUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -68,9 +69,13 @@ class HomeViewModel @Inject constructor(
             setState { copy(isDashboardLoading = true) }
             val period = currentState().selectedPeriod
 
-            val summary = getDashboardSummaryUseCase(period)
-            val categorySpending = getCategorySpendingUseCase(period)
-            val recentTransactions = getRecentTransactionsUseCase()
+            val summaryDeferred = async { getDashboardSummaryUseCase(period) }
+            val categorySpendingDeferred = async { getCategorySpendingUseCase(period) }
+            val recentTransactionsDeferred = async { getRecentTransactionsUseCase() }
+
+            val summary = summaryDeferred.await()
+            val categorySpending = categorySpendingDeferred.await()
+            val recentTransactions = recentTransactionsDeferred.await()
 
             setState {
                 copy(
