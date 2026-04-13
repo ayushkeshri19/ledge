@@ -1,5 +1,9 @@
 package com.ayush.transactions.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.map
 import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
@@ -38,19 +42,29 @@ class TransactionRepositoryImpl @Inject constructor(
     private val categoryDao: CategoryDao,
     private val supabaseDataSource: SupabaseTransactionDataSource,
     private val supabaseClient: SupabaseClient,
-    private val workManager: WorkManager,
+    private val workManager: WorkManager
 ) : TransactionRepository {
 
-    override fun getAllTransactions(): Flow<List<Transaction>> {
-        return transactionDao.getAllTransactions().map { list ->
-            list.map { it.toDomain() }
-        }
+    companion object {
+        private val PAGING_CONFIG = PagingConfig(
+            pageSize = 20,
+            prefetchDistance = 10,
+            enablePlaceholders = false
+        )
     }
 
-    override fun searchTransactions(query: String): Flow<List<Transaction>> {
-        return transactionDao.searchTransactions(query).map { list ->
-            list.map { it.toDomain() }
-        }
+    override fun getAllTransactions(): Flow<PagingData<Transaction>> {
+        return Pager(
+            config = PAGING_CONFIG,
+            pagingSourceFactory = { transactionDao.getAllTransactions() }
+        ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
+    }
+
+    override fun searchTransactions(query: String): Flow<PagingData<Transaction>> {
+        return Pager(
+            config = PAGING_CONFIG,
+            pagingSourceFactory = { transactionDao.searchTransactions(query) }
+        ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
     }
 
     override fun getFilteredTransactions(
@@ -59,16 +73,21 @@ class TransactionRepositoryImpl @Inject constructor(
         type: TransactionType?,
         categoryId: Long?,
         minAmount: Double?,
-        maxAmount: Double?,
-    ): Flow<List<Transaction>> {
-        return transactionDao.getFilteredTransactions(
-            startDate = startDate,
-            endDate = endDate,
-            type = type?.value,
-            categoryId = categoryId,
-            minAmount = minAmount,
-            maxAmount = maxAmount,
-        ).map { list -> list.map { it.toDomain() } }
+        maxAmount: Double?
+    ): Flow<PagingData<Transaction>> {
+        return Pager(
+            config = PAGING_CONFIG,
+            pagingSourceFactory = {
+                transactionDao.getFilteredTransactions(
+                    startDate = startDate,
+                    endDate = endDate,
+                    type = type?.value,
+                    categoryId = categoryId,
+                    minAmount = minAmount,
+                    maxAmount = maxAmount,
+                )
+            },
+        ).flow.map { pagingData -> pagingData.map { it.toDomain() } }
     }
 
     override suspend fun getTransactionById(id: Long): Transaction? {
@@ -96,7 +115,7 @@ class TransactionRepositoryImpl @Inject constructor(
         note: String,
         date: Long,
         isRecurring: Boolean,
-        recurrenceType: String?,
+        recurrenceType: String?
     ): Long = withContext(Dispatchers.IO) {
         val localId = transactionDao.insert(
             TransactionEntity(
@@ -123,7 +142,7 @@ class TransactionRepositoryImpl @Inject constructor(
         note: String,
         date: Long,
         isRecurring: Boolean,
-        recurrenceType: String?,
+        recurrenceType: String?
     ) {
         withContext(Dispatchers.IO) {
             val existing = transactionDao.getTransactionById(id) ?: return@withContext

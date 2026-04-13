@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -59,8 +58,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.ayush.common.utils.toast
 import com.ayush.transactions.domain.models.Transaction
+import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.ui.components.LedgeFilterChip
 import com.ayush.ui.components.LedgeTextField
@@ -85,6 +88,7 @@ import kotlinx.coroutines.launch
 fun TransactionsScreen() {
     val viewModel: TransactionsViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val lazyPagingItems = viewModel.transactionsPagingFlow.collectAsLazyPagingItems()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -97,6 +101,7 @@ fun TransactionsScreen() {
 
     TransactionsContent(
         state = state,
+        lazyPagingItems = lazyPagingItems,
         onEvent = viewModel::onEvent,
     )
 }
@@ -105,6 +110,7 @@ fun TransactionsScreen() {
 @Composable
 private fun TransactionsContent(
     state: TransactionsState,
+    lazyPagingItems: LazyPagingItems<TransactionListItem>,
     onEvent: (TransactionsEvent) -> Unit,
 ) {
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
@@ -116,6 +122,10 @@ private fun TransactionsContent(
     val scope = rememberCoroutineScope()
 
     val focusManager = LocalFocusManager.current
+
+    val isInitialLoad = lazyPagingItems.loadState.refresh is LoadState.Loading
+    val isEmpty = lazyPagingItems.itemCount == 0
+            && lazyPagingItems.loadState.refresh is LoadState.NotLoading
 
     Column(
         modifier = Modifier
@@ -264,7 +274,7 @@ private fun TransactionsContent(
         }
 
         when {
-            state.isLoading || state.isSyncing -> {
+            isInitialLoad || state.isSyncing -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
@@ -277,7 +287,7 @@ private fun TransactionsContent(
                 }
             }
 
-            state.transactions.isEmpty() -> {
+            isEmpty -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center,
@@ -314,32 +324,58 @@ private fun TransactionsContent(
             }
 
             else -> {
-                val grouped = remember(state.transactions) {
-                    state.transactions.groupBy { formatDateHeader(it.date) }
-                }
                 LazyColumn(
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    grouped.forEach { (dateHeader, txns) ->
-                        stickyHeader(key = "header_$dateHeader") {
-                            DateSectionHeader(label = dateHeader)
+                    items(
+                        count = lazyPagingItems.itemCount,
+                        key = { index ->
+                            when (val item = lazyPagingItems.peek(index)) {
+                                is TransactionListItem.Header -> "header_${item.dateLabel}"
+                                is TransactionListItem.Item -> "txn_${item.transaction.id}"
+                                null -> "placeholder_$index"
+                            }
+                        },
+                    ) { index ->
+                        when (val item = lazyPagingItems[index]) {
+                            is TransactionListItem.Header -> {
+                                DateSectionHeader(label = item.dateLabel)
+                            }
+
+                            is TransactionListItem.Item -> {
+                                SwipeableTransactionItem(
+                                    transaction = item.transaction,
+                                    onEdit = {
+                                        transactionToEdit = item.transaction
+                                        focusManager.clearFocus()
+                                    },
+                                    onDelete = {
+                                        transactionToDelete = item.transaction
+                                        focusManager.clearFocus()
+                                    },
+                                )
+                            }
+
+                            null -> {}
                         }
-                        items(
-                            items = txns,
-                            key = { it.id },
-                        ) { transaction ->
-                            SwipeableTransactionItem(
-                                transaction = transaction,
-                                onEdit = {
-                                    transactionToEdit = transaction
-                                    focusManager.clearFocus()
-                                },
-                                onDelete = {
-                                    transactionToDelete = transaction
-                                    focusManager.clearFocus()
-                                },
-                            )
+                    }
+
+                    // Loading more indicator
+                    if (lazyPagingItems.loadState.append is LoadState.Loading) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                CircularProgressIndicator(
+                                    color = Gold,
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                            }
                         }
                     }
                 }

@@ -1,5 +1,6 @@
 package com.ayush.database.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -7,6 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.ayush.database.data.CategorySpendTuple
 import com.ayush.database.data.SyncStatus
 import com.ayush.database.data.TransactionEntity
 import com.ayush.database.data.TransactionWithCategory
@@ -15,7 +17,6 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TransactionDao {
 
-    @Transaction
     @Query(
         """
         SELECT * FROM transactions
@@ -23,7 +24,7 @@ interface TransactionDao {
         ORDER BY date DESC, createdAt DESC
         """
     )
-    fun getAllTransactions(): Flow<List<TransactionWithCategory>>
+    fun getAllTransactions(): PagingSource<Int, TransactionWithCategory>
 
     @Transaction
     @Query(
@@ -61,7 +62,6 @@ interface TransactionDao {
     )
     fun getTransactionsByType(type: String): Flow<List<TransactionWithCategory>>
 
-    @Transaction
     @Query(
         """
         SELECT * FROM transactions
@@ -70,7 +70,7 @@ interface TransactionDao {
         ORDER BY date DESC, createdAt DESC
         """
     )
-    fun searchTransactions(query: String): Flow<List<TransactionWithCategory>>
+    fun searchTransactions(query: String): PagingSource<Int, TransactionWithCategory>
 
     @Query("SELECT * FROM transactions WHERE id = :id AND syncStatus != 'PENDING_DELETE'")
     suspend fun getTransactionById(id: Long): TransactionEntity?
@@ -103,7 +103,6 @@ interface TransactionDao {
         endDate: Long,
     ): Double?
 
-    @Transaction
     @Query(
         """
         SELECT * FROM transactions
@@ -123,11 +122,37 @@ interface TransactionDao {
         categoryId: Long? = null,
         minAmount: Double? = null,
         maxAmount: Double? = null,
-    ): Flow<List<TransactionWithCategory>>
+    ): PagingSource<Int, TransactionWithCategory>
 
     @Query("SELECT * FROM transactions WHERE syncStatus != 'SYNCED' ORDER BY createdAt ASC")
     suspend fun getPendingSyncTransactions(): List<TransactionEntity>
 
     @Query("UPDATE transactions SET syncStatus = :status WHERE id = :id")
     suspend fun updateSyncStatus(id: Long, status: SyncStatus)
+
+    @Query(
+        """
+        SELECT t.categoryId, c.name AS categoryName, c.colorHex AS categoryColorHex,
+               SUM(t.amount) AS totalAmount
+        FROM transactions t
+        LEFT JOIN categories c ON t.categoryId = c.id
+        WHERE t.type = 'expense'
+          AND t.date BETWEEN :startDate AND :endDate
+          AND t.syncStatus != 'PENDING_DELETE'
+        GROUP BY t.categoryId
+        ORDER BY totalAmount DESC
+        """
+    )
+    suspend fun getExpensesByCategory(startDate: Long, endDate: Long): List<CategorySpendTuple>
+
+    @Transaction
+    @Query(
+        """
+        SELECT * FROM transactions
+        WHERE syncStatus != 'PENDING_DELETE'
+        ORDER BY date DESC, createdAt DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun getRecentTransactions(limit: Int): List<TransactionWithCategory>
 }

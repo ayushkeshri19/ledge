@@ -2,11 +2,15 @@ package com.ayush.transactions.presentation
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
+import androidx.paging.insertSeparators
+import androidx.paging.map
 import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.result.ApiResult
 import com.ayush.transactions.domain.models.Category
-import com.ayush.transactions.domain.models.Transaction
+import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.transactions.domain.repository.TransactionRepository
 import com.ayush.transactions.domain.usecase.DeleteTransactionUseCase
@@ -15,12 +19,18 @@ import com.ayush.transactions.domain.usecase.GetTransactionsUseCase
 import com.ayush.transactions.domain.usecase.UpdateTransactionUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TransactionsViewModel @Inject constructor(
     private val getTransactionsUseCase: GetTransactionsUseCase,
@@ -33,9 +43,49 @@ class TransactionsViewModel @Inject constructor(
     initialState = TransactionsState()
 ) {
 
-    private var transactionsJob: Job? = null
     private var categoriesJob: Job? = null
     private var searchJob: Job? = null
+
+    // Trigger to re-create the paging flow when filters/search change
+    private val pagingTrigger = MutableStateFlow(0)
+
+    val transactionsPagingFlow: Flow<PagingData<TransactionListItem>> =
+        pagingTrigger.flatMapLatest {
+            val state = currentState()
+            val pagingFlow = when {
+                state.searchQuery.isNotBlank() ->
+                    getTransactionsUseCase.search(state.searchQuery)
+
+                state.filterState.isActive -> {
+                    val (start, end) = state.filterState.resolvedDateRange()
+                    getTransactionsUseCase.filter(
+                        startDate = start,
+                        endDate = end,
+                        type = state.filterState.type,
+                        categoryId = state.filterState.categoryId,
+                    )
+                }
+
+                else -> getTransactionsUseCase()
+            }
+
+            pagingFlow.map { pagingData ->
+                pagingData
+                    .map<_, TransactionListItem> { TransactionListItem.Item(it) }
+                    .insertSeparators { before, after ->
+                        val beforeDate = (before as? TransactionListItem.Item)
+                            ?.transaction?.date?.let { formatDateHeader(it) }
+                        val afterDate = (after as? TransactionListItem.Item)
+                            ?.transaction?.date?.let { formatDateHeader(it) }
+
+                        if (afterDate != null && afterDate != beforeDate) {
+                            TransactionListItem.Header(afterDate)
+                        } else {
+                            null
+                        }
+                    }
+            }
+        }.cachedIn(viewModelScope)
 
     init {
         observeAuthState()
@@ -56,11 +106,12 @@ class TransactionsViewModel @Inject constructor(
     private fun onAuthenticated() {
         viewModelScope.launch {
             repository.ensureDefaultCategories()
-            loadTransactions()
             loadCategories()
+            invalidatePaging()
             setState { copy(isSyncing = true) }
             repository.syncFromRemote()
             setState { copy(isSyncing = false) }
+            invalidatePaging()
         }
     }
 
@@ -71,43 +122,23 @@ class TransactionsViewModel @Inject constructor(
             is TransactionsEvent.UpdateTransaction -> updateTransaction(event)
             is TransactionsEvent.ApplyFilters -> {
                 setState { copy(filterState = event.filterState, searchQuery = "") }
-                loadTransactions()
+                invalidatePaging()
             }
 
             is TransactionsEvent.ClearFilters -> {
                 setState { copy(filterState = FilterState()) }
-                loadTransactions()
+                invalidatePaging()
             }
+
             is TransactionsEvent.ClearSearch -> {
                 setState { copy(searchQuery = "") }
-                loadTransactions()
+                invalidatePaging()
             }
         }
     }
 
-    private fun loadTransactions() {
-        transactionsJob?.cancel()
-        transactionsJob = viewModelScope.launch {
-            setState { copy(isLoading = true) }
-            val state = currentState()
-            val flow = when {
-                state.searchQuery.isNotBlank() -> getTransactionsUseCase.search(state.searchQuery)
-                state.filterState.isActive -> {
-                    val (start, end) = state.filterState.resolvedDateRange()
-                    getTransactionsUseCase.filter(
-                        startDate = start,
-                        endDate = end,
-                        type = state.filterState.type,
-                        categoryId = state.filterState.categoryId,
-                    )
-                }
-
-                else -> getTransactionsUseCase()
-            }
-            flow.collect { transactions ->
-                setState { copy(transactions = transactions, isLoading = false) }
-            }
-        }
+    private fun invalidatePaging() {
+        pagingTrigger.value++
     }
 
     private fun loadCategories() {
@@ -124,7 +155,7 @@ class TransactionsViewModel @Inject constructor(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(300)
-            loadTransactions()
+            invalidatePaging()
         }
     }
 
@@ -166,11 +197,9 @@ class TransactionsViewModel @Inject constructor(
 
 @Stable
 data class TransactionsState(
-    val transactions: List<Transaction> = emptyList(),
     val categories: List<Category> = emptyList(),
     val filterState: FilterState = FilterState(),
     val searchQuery: String = "",
-    val isLoading: Boolean = false,
     val isSyncing: Boolean = false,
 )
 
@@ -187,6 +216,7 @@ sealed interface TransactionsEvent {
         val isRecurring: Boolean,
         val recurrenceType: String?,
     ) : TransactionsEvent
+
     data class ApplyFilters(val filterState: FilterState) : TransactionsEvent
     data object ClearFilters : TransactionsEvent
     data object ClearSearch : TransactionsEvent

@@ -1,13 +1,14 @@
 package com.ayush.transactions.domain.repository
 
+import androidx.paging.PagingData
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
 import kotlinx.coroutines.flow.Flow
 
 interface TransactionRepository {
-    fun getAllTransactions(): Flow<List<Transaction>>
-    fun searchTransactions(query: String): Flow<List<Transaction>>
+    fun getAllTransactions(): Flow<PagingData<Transaction>>
+    fun searchTransactions(query: String): Flow<PagingData<Transaction>>
     fun getFilteredTransactions(
         startDate: Long,
         endDate: Long,
@@ -15,7 +16,7 @@ interface TransactionRepository {
         categoryId: Long? = null,
         minAmount: Double? = null,
         maxAmount: Double? = null,
-    ): Flow<List<Transaction>>
+    ): Flow<PagingData<Transaction>>
 
     suspend fun getTransactionById(id: Long): Transaction?
     suspend fun addTransaction(

@@ -41,6 +41,8 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:ui"))
     implementation(project(":core:network"))
+    implementation(project(":core:database"))
+
 
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
