@@ -64,6 +64,7 @@ dependencies {
     implementation(project(":feature:auth"))
     implementation(project(":feature:dashboard"))
     implementation(project(":feature:dashboard:home"))
+    implementation(project(":feature:dashboard:budget"))
     implementation(project(":feature:dashboard:transactions"))
 
     implementation(libs.hilt.android)
