@@ -20,9 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -90,59 +88,52 @@ fun HomeScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(
     state: HomeState,
     onEvent: (HomeUiEvent) -> Unit,
 ) {
-    PullToRefreshBox(
-        isRefreshing = state.isRefreshing,
-        onRefresh = { onEvent(HomeUiEvent.Refresh) },
+    LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-        ) {
+        item {
+            UserDetailsRow(
+                greeting = state.userDetails.greeting,
+                name = state.userDetails.name,
+                initials = state.userDetails.initials,
+            )
+        }
+
+        item {
+            TimePeriodToggle(
+                selectedPeriod = state.selectedPeriod,
+                onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) },
+            )
+        }
+
+        if (state.isDashboardLoading) {
             item {
-                UserDetailsRow(
-                    greeting = state.userDetails.greeting,
-                    name = state.userDetails.name,
-                    initials = state.userDetails.initials,
-                )
+                DashboardShimmer()
+            }
+        } else {
+            item {
+                BalanceOverviewCard(state = state.summaryState)
             }
 
-            item {
-                TimePeriodToggle(
-                    selectedPeriod = state.selectedPeriod,
-                    onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) },
-                )
+            if (state.categorySpending.isNotEmpty()) {
+                item {
+                    SpendingByCategoryCard(spending = state.categorySpending)
+                }
             }
 
-            if (state.isDashboardLoading) {
+            if (state.recentTransactions.isNotEmpty()) {
                 item {
-                    DashboardShimmer()
-                }
-            } else {
-                item {
-                    BalanceOverviewCard(state = state.summaryState)
-                }
-
-                if (state.categorySpending.isNotEmpty()) {
-                    item {
-                        SpendingByCategoryCard(spending = state.categorySpending)
-                    }
-                }
-
-                if (state.recentTransactions.isNotEmpty()) {
-                    item {
-                        RecentTransactionsCard(
-                            transactions = state.recentTransactions,
-                            onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) },
-                        )
-                    }
+                    RecentTransactionsCard(
+                        transactions = state.recentTransactions,
+                        onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) },
+                    )
                 }
             }
         }
