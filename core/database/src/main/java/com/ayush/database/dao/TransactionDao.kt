@@ -134,12 +134,14 @@ interface TransactionDao {
 
     @Query(
         """
-        SELECT categoryId, SUM(amount) AS totalAmount
-        FROM transactions
-        WHERE type = 'expense'
-        AND date BETWEEN :startDate AND :endDate
-        AND syncStatus != 'PENDING_DELETE'
-        GROUP BY categoryId
+        SELECT t.categoryId, c.name AS categoryName, c.colorHex AS categoryColorHex,
+               SUM(t.amount) AS totalAmount
+        FROM transactions t
+        LEFT JOIN categories c ON t.categoryId = c.id
+        WHERE t.type = 'expense'
+          AND t.date BETWEEN :startDate AND :endDate
+          AND t.syncStatus != 'PENDING_DELETE'
+        GROUP BY t.categoryId
         ORDER BY totalAmount DESC
         """
     )
