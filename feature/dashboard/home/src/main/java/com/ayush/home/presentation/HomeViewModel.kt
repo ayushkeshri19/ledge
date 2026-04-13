@@ -14,8 +14,10 @@ import com.ayush.home.domain.usecase.HomeUserDetailsUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,6 +41,7 @@ class HomeViewModel @Inject constructor(
         observeDashboardData()
     }
 
+    @OptIn(FlowPreview::class)
     private fun observeDashboardData() {
         viewModelScope.launch {
             _selectedPeriod.flatMapLatest { period ->
@@ -48,7 +51,7 @@ class HomeViewModel @Inject constructor(
                     getRecentTransactionsUseCase(),
                 ) { summary, spending, recent ->
                     Triple(summary, spending, recent)
-                }
+                }.debounce(100)
             }.collect { (summary, spending, recent) ->
                 setState {
                     copy(
