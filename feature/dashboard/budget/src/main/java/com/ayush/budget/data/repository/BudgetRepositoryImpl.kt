@@ -152,10 +152,15 @@ class BudgetRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "Budget syncFromRemote: FAILED")
         }
+
+        try {
+            syncPendingBudgets()
+        } catch (e: Exception) {
+            Timber.d(e, "Budget syncPending after remote: FAILED")
+        }
     }
 
     private suspend fun syncPendingBudgets() {
-        val session = supabaseClient.auth.currentSessionOrNull() ?: return
         val pending = budgetDao.getPendingSyncBudgets()
 
         pending.forEach { entity ->
@@ -202,7 +207,8 @@ class BudgetRepositoryImpl @Inject constructor(
                         budgetDao.deleteById(entity.id)
                     }
 
-                    SyncStatus.SYNCED -> { /* nothing */
+                    SyncStatus.SYNCED -> {
+                        /** No-op */
                     }
                 }
             } catch (e: Exception) {
