@@ -65,7 +65,7 @@ fun LedgePieChart(
         if (selectedIndex != null) {
             selectedScale.snapTo(0.5f)
             selectedScale.animateTo(
-                targetValue = 1.2f,
+                targetValue = 1.3f,
                 animationSpec = spring(
                     dampingRatio = Spring.DampingRatioHighBouncy,
                     stiffness = Spring.StiffnessHigh
@@ -132,16 +132,18 @@ fun LedgePieChart(
 
             val progress = animationProgress.value
             var currentAngle = -90f
+            val gapAngle = if (segments.size > 1) 2.5f else 0f
 
             segments.forEachIndexed { index, segment ->
-
-            val sweep = proportions[index] * 360f * progress
+                val fullSweep = proportions[index] * 360f * progress
+                val sweep = (fullSweep - gapAngle).coerceAtLeast(0f)
+                val startAngle = currentAngle + gapAngle / 2f
                 val isSelected = index == selectedIndex
 
                 if (isSelected) {
                     drawArc(
                         color = segment.color.copy(alpha = 0.3f),
-                        startAngle = currentAngle,
+                        startAngle = startAngle,
                         sweepAngle = sweep,
                         useCenter = false,
                         topLeft = topLeft,
@@ -155,7 +157,7 @@ fun LedgePieChart(
 
                 drawArc(
                     color = segment.color,
-                    startAngle = currentAngle,
+                    startAngle = startAngle,
                     sweepAngle = sweep,
                     useCenter = false,
                     topLeft = topLeft,
@@ -166,7 +168,7 @@ fun LedgePieChart(
                     ),
                 )
 
-                currentAngle += sweep
+                currentAngle += fullSweep
             }
         }
         centerContent?.invoke()
