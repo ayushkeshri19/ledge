@@ -83,7 +83,6 @@ private fun BudgetContent(
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // Header
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -165,7 +164,6 @@ private fun BudgetContent(
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    // Overall budget
                     state.overallBudget?.let { overall ->
                         item(key = "overall") {
                             OverallBudgetCard(
@@ -175,7 +173,6 @@ private fun BudgetContent(
                         }
                     }
 
-                    // Section header
                     if (state.categoryBudgets.isNotEmpty()) {
                         item(key = "header") {
                             Text(
@@ -201,7 +198,6 @@ private fun BudgetContent(
         }
     }
 
-    // Bottom sheet
     if (state.showSheet) {
         ModalBottomSheet(
             onDismissRequest = { onEvent(BudgetEvent.DismissSheet) },
@@ -304,7 +300,6 @@ private fun CategoryBudgetCard(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // Category color dot
         Box(
             modifier = Modifier
                 .size(10.dp)

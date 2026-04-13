@@ -2,6 +2,7 @@ package com.ayush.database.di
 
 import android.content.Context
 import androidx.room.Room
+import com.ayush.common.notification.BudgetNotificationHelper
 import com.ayush.database.LedgeDatabase
 import com.ayush.database.dao.BudgetDao
 import com.ayush.database.dao.CategoryDao
@@ -40,5 +41,13 @@ object DatabaseModule {
     @Provides
     fun providesBudgetDao(database: LedgeDatabase): BudgetDao {
         return database.budgetDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBudgetNotificationHelper(
+        @ApplicationContext context: Context,
+    ): BudgetNotificationHelper {
+        return BudgetNotificationHelper(context)
     }
 }

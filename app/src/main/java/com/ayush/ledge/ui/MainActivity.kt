@@ -1,10 +1,15 @@
 package com.ayush.ledge.ui
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.deeplink.DeepLinkHandler
@@ -25,9 +30,25 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         deepLinkHandler.handle(intent)
         enableEdgeToEdge()
+        requestNotificationPermission()
         setContent {
             LedgeTheme {
                 LedgeNavGraph()
+            }
+        }
+    }
+
+    private fun requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                    100,
+                )
             }
         }
     }

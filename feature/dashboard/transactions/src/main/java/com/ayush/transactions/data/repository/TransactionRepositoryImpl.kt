@@ -11,7 +11,11 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import com.ayush.common.notification.BudgetNotificationHelper
 import com.ayush.common.utils.Workers
+import com.ayush.common.utils.endOfDay
+import com.ayush.common.utils.startOfDay
+import com.ayush.database.dao.BudgetDao
 import com.ayush.database.dao.CategoryDao
 import com.ayush.database.dao.TransactionDao
 import com.ayush.database.data.DefaultCategories
@@ -32,6 +36,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.Calendar
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -40,9 +45,11 @@ import javax.inject.Singleton
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDao,
     private val categoryDao: CategoryDao,
+    private val budgetDao: BudgetDao,
     private val supabaseDataSource: SupabaseTransactionDataSource,
     private val supabaseClient: SupabaseClient,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val budgetNotificationHelper: BudgetNotificationHelper,
 ) : TransactionRepository {
 
     companion object {
@@ -131,6 +138,7 @@ class TransactionRepositoryImpl @Inject constructor(
             )
         )
         enqueueSync()
+        checkBudgetAlerts()
         localId
     }
 
@@ -164,6 +172,7 @@ class TransactionRepositoryImpl @Inject constructor(
                 )
             )
             enqueueSync()
+            checkBudgetAlerts()
         }
     }
 
@@ -228,6 +237,58 @@ class TransactionRepositoryImpl @Inject constructor(
 
     private fun currentUserId(): String {
         return supabaseClient.auth.currentSessionOrNull()?.user?.id ?: ""
+    }
+
+    private suspend fun checkBudgetAlerts() {
+        try {
+            val (monthStart, monthEnd) = currentMonthRange()
+            val budgets = budgetDao.getAllBudgetsSnapshot()
+            if (budgets.isEmpty()) return
+
+            val categorySpending = transactionDao.getExpensesByCategory(monthStart, monthEnd)
+            val totalSpent = transactionDao.getTotalByTypeAndDateRange("expense", monthStart, monthEnd) ?: 0.0
+
+            budgets.forEach { budget ->
+                val spent = if (budget.categoryId == null) {
+                    totalSpent
+                } else {
+                    categorySpending.find { it.categoryId == budget.categoryId }?.totalAmount ?: 0.0
+                }
+
+                val ratio = if (budget.amount > 0) spent / budget.amount else 0.0
+                val threshold = budget.warningThreshold / 100.0
+                val categoryName = budget.categoryId?.let { categoryDao.getCategoryById(it)?.name }
+
+                when {
+                    ratio >= 1.0 -> budgetNotificationHelper.notifyExceeded(
+                        budgetId = budget.id,
+                        categoryName = categoryName,
+                        overBy = spent - budget.amount,
+                        limit = budget.amount,
+                    )
+
+                    ratio >= threshold -> budgetNotificationHelper.notifyWarning(
+                        budgetId = budget.id,
+                        categoryName = categoryName,
+                        thresholdPercent = budget.warningThreshold,
+                        spent = spent,
+                        limit = budget.amount,
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Timber.d(e, "checkBudgetAlerts failed")
+        }
+    }
+
+    private fun currentMonthRange(): Pair<Long, Long> {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.DAY_OF_MONTH, 1)
+        cal.startOfDay()
+        val start = cal.timeInMillis
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+        cal.endOfDay()
+        return Pair(start, cal.timeInMillis)
     }
 
     private fun enqueueSync() {
