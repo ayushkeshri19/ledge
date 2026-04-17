@@ -27,9 +27,9 @@ class MainActivity : ComponentActivity() {
     lateinit var authStateProvider: AuthStateProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         deepLinkHandler.handle(intent)
-        enableEdgeToEdge()
         requestNotificationPermission()
         setContent {
             LedgeTheme {

@@ -18,7 +18,7 @@ class GoogleIdTokenProvider(
 ) {
 
     suspend fun getIdToken(activity: Activity): Result<Pair<String, String>> = withContext(Dispatchers.Main.immediate) {
-        runCatching {
+        try {
             val rawNonce = ByteArray(32).also { SecureRandom().nextBytes(it) }
                 .joinToString("") { "%02x".format(it) }
             val hashedNonce = MessageDigest.getInstance("SHA-256")
@@ -38,13 +38,13 @@ class GoogleIdTokenProvider(
 
             val result = credentialManager.getCredential(activity, request)
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
-            Pair(googleIdTokenCredential.idToken, rawNonce)
-        }.recover { e ->
-            when (e) {
-                is GetCredentialCancellationException -> throw Exception("Sign-in cancelled")
-                is NoCredentialException -> throw Exception("No Google account found on this device")
-                else -> throw Exception("Google sign-in failed. Please try again.")
-            }
+            Result.success(Pair(googleIdTokenCredential.idToken, rawNonce))
+        } catch (e: GetCredentialCancellationException) {
+            Result.failure(Exception("Sign-in cancelled"))
+        } catch (e: NoCredentialException) {
+            Result.failure(Exception("No Google account found on this device"))
+        } catch (e: Exception) {
+            Result.failure(Exception("Google sign-in failed. Please try again."))
         }
     }
 }
