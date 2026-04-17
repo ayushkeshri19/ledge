@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.deeplink.DeepLinkHandler
 import com.ayush.ui.theme.LedgeTheme
+import com.ayush.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -36,7 +37,7 @@ class MainActivity : ComponentActivity() {
         deepLinkHandler.handle(intent)
         requestNotificationPermission()
         setContent {
-            LedgeTheme {
+            LedgeTheme(themeMode = ThemeMode.LIGHT) {
                 LedgeNavGraph()
             }
         }
