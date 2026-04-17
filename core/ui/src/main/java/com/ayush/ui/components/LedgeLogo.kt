@@ -28,7 +28,7 @@ fun LedgeLogo(
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Box(
@@ -38,7 +38,7 @@ fun LedgeLogo(
                         brush = Brush.radialGradient(
                             colors = listOf(colors.goldGlow, Color.Transparent),
                         ),
-                        shape = RoundedCornerShape(50),
+                        shape = RoundedCornerShape(50)
                     )
             )
             Box(
@@ -46,15 +46,15 @@ fun LedgeLogo(
                     .size(52.dp)
                     .background(colors.bgCard2, RoundedCornerShape(16.dp))
                     .border(1.dp, colors.borderFocus, RoundedCornerShape(16.dp)),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = "L",
                     style = LedgeTextStyle.HeadingScreen.copy(
                         fontFamily = DmSerifFontFamily,
                         fontSize = 28.sp,
-                        color = colors.gold,
-                    ),
+                        color = colors.gold
+                    )
                 )
             }
         }
@@ -63,18 +63,16 @@ fun LedgeLogo(
             text = "Ledge",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 26.sp,
-                color = colors.textPrimary,
-            ),
+                color = colors.textPrimary
+            )
         )
 
         if (subtitle != null) {
             Text(
                 text = subtitle,
-                style = LedgeTextStyle.LabelCaps.copy(
-                    fontSize = 9.sp,
-                    color = colors.gold,
-                    letterSpacing = 2.5.sp,
-                ),
+                style = LedgeTextStyle.Caption.copy(
+                    color = colors.textMuted2
+                )
             )
         }
     }

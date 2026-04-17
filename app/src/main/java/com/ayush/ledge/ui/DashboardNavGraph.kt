@@ -35,7 +35,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.budget.presentation.BudgetScreen
 import com.ayush.home.presentation.HomeScreen
-import com.ayush.insights.InsightsScreen
+import com.ayush.insights.presentation.InsightsScreen
 import com.ayush.transactions.presentation.AddTransactionScreen
 import com.ayush.ui.R
 import com.ayush.ui.components.FabButton
@@ -75,7 +75,7 @@ sealed interface DashboardBottomNavItems {
     @Serializable
     data object Insights : DashboardBottomNavItems {
         override val label: String get() = "Insights"
-        override val icon: Int get() = R.drawable.ic_more
+        override val icon: Int get() = R.drawable.ic_insights
         override val route: DashboardRoute get() = DashboardRoute.Insights
     }
 
