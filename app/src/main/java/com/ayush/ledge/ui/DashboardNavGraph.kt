@@ -142,7 +142,6 @@ internal fun DashboardNavGraph(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
                 .padding(if (showBottomBar) padding else PaddingValues())
         ) {
             NavDisplay(
@@ -280,6 +279,7 @@ private fun MoreScreen(onSignOut: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,6 +46,7 @@ fun LedgeAuthScaffold(
         Column(
             modifier = modifier
                 .fillMaxSize()
+                .safeDrawingPadding()
                 .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             content = content,

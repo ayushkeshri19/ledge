@@ -3,9 +3,11 @@ package com.ayush.ledge.ui
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.core.app.ActivityCompat
@@ -27,7 +29,9 @@ class MainActivity : ComponentActivity() {
     lateinit var authStateProvider: AuthStateProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         super.onCreate(savedInstanceState)
         deepLinkHandler.handle(intent)
         requestNotificationPermission()
@@ -47,7 +51,7 @@ class MainActivity : ComponentActivity() {
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    100,
+                    100
                 )
             }
         }

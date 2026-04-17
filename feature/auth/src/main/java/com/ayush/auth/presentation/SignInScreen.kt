@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.auth.di.GoogleSignInProviderEntryPoint
 import com.ayush.auth.domain.usecase.AuthEligibilityResult
@@ -53,7 +52,7 @@ import dagger.hilt.android.EntryPointAccessors
 
 @Composable
 fun SignInScreen(
-    viewModel: AuthViewModel = hiltViewModel(),
+    viewModel: AuthViewModel,
     onAuthSuccess: () -> Unit = {},
     onNavigateToSignUp: () -> Unit = {},
     onForgotPassword: () -> Unit = {},
