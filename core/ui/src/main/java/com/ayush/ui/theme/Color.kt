@@ -51,3 +51,53 @@ val LedgeMd3OnErrorContainer = SemanticRed
 
 val LedgeMd3Outline = BorderSubtle
 val LedgeMd3OutlineVariant = BorderMid
+
+val BgDeepLight = Color(0xFFF4EFE6)
+val BgSurfaceLight = Color(0xFFFAF6ED)
+val BgCardLight = Color(0xFFFFFFFF)
+val BgCard2Light = Color(0xFFF9F4EA)
+val BgSheetLight = Color(0xFFFBF7EE)
+
+val BorderSubtleLight = Color(0x14000000)
+val BorderMidLight = Color(0x24000000)
+val BorderFocusLight = Color(0x66C9A84C)
+
+val GoldAccentLight = Color(0xFFB8922F)
+val GoldDimLight = Color(0x29C9A84C)
+val GoldGlowLight = Color(0x40C9A84C)
+
+val SemanticGreenLight = Color(0xFF1F9271)
+val SemanticRedLight = Color(0xFFC23B3B)
+val SemanticBlueLight = Color(0xFF3B6FD4)
+val SemanticPurpleLight = Color(0xFF7A52B2)
+
+val GreenDimLight = Color(0x1F1F9271)
+val RedDimLight = Color(0x1FC23B3B)
+val BlueDimLight = Color(0x1F3B6FD4)
+val PurpleDimLight = Color(0x1F7A52B2)
+
+val TextPrimaryLight = Color(0xFF1A1712)
+val TextMutedLight = Color(0x591A1712)
+val TextMuted2Light = Color(0x8C1A1712)
+val TextMuted3Light = Color(0xB31A1712)
+
+val LedgeMd3PrimaryLight = Gold
+val LedgeMd3OnPrimaryLight = TextPrimaryLight
+val LedgeMd3PrimaryContainerLight = GoldDimLight
+val LedgeMd3OnPrimaryContainerLight = GoldAccentLight
+
+val LedgeMd3BackgroundLight = BgDeepLight
+val LedgeMd3OnBackgroundLight = TextPrimaryLight
+val LedgeMd3SurfaceLight = BgSurfaceLight
+val LedgeMd3OnSurfaceLight = TextPrimaryLight
+val LedgeMd3SurfaceVariantLight = BgCardLight
+val LedgeMd3OnSurfaceVariantLight = TextMuted2Light
+
+val LedgeMd3ErrorLight = SemanticRedLight
+
+val LedgeMd3OnErrorLight = BgDeepLight
+val LedgeMd3ErrorContainerLight = RedDimLight
+val LedgeMd3OnErrorContainerLight = SemanticRedLight
+
+val LedgeMd3OutlineLight = BorderSubtleLight
+val LedgeMd3OutlineVariantLight = BorderMidLight

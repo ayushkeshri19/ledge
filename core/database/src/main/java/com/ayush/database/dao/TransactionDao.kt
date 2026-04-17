@@ -156,8 +156,6 @@ interface TransactionDao {
     )
     suspend fun getRecentTransactions(limit: Int): List<TransactionWithCategory>
 
-    // ─── Flow variants for reactive dashboard ───
-
     @Query(
         """
         SELECT SUM(amount) FROM transactions
