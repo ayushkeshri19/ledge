@@ -10,6 +10,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.ayush.common.theme.ThemeMode
 
 private val LedgeDarkColorScheme = darkColorScheme(
     primary = LedgeMd3Primary,

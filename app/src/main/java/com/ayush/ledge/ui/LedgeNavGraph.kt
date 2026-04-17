@@ -81,9 +81,9 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
             }
 
             entry<LedgeRoute.Profile> {
-                UserProfileScreen {
-                    backStack.remove(LedgeRoute.Profile)
-                }
+                UserProfileScreen(
+                    onBack = { backStack.remove(LedgeRoute.Profile) }
+                )
             }
         },
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }

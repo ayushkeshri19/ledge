@@ -10,13 +10,15 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.deeplink.DeepLinkHandler
 import com.ayush.ui.theme.LedgeTheme
-import com.ayush.ui.theme.ThemeMode
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -29,6 +31,8 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var authStateProvider: AuthStateProvider
 
+    private val mainViewModel: MainViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
@@ -37,8 +41,9 @@ class MainActivity : ComponentActivity() {
         deepLinkHandler.handle(intent)
         requestNotificationPermission()
         setContent {
-            LedgeTheme(themeMode = ThemeMode.LIGHT) {
-                LedgeNavGraph()
+            val themeMode by mainViewModel.themeMode.collectAsStateWithLifecycle()
+            LedgeTheme(themeMode = themeMode) {
+                LedgeNavGraph(mainViewModel = mainViewModel)
             }
         }
     }

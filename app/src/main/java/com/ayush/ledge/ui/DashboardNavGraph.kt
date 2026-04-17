@@ -2,8 +2,6 @@ package com.ayush.ledge.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +28,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,6 +43,7 @@ import com.ayush.home.presentation.HomeScreen
 import com.ayush.transactions.presentation.AddTransactionScreen
 import com.ayush.ui.R
 import com.ayush.ui.components.FabButton
+import com.ayush.ui.components.noRippleClickable
 import com.ayush.ui.theme.LedgeTheme
 import com.ayush.ui.theme.NavLabelStyle
 import kotlinx.serialization.Serializable
@@ -169,14 +167,14 @@ private fun LedgeBottomBar(
     selectedTab: DashboardBottomNavItems,
     onTabSelected: (DashboardBottomNavItems) -> Unit,
     onFabClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val leftTabs = DashboardBottomNavItems.items.take(2)
     val rightTabs = DashboardBottomNavItems.items.drop(2)
 
     Box(
         modifier = modifier.fillMaxWidth(),
-        contentAlignment = Alignment.BottomCenter,
+        contentAlignment = Alignment.BottomCenter
     ) {
         val colors = LedgeTheme.colors
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -185,7 +183,7 @@ private fun LedgeBottomBar(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(colors.bgSurface.copy(alpha = 0.95f)),
+                    .background(colors.bgSurface.copy(alpha = 0.95f))
             ) {
                 Row(
                     modifier = Modifier
@@ -193,14 +191,14 @@ private fun LedgeBottomBar(
                         .navigationBarsPadding()
                         .padding(top = 14.dp, bottom = 10.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.Top,
+                    verticalAlignment = Alignment.Top
                 ) {
                     leftTabs.forEach { tab ->
                         BottomNavItem(
                             tab = tab,
                             isSelected = selectedTab == tab,
                             onClick = { onTabSelected(tab) },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1f)
                         )
                     }
 
@@ -208,7 +206,7 @@ private fun LedgeBottomBar(
                         onClick = onFabClick,
                         modifier = Modifier
                             .weight(1f)
-                            .offset(y = (-30).dp),
+                            .offset(y = (-40).dp)
                     )
 
                     rightTabs.forEach { tab ->
@@ -216,7 +214,7 @@ private fun LedgeBottomBar(
                             tab = tab,
                             isSelected = selectedTab == tab,
                             onClick = { onTabSelected(tab) },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 }
@@ -230,7 +228,7 @@ private fun BottomNavItem(
     tab: DashboardBottomNavItems,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val colors = LedgeTheme.colors
     val tintColor = if (isSelected) colors.gold else colors.textMuted
@@ -238,14 +236,10 @@ private fun BottomNavItem(
     Column(
         modifier = modifier
             .clip(RoundedCornerShape(14.dp))
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-                onClick = onClick,
-            )
+            .noRippleClickable(onClick = onClick)
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Box(
             modifier = Modifier
@@ -254,14 +248,14 @@ private fun BottomNavItem(
                 .background(
                     color = if (isSelected) colors.gold else Color.Transparent,
                     shape = RoundedCornerShape(2.dp),
-                ),
+                )
         )
 
         Icon(
             painter = painterResource(id = tab.icon),
             contentDescription = tab.label,
             tint = tintColor,
-            modifier = Modifier.size(22.dp),
+            modifier = Modifier.size(22.dp)
         )
 
         Text(
@@ -280,12 +274,12 @@ private fun MoreScreen(onSignOut: () -> Unit) {
             .statusBarsPadding()
             .padding(24.dp),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "More",
             style = MaterialTheme.typography.headlineLarge,
-            color = LedgeTheme.colors.textPrimary,
+            color = LedgeTheme.colors.textPrimary
         )
 
         Spacer(Modifier.height(32.dp))
@@ -293,12 +287,12 @@ private fun MoreScreen(onSignOut: () -> Unit) {
         OutlinedButton(onClick = onSignOut) {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.Logout,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.primary
                 )
                 Text("Sign Out")
             }

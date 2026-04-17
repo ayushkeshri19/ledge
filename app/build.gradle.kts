@@ -60,6 +60,7 @@ dependencies {
     implementation(project(":core:ui"))
 
     implementation(project(":core:database"))
+    implementation(project(":core:datastore"))
 
     implementation(project(":feature:auth"))
     implementation(project(":feature:profile"))
