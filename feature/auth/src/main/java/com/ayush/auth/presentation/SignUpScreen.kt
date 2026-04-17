@@ -163,9 +163,7 @@ internal fun SignUpScreenContent(
         derivedStateOf { computePasswordStrength(uiState.password) }
     }
 
-    LedgeAuthScaffold(
-        modifier = modifier.verticalScroll(rememberScrollState()),
-    ) {
+    LedgeAuthScaffold(modifier = modifier.verticalScroll(rememberScrollState())) {
 
         Spacer(Modifier.height(48.dp))
 
@@ -177,15 +175,15 @@ internal fun SignUpScreenContent(
             text = "Create account",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 24.sp,
-                color = TextPrimary,
+                color = TextPrimary
             ),
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(6.dp))
         Text(
             text = "Start managing your finances",
             style = LedgeTextStyle.BodySmall.copy(color = TextMuted2),
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Center
         )
 
         Spacer(Modifier.height(28.dp))
@@ -203,7 +201,7 @@ internal fun SignUpScreenContent(
             ),
             keyboardActions = KeyboardActions(
                 onNext = { emailFocus.requestFocus() }
-            ),
+            )
         )
 
         Spacer(Modifier.height(14.dp))
@@ -222,7 +220,7 @@ internal fun SignUpScreenContent(
             keyboardActions = KeyboardActions(
                 onNext = { passwordFocus.requestFocus() }
             ),
-            modifier = Modifier.focusRequester(emailFocus),
+            modifier = Modifier.focusRequester(emailFocus)
         )
 
         Spacer(Modifier.height(14.dp))
@@ -237,7 +235,7 @@ internal fun SignUpScreenContent(
             keyboardActions = KeyboardActions(
                 onNext = { confirmFocus.requestFocus() }
             ),
-            modifier = Modifier.focusRequester(passwordFocus),
+            modifier = Modifier.focusRequester(passwordFocus)
         )
         if (uiState.password.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
@@ -257,7 +255,7 @@ internal fun SignUpScreenContent(
             keyboardActions = KeyboardActions(
                 onDone = { focusManager.clearFocus(); onSubmit() }
             ),
-            modifier = Modifier.focusRequester(confirmFocus),
+            modifier = Modifier.focusRequester(confirmFocus)
         )
 
         Spacer(Modifier.height(24.dp))
@@ -266,7 +264,7 @@ internal fun SignUpScreenContent(
             text = "Create account",
             enabled = ctaEnabled,
             isLoading = uiState.isLoading,
-            onClick = { focusManager.clearFocus(); onSubmit() },
+            onClick = { focusManager.clearFocus(); onSubmit() }
         )
 
         Spacer(Modifier.height(24.dp))
@@ -279,7 +277,7 @@ internal fun SignUpScreenContent(
             iconPainter = painterResource(com.ayush.ui.R.drawable.ic_google),
             label = "Sign up with Google",
             onClick = onGoogleClicked,
-            isLoading = uiState.isGoogleLoading,
+            isLoading = uiState.isGoogleLoading
         )
 
         Spacer(Modifier.height(28.dp))
@@ -287,15 +285,15 @@ internal fun SignUpScreenContent(
         Row(
             modifier = Modifier.padding(bottom = 40.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Already have an account? ",
-                style = LedgeTextStyle.BodySmall.copy(color = TextMuted2),
+                style = LedgeTextStyle.BodySmall.copy(color = TextMuted2)
             )
             LedgeTextLink(
                 text = "Sign in",
-                onClick = onNavigateToSignIn,
+                onClick = onNavigateToSignIn
             )
         }
     }
@@ -319,7 +317,7 @@ private fun PasswordStrengthBar(
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         ) {
             repeat(4) { index ->
                 Box(
@@ -340,7 +338,7 @@ private fun PasswordStrengthBar(
             Text(
                 text = labels[strength - 1],
                 style = LedgeTextStyle.Caption.copy(color = activeColor, fontSize = 9.sp),
-                modifier = Modifier.align(Alignment.End),
+                modifier = Modifier.align(Alignment.End)
             )
         }
     }

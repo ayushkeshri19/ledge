@@ -107,7 +107,7 @@ private fun HomeContent(state: HomeState) {
             .fillMaxSize()
             .statusBarsPadding(),
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             UserDetailsRow(
@@ -121,7 +121,7 @@ private fun HomeContent(state: HomeState) {
         item {
             TimePeriodToggle(
                 selectedPeriod = state.selectedPeriod,
-                onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) },
+                onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) }
             )
         }
 
@@ -144,7 +144,7 @@ private fun HomeContent(state: HomeState) {
                 item {
                     RecentTransactionsCard(
                         transactions = state.recentTransactions,
-                        onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) },
+                        onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) }
                     )
                 }
             }
@@ -162,7 +162,7 @@ private fun TimePeriodToggle(
             SegmentOption(
                 value = period,
                 label = period.label,
-                selectedColor = Gold,
+                selectedColor = Gold
             )
         }
     }
@@ -170,7 +170,7 @@ private fun TimePeriodToggle(
     LedgeSegmentedToggle(
         options = options,
         selectedValue = selectedPeriod,
-        onSelect = onPeriodChanged,
+        onSelect = onPeriodChanged
     )
 }
 
@@ -181,72 +181,72 @@ private fun BalanceOverviewCard(state: SummaryState) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(BgCard)
-            .padding(20.dp),
+            .padding(20.dp)
     ) {
         Text(
             text = "NET BALANCE",
             style = LedgeTextStyle.LabelCaps,
-            color = TextMuted,
+            color = TextMuted
         )
         Spacer(Modifier.height(4.dp))
         AnimatedAmount(
             targetAmount = state.netBalance,
             style = LedgeTextStyle.BalanceHero,
-            color = if (state.netBalance >= 0) Gold else SemanticRed,
+            color = if (state.netBalance >= 0) Gold else SemanticRed
         )
         Spacer(Modifier.height(16.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(SemanticGreen),
+                            .background(SemanticGreen)
                     )
                     Text(
                         text = "INCOME",
                         style = LedgeTextStyle.LabelCaps,
-                        color = TextMuted,
+                        color = TextMuted
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = "+\u20B9${formatAmount(state.totalIncome)}",
                     style = LedgeTextStyle.AmountMedium,
-                    color = SemanticGreen,
+                    color = SemanticGreen
                 )
             }
 
             Column(horizontalAlignment = Alignment.End) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Box(
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(SemanticRed),
+                            .background(SemanticRed)
                     )
                     Text(
                         text = "EXPENSE",
                         style = LedgeTextStyle.LabelCaps,
-                        color = TextMuted,
+                        color = TextMuted
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = "-\u20B9${formatAmount(state.totalExpense)}",
                     style = LedgeTextStyle.AmountMedium,
-                    color = SemanticRed,
+                    color = SemanticRed
                 )
             }
         }
@@ -262,12 +262,12 @@ private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(BgCard)
-            .padding(20.dp),
+            .padding(20.dp)
     ) {
         Text(
             text = "Spending by Category",
             style = LedgeTextStyle.HeadingCard,
-            color = TextPrimary,
+            color = TextPrimary
         )
         Spacer(Modifier.height(16.dp))
 
@@ -276,14 +276,14 @@ private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             LedgePieChart(
                 segments = spending.map { cat ->
                     PieChartSegment(
                         value = cat.amount.toFloat(),
                         color = cat.color,
-                        label = cat.categoryName,
+                        label = cat.categoryName
                     )
                 },
                 modifier = Modifier.size(180.dp),
@@ -297,15 +297,15 @@ private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
                         Text(
                             text = "TOTAL",
                             style = LedgeTextStyle.LabelCaps,
-                            color = TextMuted,
+                            color = TextMuted
                         )
                         Text(
                             text = "\u20B9${formatAmount(totalExpense)}",
                             style = LedgeTextStyle.AmountLarge,
-                            color = TextPrimary,
+                            color = TextPrimary
                         )
                     }
-                },
+                }
             )
         }
 
@@ -325,31 +325,31 @@ private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
                         selectedIndex = if (selectedIndex == index) null else index
                     }
                     .padding(vertical = 8.dp, horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
                     modifier = Modifier
                         .size(10.dp)
                         .clip(CircleShape)
-                        .background(category.color),
+                        .background(category.color)
                 )
                 Spacer(Modifier.width(10.dp))
                 Text(
                     text = category.categoryName,
                     style = LedgeTextStyle.BodySmall,
                     color = if (isSelected) TextPrimary else TextMuted2,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "\u20B9${formatAmount(category.amount)}",
                     style = LedgeTextStyle.BodySmall,
-                    color = if (isSelected) TextPrimary else TextMuted2,
+                    color = if (isSelected) TextPrimary else TextMuted2
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = "${(category.percentage * 100).toInt()}%",
                     style = LedgeTextStyle.Caption,
-                    color = TextMuted,
+                    color = TextMuted
                 )
             }
         }
@@ -366,17 +366,17 @@ private fun RecentTransactionsCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(BgCard)
-            .padding(20.dp),
+            .padding(20.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = "Recent Transactions",
                 style = LedgeTextStyle.HeadingCard,
-                color = TextPrimary,
+                color = TextPrimary
             )
             Text(
                 text = "See all",
@@ -385,7 +385,7 @@ private fun RecentTransactionsCard(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
                     .clickable(onClick = onSeeAll)
-                    .padding(4.dp),
+                    .padding(4.dp)
             )
         }
         Spacer(Modifier.height(12.dp))
@@ -424,7 +424,7 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
 
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
@@ -433,13 +433,13 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
                 .background(
                     (transaction.categoryColor ?: TextMuted).copy(alpha = 0.12f)
                 ),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
                     .size(10.dp)
                     .clip(CircleShape)
-                    .background(transaction.categoryColor ?: TextMuted),
+                    .background(transaction.categoryColor ?: TextMuted)
             )
         }
 
@@ -451,25 +451,25 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
                 style = LedgeTextStyle.HeadingCard,
                 color = TextPrimary,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                overflow = TextOverflow.Ellipsis
             )
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 transaction.categoryName?.let { name ->
                     Text(
                         text = name,
                         style = LedgeTextStyle.Caption,
-                        color = TextMuted,
+                        color = TextMuted
                     )
                     Text(
                         text = "\u00B7",
                         style = LedgeTextStyle.Caption,
-                        color = TextMuted,
+                        color = TextMuted
                     )
                 }
                 Text(
                     text = formatDate(transaction.date),
                     style = LedgeTextStyle.Caption,
-                    color = TextMuted,
+                    color = TextMuted
                 )
             }
         }
@@ -479,7 +479,7 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
         Text(
             text = "$amountPrefix\u20B9${formatAmount(transaction.amount)}",
             style = LedgeTextStyle.AmountMono,
-            color = amountColor,
+            color = amountColor
         )
     }
 }
@@ -496,20 +496,20 @@ private fun UserDetailsRow(
             .fillMaxWidth()
             .padding(top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(
                 text = "$greeting,",
                 color = TextMuted,
-                style = LedgeTextStyle.BodySmall,
+                style = LedgeTextStyle.BodySmall
             )
             Text(
                 text = name,
                 color = TextPrimary,
-                style = LedgeTextStyle.HeadingScreen,
+                style = LedgeTextStyle.HeadingScreen
             )
         }
 
@@ -541,14 +541,14 @@ private fun UserProfile(
                 .size(48.dp)
                 .clip(CircleShape)
                 .background(GoldGlow),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
                     .background(BgCard),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 Box(
                     modifier = Modifier
@@ -560,11 +560,11 @@ private fun UserProfile(
                                 start = Offset.Zero,
                                 end = Offset(
                                     Float.POSITIVE_INFINITY,
-                                    Float.POSITIVE_INFINITY,
+                                    Float.POSITIVE_INFINITY
                                 ),
                             ),
                         ),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = initials,
@@ -572,7 +572,7 @@ private fun UserProfile(
                         style = TextStyle(
                             fontFamily = DmSansFontFamily,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
+                            fontSize = 15.sp
                         ),
                     )
                 }
@@ -587,7 +587,7 @@ private fun UserProfile(
                     .background(BgSurface)
                     .padding(2.dp)
                     .clip(CircleShape)
-                    .background(Gold),
+                    .background(Gold)
             )
         }
     }

@@ -41,12 +41,14 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -85,6 +87,8 @@ import com.ayush.ui.theme.TextMuted2
 import com.ayush.ui.theme.TextPrimary
 import kotlinx.coroutines.launch
 
+private val LocalEventSink = staticCompositionLocalOf<(TransactionsEvent) -> Unit> { error { } }
+
 @Composable
 fun TransactionsScreen() {
     val viewModel: TransactionsViewModel = hiltViewModel()
@@ -92,27 +96,27 @@ fun TransactionsScreen() {
     val lazyPagingItems = viewModel.transactionsPagingFlow.collectAsLazyPagingItems()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.sideEffect.collect { effect ->
-            when (effect) {
-                is TransactionsSideEffect.ShowToast -> effect.message.toast(context)
+    CompositionLocalProvider(LocalEventSink provides viewModel::onEvent) {
+        LaunchedEffect(Unit) {
+            viewModel.sideEffect.collect { effect ->
+                when (effect) {
+                    is TransactionsSideEffect.ShowToast -> effect.message.toast(context)
+                }
             }
         }
-    }
 
-    TransactionsContent(
-        state = state,
-        lazyPagingItems = lazyPagingItems,
-        onEvent = viewModel::onEvent,
-    )
+        TransactionsContent(
+            state = state,
+            lazyPagingItems = lazyPagingItems
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun TransactionsContent(
     state: TransactionsState,
-    lazyPagingItems: LazyPagingItems<TransactionListItem>,
-    onEvent: (TransactionsEvent) -> Unit,
+    lazyPagingItems: LazyPagingItems<TransactionListItem>
 ) {
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
     var transactionToEdit by remember { mutableStateOf<Transaction?>(null) }
@@ -128,6 +132,8 @@ private fun TransactionsContent(
     val isEmpty = lazyPagingItems.itemCount == 0
             && lazyPagingItems.loadState.refresh is LoadState.NotLoading
 
+    val onEvent = LocalEventSink.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -142,12 +148,12 @@ private fun TransactionsContent(
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 8.dp, top = 16.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = "Transactions",
                 style = LedgeTextStyle.HeadingScreen,
-                color = TextPrimary,
+                color = TextPrimary
             )
             Box {
                 IconButton(
@@ -160,7 +166,7 @@ private fun TransactionsContent(
                         Icons.Filled.Tune,
                         contentDescription = "Filter",
                         tint = if (state.filterState.isActive) Gold else TextMuted,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(22.dp)
                     )
                 }
                 if (state.filterState.isActive) {
@@ -170,11 +176,11 @@ private fun TransactionsContent(
                             .clip(CircleShape)
                             .background(Gold)
                             .align(Alignment.TopEnd),
-                        contentAlignment = Alignment.Center,
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = state.filterState.activeCount.toString(),
-                            style = LedgeTextStyle.Caption.copy(color = BgDeep),
+                            style = LedgeTextStyle.Caption.copy(color = BgDeep)
                         )
                     }
                 }
@@ -190,7 +196,7 @@ private fun TransactionsContent(
                 Icon(
                     Icons.Filled.Search,
                     contentDescription = null,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(20.dp)
                 )
             },
             trailingIcon = if (state.searchQuery.isNotEmpty()) {
@@ -199,20 +205,20 @@ private fun TransactionsContent(
                         Icon(
                             Icons.Filled.Close,
                             contentDescription = "Clear",
-                            modifier = Modifier.size(18.dp),
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
             } else null,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp)
         )
 
         if (state.filterState.isActive) {
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 state.filterState.type?.let { type ->
                     item {
@@ -220,7 +226,7 @@ private fun TransactionsContent(
                             label = type.name.lowercase().replaceFirstChar { it.uppercase() },
                             onRemove = {
                                 onEvent(TransactionsEvent.ApplyFilters(state.filterState.copy(type = null)))
-                            },
+                            }
                         )
                     }
                 }
@@ -234,7 +240,7 @@ private fun TransactionsContent(
                                         state.filterState.copy(dateRange = DateRangeOption.ALL_TIME),
                                     ),
                                 )
-                            },
+                            }
                         )
                     }
                 }
@@ -248,7 +254,7 @@ private fun TransactionsContent(
                                         state.filterState.copy(categoryId = null, categoryName = null),
                                     ),
                                 )
-                            },
+                            }
                         )
                     }
                 }
@@ -260,12 +266,12 @@ private fun TransactionsContent(
                                 .background(BgSurface)
                                 .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.pill))
                                 .clickable { onEvent(TransactionsEvent.ClearFilters) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(
                                 text = "Clear all",
                                 style = LedgeTextStyle.Caption,
-                                color = TextMuted,
+                                color = TextMuted
                             )
                         }
                     }
@@ -279,12 +285,12 @@ private fun TransactionsContent(
             isInitialLoad || state.isSyncing -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     CircularProgressIndicator(
                         color = Gold,
                         modifier = Modifier.size(32.dp),
-                        strokeWidth = 2.dp,
+                        strokeWidth = 2.dp
                     )
                 }
             }
@@ -292,7 +298,7 @@ private fun TransactionsContent(
             isEmpty -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         val heading = when {
@@ -316,7 +322,7 @@ private fun TransactionsContent(
                                     .background(BgCard)
                                     .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.pill))
                                     .clickable { onEvent(TransactionsEvent.ClearFilters) }
-                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
                             ) {
                                 Text(text = "Clear filters", style = LedgeTextStyle.BodySmall, color = Gold)
                             }
@@ -328,7 +334,7 @@ private fun TransactionsContent(
             else -> {
                 LazyColumn(
                     contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(
                         count = lazyPagingItems.itemCount,
@@ -344,7 +350,6 @@ private fun TransactionsContent(
                             is TransactionListItem.Header -> {
                                 DateSectionHeader(label = item.dateLabel)
                             }
-
                             is TransactionListItem.Item -> {
                                 SwipeableTransactionItem(
                                     transaction = item.transaction,
@@ -355,7 +360,7 @@ private fun TransactionsContent(
                                     onDelete = {
                                         transactionToDelete = item.transaction
                                         focusManager.clearFocus()
-                                    },
+                                    }
                                 )
                             }
 
@@ -363,19 +368,18 @@ private fun TransactionsContent(
                         }
                     }
 
-                    // Loading more indicator
                     if (lazyPagingItems.loadState.append is LoadState.Loading) {
                         item {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
-                                contentAlignment = Alignment.Center,
+                                contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator(
                                     color = Gold,
                                     modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp,
+                                    strokeWidth = 2.dp
                                 )
                             }
                         }
@@ -389,7 +393,7 @@ private fun TransactionsContent(
         ModalBottomSheet(
             onDismissRequest = { transactionToDelete = null },
             sheetState = deleteSheetState,
-            containerColor = BgSurface,
+            containerColor = BgSurface
         ) {
             DeleteConfirmationSheet(
                 transaction = transaction,
@@ -414,7 +418,7 @@ private fun TransactionsContent(
         ModalBottomSheet(
             onDismissRequest = { transactionToEdit = null },
             sheetState = editSheetState,
-            containerColor = BgSurface,
+            containerColor = BgSurface
         ) {
             EditTransactionSheet(
                 transaction = transaction,
@@ -431,7 +435,7 @@ private fun TransactionsContent(
                         editSheetState.hide()
                         transactionToEdit = null
                     }
-                },
+                }
             )
         }
     }
@@ -440,7 +444,7 @@ private fun TransactionsContent(
         ModalBottomSheet(
             onDismissRequest = { showFilterSheet = false },
             sheetState = filterSheetState,
-            containerColor = BgSurface,
+            containerColor = BgSurface
         ) {
             FilterSheet(
                 currentFilters = state.filterState,
@@ -457,7 +461,7 @@ private fun TransactionsContent(
                         filterSheetState.hide()
                         showFilterSheet = false
                     }
-                },
+                }
             )
         }
     }
@@ -469,11 +473,11 @@ private fun DateSectionHeader(label: String) {
         modifier = Modifier
             .fillMaxWidth()
             .background(BgDeep)
-            .padding(top = 8.dp, bottom = 4.dp),
+            .padding(top = 8.dp, bottom = 4.dp)
     ) {
         Text(
             text = label,
-            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            style = LedgeTextStyle.Caption.copy(color = TextMuted2)
         )
     }
 }
@@ -483,7 +487,7 @@ private fun DateSectionHeader(label: String) {
 private fun SwipeableTransactionItem(
     transaction: Transaction,
     onEdit: () -> Unit,
-    onDelete: () -> Unit,
+    onDelete: () -> Unit
 ) {
     val density = LocalDensity.current
     val dismissState = remember {
@@ -503,7 +507,7 @@ private fun SwipeableTransactionItem(
                     else -> false
                 }
             },
-            positionalThreshold = { totalDistance -> totalDistance * 0.35f },
+            positionalThreshold = { totalDistance -> totalDistance * 0.35f }
         )
     }
 
@@ -520,7 +524,7 @@ private fun SwipeableTransactionItem(
                     else -> Color.Transparent
                 },
                 animationSpec = tween(150),
-                label = "swipeBg",
+                label = "swipeBg"
             )
             val iconTint by animateColorAsState(
                 targetValue = when (direction) {
@@ -529,7 +533,7 @@ private fun SwipeableTransactionItem(
                     else -> Color.Transparent
                 },
                 animationSpec = tween(150),
-                label = "swipeIcon",
+                label = "swipeIcon"
             )
             Box(
                 modifier = Modifier
@@ -547,18 +551,18 @@ private fun SwipeableTransactionItem(
                         Icons.Filled.Delete,
                         contentDescription = "Delete",
                         tint = iconTint,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(22.dp)
                     )
                     SwipeToDismissBoxValue.StartToEnd -> Icon(
                         Icons.Filled.Edit,
                         contentDescription = "Edit",
                         tint = iconTint,
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(22.dp)
                     )
                     else -> {}
                 }
             }
-        },
+        }
     ) {
         TransactionItem(transaction = transaction)
     }
@@ -577,20 +581,20 @@ private fun TransactionItem(transaction: Transaction) {
             .clip(RoundedCornerShape(LedgeRadius.medium))
             .background(BgCard)
             .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
                 .background(indicatorColor),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
                     .size(10.dp)
                     .clip(CircleShape)
-                    .background(transaction.category?.color ?: TextMuted),
+                    .background(transaction.category?.color ?: TextMuted)
             )
         }
 
@@ -602,7 +606,7 @@ private fun TransactionItem(transaction: Transaction) {
                 style = LedgeTextStyle.HeadingCard,
                 color = TextPrimary,
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                overflow = TextOverflow.Ellipsis
             )
             Spacer(Modifier.height(2.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -610,18 +614,18 @@ private fun TransactionItem(transaction: Transaction) {
                     Text(
                         text = cat.name,
                         style = LedgeTextStyle.Caption,
-                        color = TextMuted,
+                        color = TextMuted
                     )
                     Text(
                         text = "\u00B7",
                         style = LedgeTextStyle.Caption,
-                        color = TextMuted,
+                        color = TextMuted
                     )
                 }
                 Text(
                     text = formatTime(transaction.date),
                     style = LedgeTextStyle.Caption,
-                    color = TextMuted,
+                    color = TextMuted
                 )
             }
         }
@@ -632,13 +636,13 @@ private fun TransactionItem(transaction: Transaction) {
             Text(
                 text = "$amountPrefix\u20B9${formatAmount(transaction.amount)}",
                 style = LedgeTextStyle.AmountMono,
-                color = amountColor,
+                color = amountColor
             )
             if (transaction.isRecurring) {
                 Text(
                     text = transaction.recurrenceType?.value?.replaceFirstChar { it.uppercase() } ?: "Recurring",
                     style = LedgeTextStyle.Caption,
-                    color = Gold,
+                    color = Gold
                 )
             }
         }

@@ -109,7 +109,7 @@ fun SignInScreen(
         onSubmit = { viewModel.onEvent(AuthUiEvent.SignInWithEmailClicked) },
         onForgotPassword = onForgotPassword,
         onNavigateToSignUp = onNavigateToSignUp,
-        onGoogleClicked = { viewModel.onEvent(AuthUiEvent.SignInWithGoogleClicked) },
+        onGoogleClicked = { viewModel.onEvent(AuthUiEvent.SignInWithGoogleClicked) }
     )
 }
 
@@ -123,7 +123,7 @@ internal fun SignInScreenContent(
     onForgotPassword: () -> Unit,
     onNavigateToSignUp: () -> Unit,
     onGoogleClicked: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val focusManager = LocalFocusManager.current
     val passwordFocus = remember { FocusRequester() }
@@ -146,15 +146,15 @@ internal fun SignInScreenContent(
             text = "Welcome back",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 24.sp,
-                color = TextPrimary,
+                color = TextPrimary
             ),
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(6.dp))
         Text(
             text = "Sign in to your account",
             style = LedgeTextStyle.BodySmall.copy(color = TextMuted2),
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Center
         )
 
         Spacer(Modifier.height(32.dp))
@@ -172,7 +172,7 @@ internal fun SignInScreenContent(
             ),
             keyboardActions = KeyboardActions(
                 onNext = { passwordFocus.requestFocus() }
-            ),
+            )
         )
 
         Spacer(Modifier.height(16.dp))
@@ -187,14 +187,14 @@ internal fun SignInScreenContent(
             keyboardActions = KeyboardActions(
                 onDone = { focusManager.clearFocus(); onSubmit() }
             ),
-            modifier = Modifier.focusRequester(passwordFocus),
+            modifier = Modifier.focusRequester(passwordFocus)
         )
 
         Spacer(Modifier.height(12.dp))
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.CenterEnd) {
             LedgeTextLink(
                 text = "Forgot password?",
-                onClick = onForgotPassword,
+                onClick = onForgotPassword
             )
         }
 
@@ -204,7 +204,7 @@ internal fun SignInScreenContent(
             text = "Sign in",
             enabled = ctaEnabled,
             isLoading = uiState.isLoading,
-            onClick = { focusManager.clearFocus(); onSubmit() },
+            onClick = { focusManager.clearFocus(); onSubmit() }
         )
 
         Spacer(Modifier.height(24.dp))
@@ -217,7 +217,7 @@ internal fun SignInScreenContent(
             iconPainter = painterResource(com.ayush.ui.R.drawable.ic_google),
             label = "Continue with Google",
             onClick = onGoogleClicked,
-            isLoading = uiState.isGoogleLoading,
+            isLoading = uiState.isGoogleLoading
         )
 
         Spacer(Modifier.weight(1f))
@@ -225,15 +225,15 @@ internal fun SignInScreenContent(
         Row(
             modifier = Modifier.padding(bottom = 40.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Don't have an account? ",
-                style = LedgeTextStyle.BodySmall.copy(color = TextMuted2),
+                style = LedgeTextStyle.BodySmall.copy(color = TextMuted2)
             )
             LedgeTextLink(
                 text = "Sign up",
-                onClick = onNavigateToSignUp,
+                onClick = onNavigateToSignUp
             )
         }
     }
