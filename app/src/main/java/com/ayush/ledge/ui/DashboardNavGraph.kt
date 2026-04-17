@@ -99,7 +99,10 @@ sealed interface DashboardBottomNavItems {
 }
 
 @Composable
-internal fun DashboardNavGraph(onSignOut: () -> Unit) {
+internal fun DashboardNavGraph(
+    onSignOut: () -> Unit,
+    onNavigateToProfile: () -> Unit
+) {
     val backStack = rememberNavBackStack(DashboardRoute.Home)
 
     val selectedTab = when (backStack.firstOrNull()) {
@@ -147,9 +150,10 @@ internal fun DashboardNavGraph(onSignOut: () -> Unit) {
                 entryProvider = entryProvider {
                     entry<DashboardRoute.Home> {
                         HomeScreen(
+                            onNavigateToProfile = onNavigateToProfile,
                             onNavigateToTransactions = {
                                 selectTab(DashboardBottomNavItems.Transactions)
-                            },
+                            }
                         )
                     }
                     entry<DashboardRoute.Transactions> { TransactionsListScreen() }

@@ -22,11 +22,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -67,32 +69,38 @@ import com.ayush.ui.theme.TextPrimary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+private val LocalEventSink = staticCompositionLocalOf<(HomeUiEvent) -> Unit> {
+    error {}
+}
+
 @Composable
 fun HomeScreen(
-    onNavigateToTransactions: () -> Unit = {},
+    onNavigateToTransactions: () -> Unit,
+    onNavigateToProfile: () -> Unit
 ) {
     val viewModel: HomeViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        viewModel.sideEffect.collect { sideEffect ->
-            when (sideEffect) {
-                HomeSideEffect.NavigateToTransactions -> onNavigateToTransactions()
+    CompositionLocalProvider(LocalEventSink provides viewModel::onEvent) {
+        LaunchedEffect(Unit) {
+            viewModel.sideEffect.collect { sideEffect ->
+                when (sideEffect) {
+                    HomeSideEffect.NavigateToTransactions -> onNavigateToTransactions()
+                    HomeSideEffect.NavigateToProfile -> onNavigateToProfile()
+                }
             }
         }
+
+        HomeContent(state)
     }
 
-    HomeContent(
-        state = state,
-        onEvent = viewModel::onEvent,
-    )
 }
 
 @Composable
-private fun HomeContent(
-    state: HomeState,
-    onEvent: (HomeUiEvent) -> Unit,
-) {
+private fun HomeContent(state: HomeState) {
+
+    val onEvent = LocalEventSink.current
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
@@ -103,6 +111,7 @@ private fun HomeContent(
                 greeting = state.userDetails.greeting,
                 name = state.userDetails.name,
                 initials = state.userDetails.initials,
+                showDot = state.showDot
             )
         }
 
@@ -477,6 +486,7 @@ private fun UserDetailsRow(
     greeting: String,
     name: String,
     initials: String,
+    showDot: Boolean
 ) {
     Row(
         modifier = Modifier
@@ -500,50 +510,73 @@ private fun UserDetailsRow(
             )
         }
 
-        Box(contentAlignment = Alignment.TopEnd) {
+        UserProfile(
+            showDot = showDot,
+            initials = initials
+        )
+    }
+}
+
+@Composable
+private fun UserProfile(
+    showDot: Boolean,
+    initials: String
+) {
+
+    val onEvent = LocalEventSink.current
+
+    Box(
+        contentAlignment = Alignment.TopEnd,
+        modifier = Modifier
+            .clickable(
+                enabled = true,
+                onClick = { onEvent(HomeUiEvent.ProfileClicked) }
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .clip(CircleShape)
+                .background(GoldGlow),
+            contentAlignment = Alignment.Center,
+        ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
+                    .size(46.dp)
                     .clip(CircleShape)
-                    .background(GoldGlow),
+                    .background(BgCard),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(42.dp)
                         .clip(CircleShape)
-                        .background(BgCard),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(42.dp)
-                            .clip(CircleShape)
-                            .background(
-                                brush = Brush.linearGradient(
-                                    colors = listOf(GoldLight, Color(0xFF8B6914)),
-                                    start = Offset.Zero,
-                                    end = Offset(
-                                        Float.POSITIVE_INFINITY,
-                                        Float.POSITIVE_INFINITY,
-                                    ),
+                        .background(
+                            brush = Brush.linearGradient(
+                                colors = listOf(GoldLight, Color(0xFF8B6914)),
+                                start = Offset.Zero,
+                                end = Offset(
+                                    Float.POSITIVE_INFINITY,
+                                    Float.POSITIVE_INFINITY,
                                 ),
                             ),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = initials,
-                            color = BgDeep,
-                            style = TextStyle(
-                                fontFamily = DmSansFontFamily,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                            ),
-                        )
-                    }
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = initials,
+                        color = BgDeep,
+                        style = TextStyle(
+                            fontFamily = DmSansFontFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                        ),
+                    )
                 }
             }
+        }
 
+        if (showDot) {
             Box(
                 modifier = Modifier
                     .size(12.dp)

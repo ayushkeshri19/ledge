@@ -3,6 +3,7 @@ package com.ayush.ledge.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -71,12 +72,25 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
                     onSignOut = {
                         backStack.clear()
                         backStack.add(AuthRoute.Auth)
-
                         mainViewModel.signOut()
                     },
+                    onNavigateToProfile = {
+                        backStack.add(LedgeRoute.Profile)
+                    }
                 )
+            }
+
+            entry<LedgeRoute.Profile> {
+                ProfileScreen()
             }
         },
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }
     )
+}
+
+@Composable
+fun ProfileScreen() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Profile")
+    }
 }

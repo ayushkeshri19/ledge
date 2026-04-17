@@ -3,7 +3,10 @@ package com.ayush.ledge.ui
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-sealed interface LedgeRoute : NavKey
+sealed interface LedgeRoute : NavKey {
+    @Serializable
+    data object Profile : LedgeRoute
+}
 
 sealed interface AuthRoute : LedgeRoute {
     @Serializable data object Auth : AuthRoute
