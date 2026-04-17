@@ -14,14 +14,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import com.ayush.ui.components.LedgeTextField
-import com.ayush.ui.theme.TextMuted2
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgePasswordField(
@@ -55,7 +53,7 @@ fun LedgePasswordField(
                 Icon(
                     imageVector = if (showPassword) Icons.Default.RemoveRedEye else Icons.Filled.PanoramaFishEye,
                     contentDescription = if (showPassword) "Hide password" else "Show password",
-                    tint = TextMuted2,
+                    tint = LedgeTheme.colors.textMuted2,
                     modifier = Modifier.size(20.dp),
                 )
             }

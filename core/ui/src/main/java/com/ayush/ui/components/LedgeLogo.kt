@@ -15,19 +15,16 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ayush.ui.theme.BgCard2
-import com.ayush.ui.theme.BorderFocus
 import com.ayush.ui.theme.DmSerifFontFamily
-import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldGlow
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeLogo(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
 ) {
+    val colors = LedgeTheme.colors
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -39,7 +36,7 @@ fun LedgeLogo(
                     .size(72.dp)
                     .background(
                         brush = Brush.radialGradient(
-                            colors = listOf(GoldGlow, Color.Transparent),
+                            colors = listOf(colors.goldGlow, Color.Transparent),
                         ),
                         shape = RoundedCornerShape(50),
                     )
@@ -47,8 +44,8 @@ fun LedgeLogo(
             Box(
                 modifier = Modifier
                     .size(52.dp)
-                    .background(BgCard2, RoundedCornerShape(16.dp))
-                    .border(1.dp, BorderFocus, RoundedCornerShape(16.dp)),
+                    .background(colors.bgCard2, RoundedCornerShape(16.dp))
+                    .border(1.dp, colors.borderFocus, RoundedCornerShape(16.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -56,7 +53,7 @@ fun LedgeLogo(
                     style = LedgeTextStyle.HeadingScreen.copy(
                         fontFamily = DmSerifFontFamily,
                         fontSize = 28.sp,
-                        color = Gold,
+                        color = colors.gold,
                     ),
                 )
             }
@@ -66,7 +63,7 @@ fun LedgeLogo(
             text = "Ledge",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 26.sp,
-                color = TextPrimary,
+                color = colors.textPrimary,
             ),
         )
 
@@ -75,7 +72,7 @@ fun LedgeLogo(
                 text = subtitle,
                 style = LedgeTextStyle.LabelCaps.copy(
                     fontSize = 9.sp,
-                    color = Gold,
+                    color = colors.gold,
                     letterSpacing = 2.5.sp,
                 ),
             )

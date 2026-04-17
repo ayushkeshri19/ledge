@@ -46,12 +46,8 @@ import com.ayush.home.presentation.HomeScreen
 import com.ayush.transactions.presentation.AddTransactionScreen
 import com.ayush.ui.R
 import com.ayush.ui.components.FabButton
-import com.ayush.ui.theme.BgSurface
-import com.ayush.ui.theme.BorderSubtle
-import com.ayush.ui.theme.Gold
+import com.ayush.ui.theme.LedgeTheme
 import com.ayush.ui.theme.NavLabelStyle
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextPrimary
 import kotlinx.serialization.Serializable
 import com.ayush.transactions.presentation.TransactionsScreen as TransactionsListScreen
 
@@ -182,13 +178,14 @@ private fun LedgeBottomBar(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.BottomCenter,
     ) {
+        val colors = LedgeTheme.colors
         Column(modifier = Modifier.fillMaxWidth()) {
-            HorizontalDivider(thickness = 1.dp, color = BorderSubtle)
+            HorizontalDivider(thickness = 1.dp, color = colors.borderSubtle)
 
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(BgSurface.copy(alpha = 0.95f)),
+                    .background(colors.bgSurface.copy(alpha = 0.95f)),
             ) {
                 Row(
                     modifier = Modifier
@@ -235,7 +232,8 @@ private fun BottomNavItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val tintColor = if (isSelected) Gold else TextMuted
+    val colors = LedgeTheme.colors
+    val tintColor = if (isSelected) colors.gold else colors.textMuted
 
     Column(
         modifier = modifier
@@ -254,7 +252,7 @@ private fun BottomNavItem(
                 .width(24.dp)
                 .height(2.dp)
                 .background(
-                    color = if (isSelected) Gold else Color.Transparent,
+                    color = if (isSelected) colors.gold else Color.Transparent,
                     shape = RoundedCornerShape(2.dp),
                 ),
         )
@@ -287,7 +285,7 @@ private fun MoreScreen(onSignOut: () -> Unit) {
         Text(
             text = "More",
             style = MaterialTheme.typography.headlineLarge,
-            color = TextPrimary,
+            color = LedgeTheme.colors.textPrimary,
         )
 
         Spacer(Modifier.height(32.dp))

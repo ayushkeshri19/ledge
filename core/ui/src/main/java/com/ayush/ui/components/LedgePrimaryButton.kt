@@ -16,13 +16,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ayush.ui.theme.BgCard2
-import com.ayush.ui.theme.BgDeep
-import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldLight
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextMuted
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgePrimaryButton(
@@ -32,8 +28,10 @@ fun LedgePrimaryButton(
     enabled: Boolean = true,
     isLoading: Boolean = false,
 ) {
+    val colors = LedgeTheme.colors
     val gradient = Brush.horizontalGradient(
-        colors = if (enabled) listOf(Gold, GoldLight) else listOf(BgCard2, BgCard2)
+        colors = if (enabled) listOf(colors.gold, colors.goldAccent)
+        else listOf(colors.bgCard2, colors.bgCard2)
     )
 
     Box(
@@ -48,14 +46,14 @@ fun LedgePrimaryButton(
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(22.dp),
-                color = BgDeep,
+                color = colors.bgDeep,
                 strokeWidth = 2.dp,
             )
         } else {
             Text(
                 text = text,
                 style = LedgeTextStyle.Button.copy(
-                    color = if (enabled) BgDeep else TextMuted,
+                    color = if (enabled) colors.bgDeep else colors.textMuted,
                     fontSize = 15.sp,
                 ),
             )

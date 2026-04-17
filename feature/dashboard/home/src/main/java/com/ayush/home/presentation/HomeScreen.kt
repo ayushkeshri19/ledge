@@ -54,19 +54,10 @@ import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.components.charts.LedgePieChart
 import com.ayush.ui.components.charts.PieChartSegment
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BgDeep
-import com.ayush.ui.theme.BgSurface
+import com.ayush.ui.components.noRippleClickable
 import com.ayush.ui.theme.DmSansFontFamily
-import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldGlow
-import com.ayush.ui.theme.GoldLight
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.SemanticGreen
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -157,12 +148,13 @@ private fun TimePeriodToggle(
     selectedPeriod: TimePeriod,
     onPeriodChanged: (TimePeriod) -> Unit,
 ) {
-    val options = remember {
+    val gold = LedgeTheme.colors.gold
+    val options = remember(gold) {
         TimePeriod.entries.map { period ->
             SegmentOption(
                 value = period,
                 label = period.label,
-                selectedColor = Gold
+                selectedColor = gold
             )
         }
     }
@@ -176,23 +168,24 @@ private fun TimePeriodToggle(
 
 @Composable
 private fun BalanceOverviewCard(state: SummaryState) {
+    val colors = LedgeTheme.colors
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(BgCard)
+            .background(colors.bgCard)
             .padding(20.dp)
     ) {
         Text(
             text = "NET BALANCE",
             style = LedgeTextStyle.LabelCaps,
-            color = TextMuted
+            color = colors.textMuted
         )
         Spacer(Modifier.height(4.dp))
         AnimatedAmount(
             targetAmount = state.netBalance,
             style = LedgeTextStyle.BalanceHero,
-            color = if (state.netBalance >= 0) Gold else SemanticRed
+            color = if (state.netBalance >= 0) colors.gold else colors.semanticRed
         )
         Spacer(Modifier.height(16.dp))
 
@@ -209,19 +202,19 @@ private fun BalanceOverviewCard(state: SummaryState) {
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(SemanticGreen)
+                            .background(colors.semanticGreen)
                     )
                     Text(
                         text = "INCOME",
                         style = LedgeTextStyle.LabelCaps,
-                        color = TextMuted
+                        color = colors.textMuted
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = "+\u20B9${formatAmount(state.totalIncome)}",
                     style = LedgeTextStyle.AmountMedium,
-                    color = SemanticGreen
+                    color = colors.semanticGreen
                 )
             }
 
@@ -234,19 +227,19 @@ private fun BalanceOverviewCard(state: SummaryState) {
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(SemanticRed)
+                            .background(colors.semanticRed)
                     )
                     Text(
                         text = "EXPENSE",
                         style = LedgeTextStyle.LabelCaps,
-                        color = TextMuted
+                        color = colors.textMuted
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = "-\u20B9${formatAmount(state.totalExpense)}",
                     style = LedgeTextStyle.AmountMedium,
-                    color = SemanticRed
+                    color = colors.semanticRed
                 )
             }
         }
@@ -255,19 +248,20 @@ private fun BalanceOverviewCard(state: SummaryState) {
 
 @Composable
 private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
+    val colors = LedgeTheme.colors
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(BgCard)
+            .background(colors.bgCard)
             .padding(20.dp)
     ) {
         Text(
             text = "Spending by Category",
             style = LedgeTextStyle.HeadingCard,
-            color = TextPrimary
+            color = colors.textPrimary
         )
         Spacer(Modifier.height(16.dp))
 
@@ -297,12 +291,12 @@ private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
                         Text(
                             text = "TOTAL",
                             style = LedgeTextStyle.LabelCaps,
-                            color = TextMuted
+                            color = colors.textMuted
                         )
                         Text(
                             text = "\u20B9${formatAmount(totalExpense)}",
                             style = LedgeTextStyle.AmountLarge,
-                            color = TextPrimary
+                            color = colors.textPrimary
                         )
                     }
                 }
@@ -337,19 +331,19 @@ private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
                 Text(
                     text = category.categoryName,
                     style = LedgeTextStyle.BodySmall,
-                    color = if (isSelected) TextPrimary else TextMuted2,
+                    color = if (isSelected) colors.textPrimary else colors.textMuted2,
                     modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = "\u20B9${formatAmount(category.amount)}",
                     style = LedgeTextStyle.BodySmall,
-                    color = if (isSelected) TextPrimary else TextMuted2
+                    color = if (isSelected) colors.textPrimary else colors.textMuted2
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = "${(category.percentage * 100).toInt()}%",
                     style = LedgeTextStyle.Caption,
-                    color = TextMuted
+                    color = colors.textMuted
                 )
             }
         }
@@ -361,11 +355,12 @@ private fun RecentTransactionsCard(
     transactions: List<RecentTransaction>,
     onSeeAll: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(BgCard)
+            .background(colors.bgCard)
             .padding(20.dp)
     ) {
         Row(
@@ -376,12 +371,12 @@ private fun RecentTransactionsCard(
             Text(
                 text = "Recent Transactions",
                 style = LedgeTextStyle.HeadingCard,
-                color = TextPrimary
+                color = colors.textPrimary
             )
             Text(
                 text = "See all",
                 style = LedgeTextStyle.BodySmall,
-                color = Gold,
+                color = colors.gold,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
                     .clickable(onClick = onSeeAll)
@@ -419,7 +414,8 @@ private fun RecentTransactionsCard(
 
 @Composable
 private fun RecentTransactionItem(transaction: RecentTransaction) {
-    val amountColor = if (transaction.isExpense) SemanticRed else SemanticGreen
+    val colors = LedgeTheme.colors
+    val amountColor = if (transaction.isExpense) colors.semanticRed else colors.semanticGreen
     val amountPrefix = if (transaction.isExpense) "-" else "+"
 
     Row(
@@ -431,7 +427,7 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
                 .size(36.dp)
                 .clip(CircleShape)
                 .background(
-                    (transaction.categoryColor ?: TextMuted).copy(alpha = 0.12f)
+                    (transaction.categoryColor ?: colors.textMuted).copy(alpha = 0.12f)
                 ),
             contentAlignment = Alignment.Center
         ) {
@@ -439,7 +435,7 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
                 modifier = Modifier
                     .size(10.dp)
                     .clip(CircleShape)
-                    .background(transaction.categoryColor ?: TextMuted)
+                    .background(transaction.categoryColor ?: colors.textMuted)
             )
         }
 
@@ -449,7 +445,7 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
             Text(
                 text = transaction.note,
                 style = LedgeTextStyle.HeadingCard,
-                color = TextPrimary,
+                color = colors.textPrimary,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -458,18 +454,18 @@ private fun RecentTransactionItem(transaction: RecentTransaction) {
                     Text(
                         text = name,
                         style = LedgeTextStyle.Caption,
-                        color = TextMuted
+                        color = colors.textMuted
                     )
                     Text(
                         text = "\u00B7",
                         style = LedgeTextStyle.Caption,
-                        color = TextMuted
+                        color = colors.textMuted
                     )
                 }
                 Text(
                     text = formatDate(transaction.date),
                     style = LedgeTextStyle.Caption,
-                    color = TextMuted
+                    color = colors.textMuted
                 )
             }
         }
@@ -491,6 +487,7 @@ private fun UserDetailsRow(
     initials: String,
     showDot: Boolean
 ) {
+    val colors = LedgeTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -503,12 +500,12 @@ private fun UserDetailsRow(
         ) {
             Text(
                 text = "$greeting,",
-                color = TextMuted,
+                color = colors.textMuted,
                 style = LedgeTextStyle.BodySmall
             )
             Text(
                 text = name,
-                color = TextPrimary,
+                color = colors.textPrimary,
                 style = LedgeTextStyle.HeadingScreen
             )
         }
@@ -526,12 +523,13 @@ private fun UserProfile(
     initials: String
 ) {
 
+    val colors = LedgeTheme.colors
     val onEvent = LocalEventSink.current
 
     Box(
         contentAlignment = Alignment.TopEnd,
         modifier = Modifier
-            .clickable(
+            .noRippleClickable(
                 enabled = true,
                 onClick = { onEvent(HomeUiEvent.ProfileClicked) }
             )
@@ -540,14 +538,14 @@ private fun UserProfile(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(GoldGlow),
+                .background(colors.goldGlow),
             contentAlignment = Alignment.Center
         ) {
             Box(
                 modifier = Modifier
                     .size(46.dp)
                     .clip(CircleShape)
-                    .background(BgCard),
+                    .background(colors.bgCard),
                 contentAlignment = Alignment.Center
             ) {
                 Box(
@@ -556,7 +554,7 @@ private fun UserProfile(
                         .clip(CircleShape)
                         .background(
                             brush = Brush.linearGradient(
-                                colors = listOf(GoldLight, Color(0xFF8B6914)),
+                                colors = listOf(colors.goldAccent, Color(0xFF8B6914)),
                                 start = Offset.Zero,
                                 end = Offset(
                                     Float.POSITIVE_INFINITY,
@@ -568,7 +566,7 @@ private fun UserProfile(
                 ) {
                     Text(
                         text = initials,
-                        color = BgDeep,
+                        color = colors.bgDeep,
                         style = TextStyle(
                             fontFamily = DmSansFontFamily,
                             fontWeight = FontWeight.Bold,
@@ -584,10 +582,10 @@ private fun UserProfile(
                 modifier = Modifier
                     .size(12.dp)
                     .clip(CircleShape)
-                    .background(BgSurface)
+                    .background(colors.bgSurface)
                     .padding(2.dp)
                     .clip(CircleShape)
-                    .background(Gold)
+                    .background(colors.gold)
             )
         }
     }

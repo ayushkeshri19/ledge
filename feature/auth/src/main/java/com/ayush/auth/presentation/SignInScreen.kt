@@ -46,8 +46,6 @@ import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.components.LedgeTextLink
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
 import dagger.hilt.android.EntryPointAccessors
 
 @Composable
@@ -146,14 +144,14 @@ internal fun SignInScreenContent(
             text = "Welcome back",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 24.sp,
-                color = TextPrimary
+                color = LedgeTheme.colors.textPrimary
             ),
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(6.dp))
         Text(
             text = "Sign in to your account",
-            style = LedgeTextStyle.BodySmall.copy(color = TextMuted2),
+            style = LedgeTextStyle.BodySmall.copy(color = LedgeTheme.colors.textMuted2),
             textAlign = TextAlign.Center
         )
 
@@ -229,7 +227,7 @@ internal fun SignInScreenContent(
         ) {
             Text(
                 text = "Don't have an account? ",
-                style = LedgeTextStyle.BodySmall.copy(color = TextMuted2)
+                style = LedgeTextStyle.BodySmall.copy(color = LedgeTheme.colors.textMuted2)
             )
             LedgeTextLink(
                 text = "Sign up",

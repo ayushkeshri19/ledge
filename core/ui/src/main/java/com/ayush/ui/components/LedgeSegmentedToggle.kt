@@ -17,11 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BgDeep
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextMuted
+import com.ayush.ui.theme.LedgeTheme
 
 data class SegmentOption<T>(
     val value: T,
@@ -35,9 +33,9 @@ fun <T> LedgeSegmentedToggle(
     selectedValue: T,
     onSelect: (T) -> Unit,
     modifier: Modifier = Modifier,
-    containerColor: Color = BgDeep,
-    selectedContainerColor: Color = BgCard,
-    unselectedTextColor: Color = TextMuted,
+    containerColor: Color = LedgeTheme.colors.bgDeep,
+    selectedContainerColor: Color = LedgeTheme.colors.bgCard,
+    unselectedTextColor: Color = LedgeTheme.colors.textMuted,
 ) {
     Row(
         modifier = modifier

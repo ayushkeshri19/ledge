@@ -60,11 +60,12 @@ val BgSheetLight = Color(0xFFFBF7EE)
 
 val BorderSubtleLight = Color(0x14000000)
 val BorderMidLight = Color(0x24000000)
-val BorderFocusLight = Color(0x66C9A84C)
+val BorderFocusLight = Color(0x66A8862A)
 
-val GoldAccentLight = Color(0xFFB8922F)
-val GoldDimLight = Color(0x29C9A84C)
-val GoldGlowLight = Color(0x40C9A84C)
+val GoldBaseLight = Color(0xFFA8862A)
+val GoldAccentLight = Color(0xFF8B6914)
+val GoldDimLight = Color(0x29A8862A)
+val GoldGlowLight = Color(0x40A8862A)
 
 val SemanticGreenLight = Color(0xFF1F9271)
 val SemanticRedLight = Color(0xFFC23B3B)
@@ -77,11 +78,11 @@ val BlueDimLight = Color(0x1F3B6FD4)
 val PurpleDimLight = Color(0x1F7A52B2)
 
 val TextPrimaryLight = Color(0xFF1A1712)
-val TextMutedLight = Color(0x591A1712)
-val TextMuted2Light = Color(0x8C1A1712)
-val TextMuted3Light = Color(0xB31A1712)
+val TextMutedLight = Color(0x801A1712)
+val TextMuted2Light = Color(0xB31A1712)
+val TextMuted3Light = Color(0xD91A1712)
 
-val LedgeMd3PrimaryLight = Gold
+val LedgeMd3PrimaryLight = GoldBaseLight
 val LedgeMd3OnPrimaryLight = TextPrimaryLight
 val LedgeMd3PrimaryContainerLight = GoldDimLight
 val LedgeMd3OnPrimaryContainerLight = GoldAccentLight

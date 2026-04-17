@@ -6,8 +6,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.LedgeTextStyle
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeTextLink(
@@ -18,7 +18,7 @@ fun LedgeTextLink(
     Text(
         text = text,
         style = LedgeTextStyle.BodySmall.copy(
-            color = Gold,
+            color = LedgeTheme.colors.gold,
         ),
         modifier = modifier.clickable(
             interactionSource = remember { MutableInteractionSource() },

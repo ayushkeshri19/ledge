@@ -52,14 +52,8 @@ import com.ayush.ui.components.LedgePrimaryButton
 import com.ayush.ui.components.LedgeSocialButton
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.components.LedgeTextLink
-import com.ayush.ui.theme.BorderSubtle
-import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
-import com.ayush.ui.theme.SemanticGreen
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
 import dagger.hilt.android.EntryPointAccessors
 
 @Composable
@@ -175,14 +169,14 @@ internal fun SignUpScreenContent(
             text = "Create account",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 24.sp,
-                color = TextPrimary
+                color = LedgeTheme.colors.textPrimary
             ),
             textAlign = TextAlign.Center
         )
         Spacer(Modifier.height(6.dp))
         Text(
             text = "Start managing your finances",
-            style = LedgeTextStyle.BodySmall.copy(color = TextMuted2),
+            style = LedgeTextStyle.BodySmall.copy(color = LedgeTheme.colors.textMuted2),
             textAlign = TextAlign.Center
         )
 
@@ -289,7 +283,7 @@ internal fun SignUpScreenContent(
         ) {
             Text(
                 text = "Already have an account? ",
-                style = LedgeTextStyle.BodySmall.copy(color = TextMuted2)
+                style = LedgeTextStyle.BodySmall.copy(color = LedgeTheme.colors.textMuted2)
             )
             LedgeTextLink(
                 text = "Sign in",
@@ -305,14 +299,15 @@ private fun PasswordStrengthBar(
     strength: Int,
     modifier: Modifier = Modifier
 ) {
+    val colors = LedgeTheme.colors
     val segmentColors = listOf(
-        SemanticRed,
+        colors.semanticRed,
         Color(0xFFE08C4C),
-        Gold,
-        SemanticGreen
+        colors.gold,
+        colors.semanticGreen
     )
     val labels = listOf("Weak", "Fair", "Good", "Strong")
-    val activeColor = segmentColors.getOrElse(strength - 1) { BorderSubtle }
+    val activeColor = segmentColors.getOrElse(strength - 1) { colors.borderSubtle }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -328,7 +323,7 @@ private fun PasswordStrengthBar(
                             if (index < strength)
                                 m.background(activeColor, RoundedCornerShape(2.dp))
                             else
-                                m.background(BorderSubtle, RoundedCornerShape(2.dp))
+                                m.background(colors.borderSubtle, RoundedCornerShape(2.dp))
                         }
                 )
             }

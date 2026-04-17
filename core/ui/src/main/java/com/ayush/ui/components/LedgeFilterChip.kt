@@ -17,10 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldDim
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeFilterChip(
@@ -28,21 +27,22 @@ fun LedgeFilterChip(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val colors = LedgeTheme.colors
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(LedgeRadius.pill))
-            .background(GoldDim)
-            .border(1.dp, Gold, RoundedCornerShape(LedgeRadius.pill))
+            .background(colors.goldDim)
+            .border(1.dp, colors.gold, RoundedCornerShape(LedgeRadius.pill))
             .padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(text = label, style = LedgeTextStyle.Caption, color = Gold)
+        Text(text = label, style = LedgeTextStyle.Caption, color = colors.gold)
         IconButton(onClick = onRemove, modifier = Modifier.size(18.dp)) {
             Icon(
                 Icons.Filled.Close,
                 contentDescription = "Remove filter",
-                tint = Gold,
+                tint = colors.gold,
                 modifier = Modifier.size(12.dp),
             )
         }

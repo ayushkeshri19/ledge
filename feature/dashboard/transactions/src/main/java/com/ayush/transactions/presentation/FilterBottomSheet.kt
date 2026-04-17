@@ -33,11 +33,7 @@ import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.LedgeSelectableChip
 import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.SemanticGreen
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 internal fun FilterSheet(
@@ -46,6 +42,7 @@ internal fun FilterSheet(
     onApply: (FilterState) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     var tempFilters by remember { mutableStateOf(currentFilters) }
 
     Column(
@@ -62,7 +59,7 @@ internal fun FilterSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(text = "Filters", style = LedgeTextStyle.HeadingScreen, color = TextPrimary)
+            Text(text = "Filters", style = LedgeTextStyle.HeadingScreen, color = colors.textPrimary)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 TextButton(
                     onClick = { tempFilters = FilterState() },
@@ -71,11 +68,11 @@ internal fun FilterSheet(
                     Text(
                         text = "Reset",
                         style = LedgeTextStyle.Button,
-                        color = if (tempFilters.isActive) SemanticRed else TextMuted,
+                        color = if (tempFilters.isActive) colors.semanticRed else colors.textMuted,
                     )
                 }
                 IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close", tint = TextMuted)
+                    Icon(Icons.Filled.Close, contentDescription = "Close", tint = colors.textMuted)
                 }
             }
         }
@@ -84,14 +81,14 @@ internal fun FilterSheet(
 
         Text(
             text = "TYPE",
-            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
             modifier = Modifier.padding(bottom = 10.dp),
         )
         LedgeSegmentedToggle(
             options = listOf(
-                SegmentOption<TransactionType?>(null, "All", TextPrimary),
-                SegmentOption(TransactionType.EXPENSE, "Expense", SemanticRed),
-                SegmentOption(TransactionType.INCOME, "Income", SemanticGreen),
+                SegmentOption<TransactionType?>(null, "All", colors.textPrimary),
+                SegmentOption(TransactionType.EXPENSE, "Expense", colors.semanticRed),
+                SegmentOption(TransactionType.INCOME, "Income", colors.semanticGreen),
             ),
             selectedValue = tempFilters.type,
             onSelect = { tempFilters = tempFilters.copy(type = it) },
@@ -101,7 +98,7 @@ internal fun FilterSheet(
 
         Text(
             text = "DATE RANGE",
-            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
             modifier = Modifier.padding(bottom = 10.dp),
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -119,7 +116,7 @@ internal fun FilterSheet(
 
             Text(
                 text = "CATEGORY",
-                style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+                style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
                 modifier = Modifier.padding(bottom = 10.dp),
             )
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

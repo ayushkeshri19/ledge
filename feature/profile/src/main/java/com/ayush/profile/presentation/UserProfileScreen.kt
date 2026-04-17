@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun UserProfileScreen(
@@ -54,7 +54,7 @@ internal fun UserProfileTopBar(onBack: () -> Unit) {
             onClick = onBack,
             colors = IconButtonDefaults.iconButtonColors(
                 containerColor = Color.Transparent,
-                contentColor = TextPrimary
+                contentColor = LedgeTheme.colors.textPrimary
             )
         ) {
             Icon(
@@ -66,7 +66,7 @@ internal fun UserProfileTopBar(onBack: () -> Unit) {
         Text(
             text = "Profile",
             style = LedgeTextStyle.HeadingScreen,
-            color = TextPrimary
+            color = LedgeTheme.colors.textPrimary
         )
     }
 }
