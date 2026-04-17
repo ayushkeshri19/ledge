@@ -20,13 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BorderSubtle
-import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldDim
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeSelectableChip(
@@ -36,13 +32,14 @@ fun LedgeSelectableChip(
     modifier: Modifier = Modifier,
     leadingDotColor: Color? = null,
 ) {
+    val colors = LedgeTheme.colors
     val borderColor by animateColorAsState(
-        targetValue = if (isSelected) Gold else BorderSubtle,
+        targetValue = if (isSelected) colors.gold else colors.borderSubtle,
         animationSpec = tween(200),
         label = "chipBorder",
     )
     val bgColor by animateColorAsState(
-        targetValue = if (isSelected) GoldDim else BgCard,
+        targetValue = if (isSelected) colors.goldDim else colors.bgCard,
         animationSpec = tween(200),
         label = "chipBg",
     )
@@ -68,7 +65,7 @@ fun LedgeSelectableChip(
         Text(
             text = label,
             style = LedgeTextStyle.BodySmall,
-            color = if (isSelected) Gold else TextPrimary,
+            color = if (isSelected) colors.gold else colors.textPrimary,
         )
     }
 }

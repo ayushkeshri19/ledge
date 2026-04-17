@@ -20,17 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BgCard2
-import com.ayush.ui.theme.BorderSubtle
-import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.RedDim
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeTextField(
@@ -48,14 +40,15 @@ fun LedgeTextField(
     singleLine: Boolean = true,
     enabled: Boolean = true,
 ) {
+    val colors = LedgeTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
     val borderColor by animateColorAsState(
         targetValue = when {
-            isError -> SemanticRed
-            isFocused -> Gold
-            else -> BorderSubtle
+            isError -> colors.semanticRed
+            isFocused -> colors.gold
+            else -> colors.borderSubtle
         },
         animationSpec = tween(200),
         label = "borderColor",
@@ -66,7 +59,7 @@ fun LedgeTextField(
             Text(
                 text = label,
                 style = LedgeTextStyle.Caption.copy(
-                    color = if (isError) SemanticRed else TextMuted2,
+                    color = if (isError) colors.semanticRed else colors.textMuted2,
                     letterSpacing = 0.8.sp,
                 ),
                 modifier = Modifier.padding(bottom = 6.dp),
@@ -79,7 +72,7 @@ fun LedgeTextField(
             placeholder = {
                 Text(
                     text = placeholder,
-                    style = LedgeTextStyle.Body.copy(color = TextMuted),
+                    style = LedgeTextStyle.Body.copy(color = colors.textMuted),
                 )
             },
             leadingIcon = leadingIcon,
@@ -90,23 +83,23 @@ fun LedgeTextField(
             interactionSource = interactionSource,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
-            textStyle = LedgeTextStyle.Body.copy(color = TextPrimary),
+            textStyle = LedgeTextStyle.Body.copy(color = colors.textPrimary),
             shape = RoundedCornerShape(LedgeRadius.medium),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = BgCard2,
-                unfocusedContainerColor = BgCard,
-                disabledContainerColor = BgCard,
-                errorContainerColor = RedDim,
-                focusedBorderColor = Gold,
-                unfocusedBorderColor = BorderSubtle,
-                errorBorderColor = SemanticRed,
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary,
-                cursorColor = Gold,
-                focusedLeadingIconColor = Gold,
-                unfocusedLeadingIconColor = TextMuted,
-                focusedTrailingIconColor = Gold,
-                unfocusedTrailingIconColor = TextMuted,
+                focusedContainerColor = colors.bgCard2,
+                unfocusedContainerColor = colors.bgCard,
+                disabledContainerColor = colors.bgCard,
+                errorContainerColor = colors.redDim,
+                focusedBorderColor = colors.gold,
+                unfocusedBorderColor = colors.borderSubtle,
+                errorBorderColor = colors.semanticRed,
+                focusedTextColor = colors.textPrimary,
+                unfocusedTextColor = colors.textPrimary,
+                cursorColor = colors.gold,
+                focusedLeadingIconColor = colors.gold,
+                unfocusedLeadingIconColor = colors.textMuted,
+                focusedTrailingIconColor = colors.gold,
+                unfocusedTrailingIconColor = colors.textMuted,
             ),
             modifier = Modifier.fillMaxWidth(),
         )
@@ -134,6 +127,7 @@ fun LedgeTextField(
     trailingIcon: @Composable (() -> Unit)?,
     visualTransformation: VisualTransformation,
 ) {
+    val colors = LedgeTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
     val isFocused by interactionSource.collectIsFocusedAsState()
 
@@ -142,7 +136,7 @@ fun LedgeTextField(
             Text(
                 text = label,
                 style = LedgeTextStyle.Caption.copy(
-                    color = if (isError) SemanticRed else TextMuted2,
+                    color = if (isError) colors.semanticRed else colors.textMuted2,
                     letterSpacing = 0.8.sp,
                 ),
                 modifier = Modifier.padding(bottom = 6.dp),
@@ -155,7 +149,7 @@ fun LedgeTextField(
             placeholder = {
                 Text(
                     text = placeholder,
-                    style = LedgeTextStyle.Body.copy(color = TextMuted),
+                    style = LedgeTextStyle.Body.copy(color = colors.textMuted),
                 )
             },
             trailingIcon = trailingIcon,
@@ -165,20 +159,20 @@ fun LedgeTextField(
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             visualTransformation = visualTransformation,
-            textStyle = LedgeTextStyle.Body.copy(color = TextPrimary),
+            textStyle = LedgeTextStyle.Body.copy(color = colors.textPrimary),
             shape = RoundedCornerShape(LedgeRadius.medium),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = BgCard2,
-                unfocusedContainerColor = BgCard,
-                errorContainerColor = RedDim,
-                focusedBorderColor = Gold,
-                unfocusedBorderColor = BorderSubtle,
-                errorBorderColor = SemanticRed,
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary,
-                cursorColor = Gold,
-                focusedTrailingIconColor = Gold,
-                unfocusedTrailingIconColor = TextMuted,
+                focusedContainerColor = colors.bgCard2,
+                unfocusedContainerColor = colors.bgCard,
+                errorContainerColor = colors.redDim,
+                focusedBorderColor = colors.gold,
+                unfocusedBorderColor = colors.borderSubtle,
+                errorBorderColor = colors.semanticRed,
+                focusedTextColor = colors.textPrimary,
+                unfocusedTextColor = colors.textPrimary,
+                cursorColor = colors.gold,
+                focusedTrailingIconColor = colors.gold,
+                unfocusedTrailingIconColor = colors.textMuted,
             ),
             modifier = Modifier.fillMaxWidth(),
         )

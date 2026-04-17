@@ -130,7 +130,7 @@ class AuthViewModel @Inject constructor(
         val result = authEligibilityUseCase.canProceed(
             email = state.email,
             password = state.password,
-            authFlow = state.authFlow,
+            authFlow = state.authFlow
         )
         setState { copy(canProceed = result) }
     }
@@ -151,7 +151,7 @@ class AuthViewModel @Inject constructor(
         setState {
             copy(
                 fullNameError = fullNameError,
-                confirmPasswordError = confirmPasswordError,
+                confirmPasswordError = confirmPasswordError
             )
         }
     }

@@ -79,6 +79,10 @@ class HomeViewModel @Inject constructor(
             HomeUiEvent.SeeAllTransactionsClicked -> {
                 sendSideEffect(HomeSideEffect.NavigateToTransactions)
             }
+
+            HomeUiEvent.ProfileClicked -> {
+                sendSideEffect(HomeSideEffect.NavigateToProfile)
+            }
         }
     }
 
@@ -105,6 +109,7 @@ data class HomeState(
     val userDetails: UserDetailsState = UserDetailsState(),
     val selectedPeriod: TimePeriod = TimePeriod.MONTH,
     val isDashboardLoading: Boolean = true,
+    val showDot: Boolean = false,
     val summaryState: SummaryState = SummaryState(),
     val categorySpending: List<CategorySpend> = emptyList(),
     val recentTransactions: List<RecentTransaction> = emptyList(),
@@ -127,8 +132,11 @@ data class SummaryState(
 sealed interface HomeUiEvent {
     data class PeriodChanged(val period: TimePeriod) : HomeUiEvent
     data object SeeAllTransactionsClicked : HomeUiEvent
+    data object ProfileClicked : HomeUiEvent
 }
 
 sealed interface HomeSideEffect {
     data object NavigateToTransactions : HomeSideEffect
+    data object NavigateToProfile : HomeSideEffect
+
 }

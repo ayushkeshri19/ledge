@@ -45,7 +45,7 @@ internal fun AuthNavGraph(
             }
 
             entry<AuthRoute.ForgotPassword> {
-                ResetPasswordScreen(onBack = ::popAuth)
+                ResetPasswordScreen(::popAuth)
             }
         },
         onBack = ::popAuth

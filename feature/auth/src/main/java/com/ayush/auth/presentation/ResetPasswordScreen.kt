@@ -42,18 +42,10 @@ import com.ayush.ui.components.LedgeLogo
 import com.ayush.ui.components.LedgePrimaryButton
 import com.ayush.ui.components.LedgeSecondaryButton
 import com.ayush.ui.components.LedgeTextField
-import com.ayush.ui.theme.BgCard2
-import com.ayush.ui.theme.BorderFocus
 import com.ayush.ui.theme.DmMonoFontFamily
-import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldDim
-import com.ayush.ui.theme.GoldGlow
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
 
 @Composable
 fun ResetPasswordScreen(
@@ -134,7 +126,7 @@ private fun RequestStepContent(
             text = "Reset password",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 24.sp,
-                color = TextPrimary,
+                color = LedgeTheme.colors.textPrimary,
             ),
             textAlign = TextAlign.Center,
         )
@@ -142,7 +134,7 @@ private fun RequestStepContent(
         Text(
             text = "Enter the email address linked to your account\nand we'll send you a reset link.",
             style = LedgeTextStyle.BodySmall.copy(
-                color = TextMuted2,
+                color = LedgeTheme.colors.textMuted2,
                 lineHeight = 18.sp,
             ),
             textAlign = TextAlign.Center,
@@ -197,6 +189,7 @@ private fun EmailSentContent(
     email: String,
     onBack: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -208,7 +201,7 @@ private fun EmailSentContent(
                     .size(88.dp)
                     .background(
                         brush = Brush.radialGradient(
-                            colors = listOf(GoldGlow, androidx.compose.ui.graphics.Color.Transparent)
+                            colors = listOf(colors.goldGlow, androidx.compose.ui.graphics.Color.Transparent)
                         ),
                         shape = RoundedCornerShape(50),
                     )
@@ -216,14 +209,14 @@ private fun EmailSentContent(
             Box(
                 modifier = Modifier
                     .size(64.dp)
-                    .background(BgCard2, RoundedCornerShape(20.dp))
-                    .border(1.dp, BorderFocus, RoundedCornerShape(20.dp)),
+                    .background(colors.bgCard2, RoundedCornerShape(20.dp))
+                    .border(1.dp, colors.borderFocus, RoundedCornerShape(20.dp)),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
                     painter = painterResource(com.ayush.ui.R.drawable.ic_mail),
                     contentDescription = null,
-                    tint = Gold,
+                    tint = colors.gold,
                     modifier = Modifier.size(28.dp),
                 )
             }
@@ -235,7 +228,7 @@ private fun EmailSentContent(
             text = "Check your inbox",
             style = LedgeTextStyle.HeadingScreen.copy(
                 fontSize = 24.sp,
-                color = TextPrimary,
+                color = colors.textPrimary,
             ),
             textAlign = TextAlign.Center,
         )
@@ -244,7 +237,7 @@ private fun EmailSentContent(
 
         Text(
             text = "We've sent a reset link to",
-            style = LedgeTextStyle.BodySmall.copy(color = TextMuted2),
+            style = LedgeTextStyle.BodySmall.copy(color = colors.textMuted2),
             textAlign = TextAlign.Center,
         )
 
@@ -252,14 +245,14 @@ private fun EmailSentContent(
 
         Box(
             modifier = Modifier
-                .background(GoldDim, RoundedCornerShape(LedgeRadius.pill))
-                .border(1.dp, BorderFocus, RoundedCornerShape(LedgeRadius.pill))
+                .background(colors.goldDim, RoundedCornerShape(LedgeRadius.pill))
+                .border(1.dp, colors.borderFocus, RoundedCornerShape(LedgeRadius.pill))
                 .padding(horizontal = 16.dp, vertical = 6.dp),
         ) {
             Text(
                 text = email,
                 style = LedgeTextStyle.BodySmall.copy(
-                    color = Gold,
+                    color = colors.gold,
                     fontFamily = DmMonoFontFamily,
                 ),
             )
@@ -270,7 +263,7 @@ private fun EmailSentContent(
         Text(
             text = "If it doesn't arrive within a minute,\ncheck your spam folder.",
             style = LedgeTextStyle.Caption.copy(
-                color = TextMuted,
+                color = colors.textMuted,
                 lineHeight = 16.sp,
             ),
             textAlign = TextAlign.Center,

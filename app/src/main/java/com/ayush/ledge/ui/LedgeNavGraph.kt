@@ -14,6 +14,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.common.auth.AuthState
+import com.ayush.profile.presentation.UserProfileScreen
 
 @Composable
 internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
@@ -71,9 +72,17 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
                     onSignOut = {
                         backStack.clear()
                         backStack.add(AuthRoute.Auth)
-
                         mainViewModel.signOut()
                     },
+                    onNavigateToProfile = {
+                        backStack.add(LedgeRoute.Profile)
+                    }
+                )
+            }
+
+            entry<LedgeRoute.Profile> {
+                UserProfileScreen(
+                    onBack = { backStack.remove(LedgeRoute.Profile) }
                 )
             }
         },

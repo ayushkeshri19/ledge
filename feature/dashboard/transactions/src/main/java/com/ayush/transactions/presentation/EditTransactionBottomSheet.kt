@@ -43,18 +43,9 @@ import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.LedgeSelectableChip
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.components.SegmentOption
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BgDeep
-import com.ayush.ui.theme.BgSurface
-import com.ayush.ui.theme.BorderSubtle
-import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.SemanticGreen
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 import java.util.Calendar
 
 private data class EditFormState(
@@ -104,6 +95,7 @@ internal fun EditTransactionSheet(
     onSave: (TransactionsEvent.UpdateTransaction) -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     var form by remember { mutableStateOf(EditFormState.from(transaction)) }
 
     Column(
@@ -120,9 +112,9 @@ internal fun EditTransactionSheet(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(text = "Edit Transaction", style = LedgeTextStyle.HeadingScreen, color = TextPrimary)
+            Text(text = "Edit Transaction", style = LedgeTextStyle.HeadingScreen, color = colors.textPrimary)
             IconButton(onClick = onDismiss) {
-                Icon(Icons.Filled.Close, contentDescription = "Close", tint = TextMuted)
+                Icon(Icons.Filled.Close, contentDescription = "Close", tint = colors.textMuted)
             }
         }
 
@@ -130,8 +122,8 @@ internal fun EditTransactionSheet(
 
         LedgeSegmentedToggle(
             options = listOf(
-                SegmentOption(TransactionType.EXPENSE, "Expense", SemanticRed),
-                SegmentOption(TransactionType.INCOME, "Income", SemanticGreen),
+                SegmentOption(TransactionType.EXPENSE, "Expense", colors.semanticRed),
+                SegmentOption(TransactionType.INCOME, "Income", colors.semanticGreen),
             ),
             selectedValue = form.type,
             onSelect = { form = form.copy(type = it) },
@@ -147,7 +139,7 @@ internal fun EditTransactionSheet(
             isError = form.amountError != null,
             errorMessage = form.amountError,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            leadingIcon = { Text(text = "\u20B9", style = LedgeTextStyle.AmountMedium, color = Gold) },
+            leadingIcon = { Text(text = "\u20B9", style = LedgeTextStyle.AmountMedium, color = colors.gold) },
             modifier = Modifier.fillMaxWidth(),
         )
 
@@ -167,7 +159,7 @@ internal fun EditTransactionSheet(
 
         Text(
             text = "DATE & TIME",
-            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
             modifier = Modifier.padding(bottom = 6.dp),
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -175,21 +167,25 @@ internal fun EditTransactionSheet(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(LedgeRadius.medium))
-                    .background(BgCard)
-                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                    .background(colors.bgCard)
+                    .border(1.dp, colors.borderSubtle, RoundedCornerShape(LedgeRadius.medium))
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
-                Text(text = formatDate(form.dateMillis), style = LedgeTextStyle.BodySmall, color = TextMuted)
+                Text(text = formatDate(form.dateMillis), style = LedgeTextStyle.BodySmall, color = colors.textMuted)
             }
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(LedgeRadius.medium))
-                    .background(BgCard)
-                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                    .background(colors.bgCard)
+                    .border(1.dp, colors.borderSubtle, RoundedCornerShape(LedgeRadius.medium))
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
-                Text(text = formatTime(form.hour, form.minute), style = LedgeTextStyle.BodySmall, color = TextMuted)
+                Text(
+                    text = formatTime(form.hour, form.minute),
+                    style = LedgeTextStyle.BodySmall,
+                    color = colors.textMuted
+                )
             }
         }
 
@@ -197,7 +193,7 @@ internal fun EditTransactionSheet(
 
         Text(
             text = "CATEGORY",
-            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
             modifier = Modifier.padding(bottom = 8.dp),
         )
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -218,18 +214,18 @@ internal fun EditTransactionSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(LedgeRadius.medium))
-                .background(BgCard)
-                .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                .background(colors.bgCard)
+                .border(1.dp, colors.borderSubtle, RoundedCornerShape(LedgeRadius.medium))
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Column {
-                Text(text = "REPEATS", style = LedgeTextStyle.Caption.copy(color = TextMuted2))
+                Text(text = "REPEATS", style = LedgeTextStyle.Caption.copy(color = colors.textMuted2))
                 Text(
                     text = if (form.isRecurring) "Recurring transaction" else "One-time transaction",
                     style = LedgeTextStyle.BodySmall,
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                 )
             }
             Switch(
@@ -241,11 +237,11 @@ internal fun EditTransactionSheet(
                     )
                 },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = BgDeep,
-                    checkedTrackColor = Gold,
-                    uncheckedThumbColor = TextMuted,
-                    uncheckedTrackColor = BgSurface,
-                    uncheckedBorderColor = BorderSubtle,
+                    checkedThumbColor = colors.bgDeep,
+                    checkedTrackColor = colors.gold,
+                    uncheckedThumbColor = colors.textMuted,
+                    uncheckedTrackColor = colors.bgSurface,
+                    uncheckedBorderColor = colors.borderSubtle,
                 ),
             )
         }

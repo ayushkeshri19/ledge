@@ -1,9 +1,12 @@
 package com.ayush.datastore.data.repository
 
 
+import com.ayush.common.theme.ThemeMode
 import com.ayush.datastore.data.AppDataStore
 import com.ayush.datastore.domain.repository.AppDataStoreRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AppDataStoreRepositoryImpl @Inject constructor(
@@ -23,5 +26,21 @@ class AppDataStoreRepositoryImpl @Inject constructor(
 
     override suspend fun clearData() {
         dataStore.clear()
+    }
+
+    override fun observeThemeMode(): Flow<ThemeMode> {
+        return dataStore.getValue(
+            key = AppDataStore.PreferencesKey.THEME_MODE,
+            defaultValue = ThemeMode.SYSTEM.name
+        ).map { raw ->
+            runCatching { ThemeMode.valueOf(raw) }.getOrDefault(ThemeMode.SYSTEM)
+        }
+    }
+
+    override suspend fun setThemeMode(mode: ThemeMode) {
+        dataStore.putValue(
+            key = AppDataStore.PreferencesKey.THEME_MODE,
+            value = mode.name
+        )
     }
 }

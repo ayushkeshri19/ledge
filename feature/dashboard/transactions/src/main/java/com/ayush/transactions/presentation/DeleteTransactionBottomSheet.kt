@@ -22,12 +22,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
-import com.ayush.ui.theme.BgCard
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 internal fun DeleteConfirmationSheet(
@@ -35,9 +32,10 @@ internal fun DeleteConfirmationSheet(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     val isExpense = transaction.type == TransactionType.EXPENSE
     val amountPrefix = if (isExpense) "-" else "+"
-    val amountColor = if (isExpense) SemanticRed else com.ayush.ui.theme.SemanticGreen
+    val amountColor = if (isExpense) colors.semanticRed else colors.semanticGreen
 
     Column(
         modifier = Modifier
@@ -48,7 +46,7 @@ internal fun DeleteConfirmationSheet(
         Text(
             text = "Delete Transaction",
             style = LedgeTextStyle.HeadingScreen,
-            color = TextPrimary,
+            color = colors.textPrimary,
         )
 
         Spacer(Modifier.height(4.dp))
@@ -56,7 +54,7 @@ internal fun DeleteConfirmationSheet(
         Text(
             text = "This action cannot be undone.",
             style = LedgeTextStyle.BodySmall,
-            color = TextMuted,
+            color = colors.textMuted,
         )
 
         Spacer(Modifier.height(20.dp))
@@ -65,7 +63,7 @@ internal fun DeleteConfirmationSheet(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(LedgeRadius.medium))
-                .background(BgCard)
+                .background(colors.bgCard)
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -73,7 +71,7 @@ internal fun DeleteConfirmationSheet(
                 Text(
                     text = transaction.note,
                     style = LedgeTextStyle.HeadingCard,
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -81,7 +79,7 @@ internal fun DeleteConfirmationSheet(
                 Text(
                     text = "${formatDate(transaction.date)}, ${formatTime(transaction.date)}",
                     style = LedgeTextStyle.Caption,
-                    color = TextMuted,
+                    color = colors.textMuted,
                 )
             }
             Text(
@@ -93,7 +91,7 @@ internal fun DeleteConfirmationSheet(
 
         Spacer(Modifier.height(24.dp))
 
-        HorizontalDivider(color = BgCard)
+        HorizontalDivider(color = colors.bgCard)
 
         Spacer(Modifier.height(8.dp))
 
@@ -103,7 +101,7 @@ internal fun DeleteConfirmationSheet(
         ) {
             TextButton(
                 onClick = onDismiss,
-                colors = ButtonDefaults.textButtonColors(contentColor = TextMuted),
+                colors = ButtonDefaults.textButtonColors(contentColor = colors.textMuted),
             ) {
                 Text(text = "Cancel", style = LedgeTextStyle.Button)
             }
@@ -112,7 +110,7 @@ internal fun DeleteConfirmationSheet(
 
             TextButton(
                 onClick = onConfirm,
-                colors = ButtonDefaults.textButtonColors(contentColor = SemanticRed),
+                colors = ButtonDefaults.textButtonColors(contentColor = colors.semanticRed),
             ) {
                 Text(text = "Delete", style = LedgeTextStyle.Button)
             }

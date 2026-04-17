@@ -10,15 +10,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ayush.ui.theme.BorderSubtle
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextMuted
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeDivider(
     label: String = "or continue with",
     modifier: Modifier = Modifier,
 ) {
+    val colors = LedgeTheme.colors
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -26,19 +26,19 @@ fun LedgeDivider(
     ) {
         HorizontalDivider(
             modifier = Modifier.weight(1f),
-            color = BorderSubtle,
+            color = colors.borderSubtle,
             thickness = 1.dp,
         )
         Text(
             text = label,
             style = LedgeTextStyle.Caption.copy(
-                color = TextMuted,
+                color = colors.textMuted,
                 letterSpacing = 0.4.sp,
             ),
         )
         HorizontalDivider(
             modifier = Modifier.weight(1f),
-            color = BorderSubtle,
+            color = colors.borderSubtle,
             thickness = 1.dp,
         )
     }

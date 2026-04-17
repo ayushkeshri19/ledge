@@ -31,10 +31,8 @@ import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.LedgeSelectableChip
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.components.SegmentOption
-import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 private enum class BudgetType(val label: String) {
     OVERALL("Overall"),
@@ -49,6 +47,7 @@ fun AddEditBudgetSheet(
     onDelete: ((Long) -> Unit)?,
     onDismiss: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     val isEditing = editingBudget != null
 
     var budgetType by remember {
@@ -71,8 +70,9 @@ fun AddEditBudgetSheet(
         mutableFloatStateOf(editingBudget?.budget?.warningThreshold?.toFloat() ?: 80f)
     }
 
-    val typeOptions = remember {
-        BudgetType.entries.map { SegmentOption(it, it.label, Gold) }
+    val gold = colors.gold
+    val typeOptions = remember(gold) {
+        BudgetType.entries.map { SegmentOption(it, it.label, gold) }
     }
 
     val canSave = amountText.toDoubleOrNull()?.let { it > 0 } == true
@@ -86,7 +86,7 @@ fun AddEditBudgetSheet(
         Text(
             text = if (isEditing) "Edit Budget" else "New Budget",
             style = LedgeTextStyle.HeadingScreen,
-            color = TextPrimary,
+            color = colors.textPrimary,
         )
 
         Spacer(Modifier.height(20.dp))
@@ -104,7 +104,7 @@ fun AddEditBudgetSheet(
             Text(
                 text = "CATEGORY",
                 style = LedgeTextStyle.LabelCaps,
-                color = TextMuted,
+                color = colors.textMuted,
             )
             Spacer(Modifier.height(8.dp))
             LazyRow(
@@ -136,13 +136,13 @@ fun AddEditBudgetSheet(
         Text(
             text = "ALERT THRESHOLD",
             style = LedgeTextStyle.LabelCaps,
-            color = TextMuted,
+            color = colors.textMuted,
         )
         Spacer(Modifier.height(4.dp))
         Text(
             text = "Alert me at ${threshold.toInt()}% of budget",
             style = LedgeTextStyle.BodySmall,
-            color = TextPrimary,
+            color = colors.textPrimary,
         )
         Spacer(Modifier.height(8.dp))
         Slider(
@@ -151,9 +151,9 @@ fun AddEditBudgetSheet(
             valueRange = 50f..95f,
             steps = 8,
             colors = SliderDefaults.colors(
-                thumbColor = Gold,
-                activeTrackColor = Gold,
-                inactiveTrackColor = Gold.copy(alpha = 0.2f),
+                thumbColor = colors.gold,
+                activeTrackColor = colors.gold,
+                inactiveTrackColor = colors.gold.copy(alpha = 0.2f),
             ),
         )
 

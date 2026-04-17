@@ -17,16 +17,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
-import com.ayush.ui.theme.BgDeep
-import com.ayush.ui.theme.BgSurface
-import com.ayush.ui.theme.Gold
-import com.ayush.ui.theme.GoldLight
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun FabButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val colors = LedgeTheme.colors
     Box(
         modifier = modifier,
         contentAlignment = Alignment.TopCenter,
@@ -36,15 +34,15 @@ fun FabButton(
                 .shadow(
                     elevation = 12.dp,
                     shape = CircleShape,
-                    ambientColor = Gold.copy(alpha = 0.2f),
-                    spotColor = Gold.copy(alpha = 0.4f),
+                    ambientColor = colors.gold.copy(alpha = 0.2f),
+                    spotColor = colors.gold.copy(alpha = 0.4f),
                 )
                 .size(52.dp)
-                .background(BgSurface, CircleShape)
+                .background(colors.bgSurface, CircleShape)
                 .padding(3.dp)
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(GoldLight, Gold),
+                        colors = listOf(colors.goldAccent, colors.gold),
                         start = Offset.Zero,
                         end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
                     ),
@@ -57,7 +55,7 @@ fun FabButton(
             Icon(
                 imageVector = Icons.Filled.Add,
                 contentDescription = "Add Transaction",
-                tint = BgDeep,
+                tint = colors.bgDeep,
                 modifier = Modifier.size(24.dp),
             )
         }

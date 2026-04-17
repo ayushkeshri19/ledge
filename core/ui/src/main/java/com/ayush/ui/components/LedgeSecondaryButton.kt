@@ -11,12 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ayush.ui.theme.BorderMid
-import com.ayush.ui.theme.BorderSubtle
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeSecondaryButton(
@@ -25,6 +22,7 @@ fun LedgeSecondaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
 ) {
+    val colors = LedgeTheme.colors
     OutlinedButton(
         onClick = onClick,
         enabled = enabled,
@@ -34,13 +32,13 @@ fun LedgeSecondaryButton(
         shape = RoundedCornerShape(LedgeRadius.large),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = Color.Transparent,
-            contentColor = TextMuted2,
+            contentColor = colors.textMuted2,
             disabledContainerColor = Color.Transparent,
-            disabledContentColor = TextMuted,
+            disabledContentColor = colors.textMuted,
         ),
         border = androidx.compose.foundation.BorderStroke(
             width = 1.dp,
-            color = if (enabled) BorderMid else BorderSubtle,
+            color = if (enabled) colors.borderMid else colors.borderSubtle,
         ),
     ) {
         Text(

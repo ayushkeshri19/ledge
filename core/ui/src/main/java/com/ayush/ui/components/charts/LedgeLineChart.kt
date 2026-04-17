@@ -26,7 +26,7 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ayush.ui.theme.BgDeep
+import com.ayush.ui.theme.LedgeTheme
 import kotlin.math.abs
 
 data class LineChartPoint(
@@ -48,6 +48,8 @@ fun LedgeLineChart(
     gridLineColor: Color = Color(0x0FFFFFFF),
 ) {
     if (points.size < 2) return
+
+    val dotCenterColor = LedgeTheme.colors.bgDeep
 
     val maxValue = points.maxOf { it.value }
     val minValue = points.minOf { it.value }
@@ -216,7 +218,7 @@ fun LedgeLineChart(
                 )
 
                 drawCircle(
-                    color = BgDeep,
+                    color = dotCenterColor,
                     radius = if (isSelected) selectedRadius.value - 2.5f else 2f,
                     center = offset,
                 )

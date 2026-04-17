@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -27,9 +28,11 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,16 +45,11 @@ import com.ayush.budget.domain.models.BudgetWithSpent
 import com.ayush.common.utils.formatAmount
 import com.ayush.common.utils.toast
 import com.ayush.ui.components.charts.LedgeBudgetProgressBar
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BgSurface
-import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.SemanticGreen
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 import kotlinx.coroutines.launch
+
+private val LocalEventSink = staticCompositionLocalOf<(BudgetEvent) -> Unit> { error {} }
 
 @Composable
 fun BudgetScreen() {
@@ -59,55 +57,57 @@ fun BudgetScreen() {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    LaunchedEffect(Unit) {
-        viewModel.sideEffect.collect { effect ->
-            when (effect) {
-                is BudgetSideEffect.ShowToast -> effect.message.toast(context)
+    CompositionLocalProvider(LocalEventSink provides viewModel::onEvent) {
+        LaunchedEffect(Unit) {
+            viewModel.sideEffect.collect { effect ->
+                when (effect) {
+                    is BudgetSideEffect.ShowToast -> effect.message.toast(context)
+                }
             }
         }
-    }
 
-    BudgetContent(
-        state = state,
-        onEvent = viewModel::onEvent,
-    )
+        BudgetContent(state)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BudgetContent(
-    state: BudgetState,
-    onEvent: (BudgetEvent) -> Unit,
-) {
+private fun BudgetContent(state: BudgetState) {
+    val colors = LedgeTheme.colors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
+    val onEvent = LocalEventSink.current
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = "Budgets",
                 style = LedgeTextStyle.HeadingScreen,
-                color = TextPrimary,
+                color = colors.textPrimary
             )
             Box(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
-                    .background(Gold.copy(alpha = 0.12f))
+                    .background(colors.gold.copy(alpha = 0.12f))
                     .clickable { onEvent(BudgetEvent.ShowAddSheet) },
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 Icon(
                     Icons.Filled.Add,
                     contentDescription = "Add budget",
-                    tint = Gold,
-                    modifier = Modifier.size(20.dp),
+                    tint = colors.gold,
+                    modifier = Modifier.size(20.dp)
                 )
             }
         }
@@ -119,9 +119,9 @@ private fun BudgetContent(
                     contentAlignment = Alignment.Center,
                 ) {
                     CircularProgressIndicator(
-                        color = Gold,
+                        color = colors.gold,
                         modifier = Modifier.size(32.dp),
-                        strokeWidth = 2.dp,
+                        strokeWidth = 2.dp
                     )
                 }
             }
@@ -129,27 +129,27 @@ private fun BudgetContent(
             state.overallBudget == null && state.categoryBudgets.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
                             text = "No budgets yet",
                             style = LedgeTextStyle.HeadingCard,
-                            color = TextMuted,
+                            color = colors.textMuted
                         )
                         Text(
                             text = "Set spending limits to stay on track",
                             style = LedgeTextStyle.BodySmall,
-                            color = TextMuted,
+                            color = colors.textMuted
                         )
                         Spacer(Modifier.height(4.dp))
                         Text(
                             text = "Tap + to create one",
                             style = LedgeTextStyle.BodySmall,
-                            color = Gold,
+                            color = colors.gold
                         )
                     }
                 }
@@ -160,7 +160,7 @@ private fun BudgetContent(
                     contentPadding = PaddingValues(
                         start = 20.dp,
                         end = 20.dp,
-                        bottom = 80.dp,
+                        bottom = 80.dp
                     ),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
@@ -168,7 +168,7 @@ private fun BudgetContent(
                         item(key = "overall") {
                             OverallBudgetCard(
                                 budget = overall,
-                                onClick = { onEvent(BudgetEvent.ShowEditSheet(overall)) },
+                                onClick = { onEvent(BudgetEvent.ShowEditSheet(overall)) }
                             )
                         }
                     }
@@ -178,8 +178,8 @@ private fun BudgetContent(
                             Text(
                                 text = "CATEGORY BUDGETS",
                                 style = LedgeTextStyle.LabelCaps,
-                                color = TextMuted,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                                color = colors.textMuted,
+                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                             )
                         }
 
@@ -189,7 +189,7 @@ private fun BudgetContent(
                         ) { budget ->
                             CategoryBudgetCard(
                                 budget = budget,
-                                onClick = { onEvent(BudgetEvent.ShowEditSheet(budget)) },
+                                onClick = { onEvent(BudgetEvent.ShowEditSheet(budget)) }
                             )
                         }
                     }
@@ -202,7 +202,7 @@ private fun BudgetContent(
         ModalBottomSheet(
             onDismissRequest = { onEvent(BudgetEvent.DismissSheet) },
             sheetState = sheetState,
-            containerColor = BgSurface,
+            containerColor = colors.bgSurface
         ) {
             AddEditBudgetSheet(
                 categories = state.categories,
@@ -224,7 +224,7 @@ private fun BudgetContent(
                         sheetState.hide()
                         onEvent(BudgetEvent.DismissSheet)
                     }
-                },
+                }
             )
         }
     }
@@ -235,42 +235,43 @@ private fun OverallBudgetCard(
     budget: BudgetWithSpent,
     onClick: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     val statusColor = when (budget.status) {
-        BudgetStatus.NORMAL -> Gold
-        BudgetStatus.WARNING -> Gold
-        BudgetStatus.EXCEEDED -> SemanticRed
+        BudgetStatus.NORMAL -> colors.gold
+        BudgetStatus.WARNING -> colors.gold
+        BudgetStatus.EXCEEDED -> colors.semanticRed
     }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
-            .background(BgCard)
+            .background(colors.bgCard)
             .clickable(onClick = onClick)
-            .padding(20.dp),
+            .padding(20.dp)
     ) {
         Text(
             text = "MONTHLY BUDGET",
             style = LedgeTextStyle.LabelCaps,
-            color = TextMuted,
+            color = colors.textMuted
         )
         Spacer(Modifier.height(8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom,
+            verticalAlignment = Alignment.Bottom
         ) {
             Column {
                 Text(
                     text = "\u20B9${formatAmount(budget.spent)}",
                     style = LedgeTextStyle.AmountLarge,
-                    color = statusColor,
+                    color = statusColor
                 )
                 Text(
                     text = "of \u20B9${formatAmount(budget.budget.amount)}",
                     style = LedgeTextStyle.BodySmall,
-                    color = TextMuted,
+                    color = colors.textMuted
                 )
             }
             StatusBadge(budget = budget)
@@ -281,7 +282,7 @@ private fun OverallBudgetCard(
         LedgeBudgetProgressBar(
             progress = budget.ratio,
             warningThreshold = budget.warningRatio,
-            height = 10.dp,
+            height = 10.dp
         )
     }
 }
@@ -289,22 +290,23 @@ private fun OverallBudgetCard(
 @Composable
 private fun CategoryBudgetCard(
     budget: BudgetWithSpent,
-    onClick: () -> Unit,
+    onClick: () -> Unit
 ) {
+    val colors = LedgeTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(BgCard)
+            .background(colors.bgCard)
             .clickable(onClick = onClick)
             .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(10.dp)
                 .clip(CircleShape)
-                .background(budget.budget.categoryColor ?: TextMuted),
+                .background(budget.budget.categoryColor ?: colors.textMuted)
         )
 
         Spacer(Modifier.width(12.dp))
@@ -317,7 +319,7 @@ private fun CategoryBudgetCard(
                 Text(
                     text = budget.budget.categoryName ?: "Unknown",
                     style = LedgeTextStyle.HeadingCard,
-                    color = TextPrimary,
+                    color = colors.textPrimary
                 )
                 StatusBadge(budget = budget)
             }
@@ -326,20 +328,20 @@ private fun CategoryBudgetCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
                     text = "\u20B9${formatAmount(budget.spent)} / \u20B9${formatAmount(budget.budget.amount)}",
                     style = LedgeTextStyle.Caption,
-                    color = TextMuted2,
+                    color = colors.textMuted2
                 )
                 Text(
                     text = "${(budget.ratio * 100).toInt()}%",
                     style = LedgeTextStyle.Caption,
                     color = when (budget.status) {
-                        BudgetStatus.NORMAL -> TextMuted2
-                        BudgetStatus.WARNING -> Gold
-                        BudgetStatus.EXCEEDED -> SemanticRed
+                        BudgetStatus.NORMAL -> colors.textMuted2
+                        BudgetStatus.WARNING -> colors.gold
+                        BudgetStatus.EXCEEDED -> colors.semanticRed
                     },
                 )
             }
@@ -349,7 +351,7 @@ private fun CategoryBudgetCard(
             LedgeBudgetProgressBar(
                 progress = budget.ratio,
                 warningThreshold = budget.warningRatio,
-                height = 6.dp,
+                height = 6.dp
             )
         }
     }
@@ -357,16 +359,17 @@ private fun CategoryBudgetCard(
 
 @Composable
 private fun StatusBadge(budget: BudgetWithSpent) {
+    val colors = LedgeTheme.colors
     when (budget.status) {
         BudgetStatus.EXCEEDED -> {
             Text(
                 text = "Over by \u20B9${formatAmount(budget.overBy)}",
                 style = LedgeTextStyle.Caption,
-                color = SemanticRed,
+                color = colors.semanticRed,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
-                    .background(SemanticRed.copy(alpha = 0.1f))
-                    .padding(horizontal = 6.dp, vertical = 2.dp),
+                    .background(colors.semanticRed.copy(alpha = 0.1f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
             )
         }
 
@@ -374,7 +377,7 @@ private fun StatusBadge(budget: BudgetWithSpent) {
             Text(
                 text = "\u20B9${formatAmount(budget.remaining)} left",
                 style = LedgeTextStyle.Caption,
-                color = Gold,
+                color = colors.gold
             )
         }
 
@@ -382,7 +385,7 @@ private fun StatusBadge(budget: BudgetWithSpent) {
             Text(
                 text = "\u20B9${formatAmount(budget.remaining)} left",
                 style = LedgeTextStyle.Caption,
-                color = SemanticGreen,
+                color = colors.semanticGreen
             )
         }
     }

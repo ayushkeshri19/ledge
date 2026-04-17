@@ -20,11 +20,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BorderSubtle
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeSocialButton(
@@ -35,6 +33,7 @@ fun LedgeSocialButton(
     enabled: Boolean = true,
     isLoading: Boolean = false,
 ) {
+    val colors = LedgeTheme.colors
     OutlinedButton(
         onClick = onClick,
         enabled = enabled && !isLoading,
@@ -43,15 +42,15 @@ fun LedgeSocialButton(
             .height(52.dp),
         shape = RoundedCornerShape(LedgeRadius.large),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = BgCard,
-            contentColor = TextPrimary,
+            containerColor = colors.bgCard,
+            contentColor = colors.textPrimary,
         ),
-        border = androidx.compose.foundation.BorderStroke(1.dp, BorderSubtle),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.borderSubtle),
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(22.dp),
-                color = TextPrimary,
+                color = colors.textPrimary,
                 strokeWidth = 2.dp,
             )
         } else {

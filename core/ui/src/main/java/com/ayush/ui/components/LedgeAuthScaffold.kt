@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,17 +15,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.ayush.ui.theme.BgDeep
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeAuthScaffold(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(BgDeep),
+            .background(colors.bgDeep),
     ) {
         Box(
             modifier = Modifier
@@ -34,7 +36,7 @@ fun LedgeAuthScaffold(
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0x12C9A84C),
+                            colors.gold.copy(alpha = 0.07f),
                             Color.Transparent,
                         ),
                         radius = 700f,
@@ -45,6 +47,7 @@ fun LedgeAuthScaffold(
         Column(
             modifier = modifier
                 .fillMaxSize()
+                .safeDrawingPadding()
                 .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             content = content,

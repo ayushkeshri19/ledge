@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -69,18 +70,9 @@ import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.LedgeSelectableChip
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.components.SegmentOption
-import com.ayush.ui.theme.BgCard
-import com.ayush.ui.theme.BgDeep
-import com.ayush.ui.theme.BgSurface
-import com.ayush.ui.theme.BorderSubtle
-import com.ayush.ui.theme.Gold
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
-import com.ayush.ui.theme.SemanticGreen
-import com.ayush.ui.theme.SemanticRed
-import com.ayush.ui.theme.TextMuted
-import com.ayush.ui.theme.TextMuted2
-import com.ayush.ui.theme.TextPrimary
+import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun AddTransactionScreen(
@@ -120,6 +112,7 @@ private fun AddTransactionContent(
     onEvent: (AddTransactionEvent) -> Unit,
     onBack: () -> Unit,
 ) {
+    val colors = LedgeTheme.colors
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
@@ -127,10 +120,11 @@ private fun AddTransactionContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .statusBarsPadding()
             .navigationBarsPadding()
             .imePadding()
             .pointerInput(Unit) { detectTapGestures { focusManager.clearFocus() } }
-            .background(BgDeep)
+            .background(colors.bgDeep)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
     ) {
@@ -145,24 +139,24 @@ private fun AddTransactionContent(
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Back",
-                    tint = TextPrimary,
+                    tint = colors.textPrimary,
                 )
             }
             Text(
                 text = "Add Transaction",
                 style = LedgeTextStyle.HeadingScreen,
-                color = TextPrimary,
+                color = colors.textPrimary,
             )
         }
 
         LedgeSegmentedToggle(
             options = listOf(
-                SegmentOption(TransactionType.EXPENSE, "Expense", SemanticRed),
-                SegmentOption(TransactionType.INCOME, "Income", SemanticGreen),
+                SegmentOption(TransactionType.EXPENSE, "Expense", colors.semanticRed),
+                SegmentOption(TransactionType.INCOME, "Income", colors.semanticGreen),
             ),
             selectedValue = state.type,
             onSelect = { onEvent(AddTransactionEvent.TypeChanged(it)) },
-            containerColor = BgSurface,
+            containerColor = colors.bgSurface,
         )
 
         Spacer(Modifier.height(16.dp))
@@ -179,7 +173,7 @@ private fun AddTransactionContent(
                 Text(
                     text = "\u20B9",
                     style = LedgeTextStyle.AmountMedium,
-                    color = Gold,
+                    color = colors.gold,
                 )
             },
             modifier = Modifier.fillMaxWidth(),
@@ -201,7 +195,7 @@ private fun AddTransactionContent(
 
         Text(
             text = "DATE & TIME",
-            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
             modifier = Modifier.padding(bottom = 6.dp),
         )
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -209,8 +203,8 @@ private fun AddTransactionContent(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(LedgeRadius.medium))
-                    .background(BgCard)
-                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                    .background(colors.bgCard)
+                    .border(1.dp, colors.borderSubtle, RoundedCornerShape(LedgeRadius.medium))
                     .clickable { showDatePicker = true }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
@@ -218,14 +212,14 @@ private fun AddTransactionContent(
                     Icon(
                         Icons.Filled.CalendarMonth,
                         contentDescription = null,
-                        tint = Gold,
+                        tint = colors.gold,
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = formatDate(state.dateMillis, showYear = true),
                         style = LedgeTextStyle.BodySmall,
-                        color = TextPrimary,
+                        color = colors.textPrimary,
                     )
                 }
             }
@@ -233,8 +227,8 @@ private fun AddTransactionContent(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(LedgeRadius.medium))
-                    .background(BgCard)
-                    .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                    .background(colors.bgCard)
+                    .border(1.dp, colors.borderSubtle, RoundedCornerShape(LedgeRadius.medium))
                     .clickable { showTimePicker = true }
                     .padding(horizontal = 16.dp, vertical = 14.dp),
             ) {
@@ -242,14 +236,14 @@ private fun AddTransactionContent(
                     Icon(
                         Icons.Filled.Schedule,
                         contentDescription = null,
-                        tint = Gold,
+                        tint = colors.gold,
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = formatTime(state.hour, state.minute),
                         style = LedgeTextStyle.BodySmall,
-                        color = TextPrimary,
+                        color = colors.textPrimary,
                     )
                 }
             }
@@ -259,7 +253,7 @@ private fun AddTransactionContent(
 
         Text(
             text = "CATEGORY",
-            style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+            style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
             modifier = Modifier.padding(bottom = 8.dp),
         )
         LazyRow(
@@ -287,8 +281,8 @@ private fun AddTransactionContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(LedgeRadius.medium))
-                .background(BgCard)
-                .border(1.dp, BorderSubtle, RoundedCornerShape(LedgeRadius.medium))
+                .background(colors.bgCard)
+                .border(1.dp, colors.borderSubtle, RoundedCornerShape(LedgeRadius.medium))
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -296,23 +290,23 @@ private fun AddTransactionContent(
             Column {
                 Text(
                     text = "REPEATS",
-                    style = LedgeTextStyle.Caption.copy(color = TextMuted2),
+                    style = LedgeTextStyle.Caption.copy(color = colors.textMuted2),
                 )
                 Text(
                     text = if (state.isRecurring) "Recurring transaction" else "One-time transaction",
                     style = LedgeTextStyle.BodySmall,
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                 )
             }
             Switch(
                 checked = state.isRecurring,
                 onCheckedChange = { onEvent(AddTransactionEvent.RecurringToggled(it)) },
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = BgDeep,
-                    checkedTrackColor = Gold,
-                    uncheckedThumbColor = TextMuted,
-                    uncheckedTrackColor = BgSurface,
-                    uncheckedBorderColor = BorderSubtle,
+                    checkedThumbColor = colors.bgDeep,
+                    checkedTrackColor = colors.gold,
+                    uncheckedThumbColor = colors.textMuted,
+                    uncheckedTrackColor = colors.bgSurface,
+                    uncheckedBorderColor = colors.borderSubtle,
                 ),
             )
         }
@@ -367,11 +361,11 @@ private fun AddTransactionContent(
                         }
                         showDatePicker = false
                     },
-                ) { Text("OK", color = Gold) }
+                ) { Text("OK", color = colors.gold) }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel", color = TextMuted)
+                    Text("Cancel", color = colors.textMuted)
                 }
             },
         ) {
@@ -389,14 +383,14 @@ private fun AddTransactionContent(
             Column(
                 modifier = Modifier
                     .clip(RoundedCornerShape(LedgeRadius.xxl))
-                    .background(BgCard)
+                    .background(colors.bgCard)
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = "Select Time",
                     style = LedgeTextStyle.HeadingCard,
-                    color = TextPrimary,
+                    color = colors.textPrimary,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 20.dp),
@@ -409,7 +403,7 @@ private fun AddTransactionContent(
                     horizontalArrangement = Arrangement.End,
                 ) {
                     TextButton(onClick = { showTimePicker = false }) {
-                        Text("Cancel", color = TextMuted)
+                        Text("Cancel", color = colors.textMuted)
                     }
                     TextButton(
                         onClick = {
@@ -421,11 +415,9 @@ private fun AddTransactionContent(
                             )
                             showTimePicker = false
                         },
-                    ) { Text("OK", color = Gold) }
+                    ) { Text("OK", color = colors.gold) }
                 }
             }
         }
     }
 }
-
-
