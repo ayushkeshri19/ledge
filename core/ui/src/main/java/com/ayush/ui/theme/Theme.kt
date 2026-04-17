@@ -1,8 +1,11 @@
 package com.ayush.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 
 private val LedgeDarkColorScheme = darkColorScheme(
     primary = LedgeMd3Primary,
@@ -20,15 +23,47 @@ private val LedgeDarkColorScheme = darkColorScheme(
     errorContainer = LedgeMd3ErrorContainer,
     onErrorContainer = LedgeMd3OnErrorContainer,
     outline = LedgeMd3Outline,
-    outlineVariant = LedgeMd3OutlineVariant,
+    outlineVariant = LedgeMd3OutlineVariant
+)
+
+private val LedgeLightColorScheme = lightColorScheme(
+    primary = LedgeMd3PrimaryLight,
+    onPrimary = LedgeMd3OnPrimaryLight,
+    primaryContainer = LedgeMd3PrimaryContainerLight,
+    onPrimaryContainer = LedgeMd3OnPrimaryContainerLight,
+    background = LedgeMd3BackgroundLight,
+    onBackground = LedgeMd3OnBackgroundLight,
+    surface = LedgeMd3SurfaceLight,
+    onSurface = LedgeMd3OnSurfaceLight,
+    surfaceVariant = LedgeMd3SurfaceVariantLight,
+    onSurfaceVariant = LedgeMd3OnSurfaceVariantLight,
+    error = LedgeMd3ErrorLight,
+    onError = LedgeMd3OnErrorLight,
+    errorContainer = LedgeMd3ErrorContainerLight,
+    onErrorContainer = LedgeMd3OnErrorContainerLight,
+    outline = LedgeMd3OutlineLight,
+    outlineVariant = LedgeMd3OutlineVariantLight
 )
 
 @Composable
-fun LedgeTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = LedgeDarkColorScheme,
-        typography = LedgeTypography,
-        shapes = LedgeShapes,
-        content = content,
-    )
+fun LedgeTheme(
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
+    content: @Composable () -> Unit
+) {
+    val useDark = when (themeMode) {
+        ThemeMode.DARK -> true
+        ThemeMode.LIGHT -> false
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
+    val ledgeColors = if (useDark) LedgeDarkColors else LedgeLightColors
+    val colorScheme = if (useDark) LedgeDarkColorScheme else LedgeLightColorScheme
+
+    CompositionLocalProvider(LocalLedgeColors provides ledgeColors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = LedgeTypography,
+            shapes = LedgeShapes,
+            content = content
+        )
+    }
 }
