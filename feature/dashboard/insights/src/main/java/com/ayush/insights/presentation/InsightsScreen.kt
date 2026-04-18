@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,22 +52,18 @@ fun InsightsScreen() {
     val viewModel: InsightsViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    val onEvent = LocalEventSink.current
-
-    InsightsContent(
-        state = state,
-        onPeriodChanged = { onEvent(InsightsEvent.PeriodChanged(it)) },
-    )
+    CompositionLocalProvider(LocalEventSink provides viewModel::onEvent) {
+        InsightsContent(state)
+    }
 }
 
 @Composable
-private fun InsightsContent(
-    state: InsightsState,
-    onPeriodChanged: (TimePeriod) -> Unit,
-) {
+private fun InsightsContent(state: InsightsState) {
     val colors = LedgeTheme.colors
 
     var seeMore by remember { mutableStateOf(false) }
+
+    val onEvent = LocalEventSink.current
 
     LazyColumn(
         modifier = Modifier
@@ -87,7 +84,7 @@ private fun InsightsContent(
         item {
             TimePeriodToggle(
                 selectedPeriod = state.selectedPeriod,
-                onPeriodChanged = onPeriodChanged
+                onPeriodChanged = { onEvent(InsightsEvent.PeriodChanged(it)) }
             )
         }
 
