@@ -32,8 +32,15 @@ data class BarChartData(
 data class BarChartGroup(
     val label: String,
     val values: List<Float>,
-    val colors: List<Color>
-)
+    val colors: List<Color>,
+) {
+    init {
+        require(values.size == colors.size) {
+            "values and colors must match; got ${values.size} vs ${colors.size}"
+        }
+        require(values.isNotEmpty()) { "group must have at least one value" }
+    }
+}
 
 @Composable
 fun LedgeBarChart(
@@ -43,7 +50,10 @@ fun LedgeBarChart(
     animationDurationMs: Int = 600,
     selectedIndex: Int? = null,
     onBarTap: ((Int) -> Unit)? = null,
-    labelColor: Color = Color(0x8CFFFFFF)
+    labelColor: Color = Color(0x8CFFFFFF),
+    showValues: Boolean = false,
+    valueFormatter: (Float) -> String = { it.toInt().toString() },
+    valueColor: Color = Color(0xCCFFFFFF),
 ) {
     if (bars.isEmpty()) return
 
@@ -99,7 +109,8 @@ fun LedgeBarChart(
     ) {
         val horizontalPadding = 24f
         val labelAreaHeight = 24.sp.toPx()
-        val topPadding = 8f
+        val valueLabelHeight = if (showValues) 16.sp.toPx() else 0f
+        val topPadding = 8f + valueLabelHeight
         val barAreaHeight = size.height - labelAreaHeight - topPadding
         val totalBarArea = size.width - horizontalPadding * 2
 
@@ -134,6 +145,23 @@ fun LedgeBarChart(
                 cornerRadius = CornerRadius(cornerRadius, cornerRadius)
             )
 
+            if (showValues && progress > 0.3f) {
+                val valueText = textMeasurer.measure(
+                    text = valueFormatter(bar.value),
+                    style = TextStyle(
+                        color = if (isSelected) bar.color else valueColor,
+                        fontSize = 11.sp
+                    )
+                )
+                drawText(
+                    textLayoutResult = valueText,
+                    topLeft = Offset(
+                        x = slotStart + (slotWidth - valueText.size.width) / 2,
+                        y = (barY - valueText.size.height - 4f).coerceAtLeast(2f)
+                    )
+                )
+            }
+
             val labelText = textMeasurer.measure(
                 text = bar.label,
                 style = TextStyle(
@@ -160,7 +188,79 @@ fun LedgeGroupedBarChart(
     groupGap: Dp = 12.dp,
     subBarGap: Dp = 3.dp,
     animationDurationMs: Int = 600,
-    labelColor: Color = Color(0x8CFFFFFF),
+    labelColor: Color = Color(0x8CFFFFFF)
 ) {
+    if (groups.isEmpty()) return
 
+    val subBarCount = groups.first().values.size
+    require(groups.all { it.values.size == subBarCount }) {
+        "all groups must have the same number of sub-bars"
+    }
+
+    val maxValue = groups.maxOf { g -> g.values.maxOrNull() ?: 0f }
+    if (maxValue == 0f) return
+
+    val animationProgress = remember { Animatable(0f) }
+    LaunchedEffect(groups) {
+        animationProgress.snapTo(0f)
+        animationProgress.animateTo(
+            targetValue = 1f,
+            animationSpec = tween(
+                durationMillis = animationDurationMs,
+                easing = EaseOutCubic
+            )
+        )
+    }
+
+    val textMeasurer = rememberTextMeasurer()
+
+    Canvas(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(180.dp)
+    ) {
+        val horizontalPadding = 24f
+        val labelAreaHeight = 24.sp.toPx()
+        val topPadding = 8f
+        val barAreaHeight = size.height - labelAreaHeight - topPadding
+        val totalBarArea = size.width - horizontalPadding * 2
+
+        val groupCount = groups.size
+        val groupGapPx = groupGap.toPx()
+        val subBarGapPx = subBarGap.toPx()
+        val cornerRadius = barCornerRadius.toPx()
+        val progress = animationProgress.value
+
+        val slotWidth = (totalBarArea - (groupCount - 1) * groupGapPx) / groupCount
+        val subBarWidth = (slotWidth - (subBarCount - 1) * subBarGapPx) / subBarCount
+
+        groups.forEachIndexed { groupIdx, group ->
+            val slotStart = horizontalPadding + groupIdx * (slotWidth + groupGapPx)
+
+            group.values.forEachIndexed { subIdx, value ->
+                val normalizedHeight = (value / maxValue) * barAreaHeight * progress
+                val barX = slotStart + subIdx * (subBarWidth + subBarGapPx)
+                val barY = topPadding + barAreaHeight - normalizedHeight
+
+                drawRoundRect(
+                    color = group.colors[subIdx],
+                    topLeft = Offset(barX, barY),
+                    size = Size(subBarWidth, normalizedHeight),
+                    cornerRadius = CornerRadius(cornerRadius, cornerRadius)
+                )
+            }
+
+            val labelText = textMeasurer.measure(
+                text = group.label,
+                style = TextStyle(color = labelColor, fontSize = 10.sp)
+            )
+            drawText(
+                textLayoutResult = labelText,
+                topLeft = Offset(
+                    x = slotStart + (slotWidth - labelText.size.width) / 2,
+                    y = topPadding + barAreaHeight + 6f
+                )
+            )
+        }
+    }
 }

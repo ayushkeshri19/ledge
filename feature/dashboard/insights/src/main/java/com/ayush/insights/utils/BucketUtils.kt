@@ -56,7 +56,11 @@ internal fun bucketSpendByWeekOfMonth(
         if (weekIdx in sums.indices) sums[weekIdx] += t.transaction.amount
     }
 
-    return (0 until bucketCount).map { i -> SpendBucket("W${i + 1}", sums[i]) }
+    return (0 until bucketCount).map { i ->
+        val first = i * 7 + 1
+        val last = minOf((i + 1) * 7, daysInMonth)
+        SpendBucket(label = "$first\u2013$last", amount = sums[i])
+    }
 }
 
 /**
