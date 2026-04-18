@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.ayush.common.utils.formatAmount
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.ui.theme.LedgeRadius
