@@ -53,4 +53,13 @@ class AppDataStore @Inject constructor(
     suspend fun clear() {
         dataStore.edit { it.clear() }
     }
+
+    suspend fun clearExcept(vararg preservedKeys: Preferences.Key<*>) {
+        val preserved = preservedKeys.toSet()
+        dataStore.edit { preferences ->
+            preferences.asMap().keys
+                .filterNot { it in preserved }
+                .forEach { preferences.remove(it) }
+        }
+    }
 }

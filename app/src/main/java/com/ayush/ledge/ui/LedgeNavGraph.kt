@@ -82,7 +82,12 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
 
             entry<LedgeRoute.Profile> {
                 UserProfileScreen(
-                    onBack = { backStack.remove(LedgeRoute.Profile) }
+                    onBack = { backStack.remove(LedgeRoute.Profile) },
+                    onSignOut = {
+                        backStack.clear()
+                        backStack.add(AuthRoute.Auth)
+                        mainViewModel.signOut()
+                    }
                 )
             }
         },

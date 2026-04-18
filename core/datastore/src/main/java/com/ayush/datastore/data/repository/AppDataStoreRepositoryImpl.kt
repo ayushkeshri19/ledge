@@ -28,6 +28,10 @@ class AppDataStoreRepositoryImpl @Inject constructor(
         dataStore.clear()
     }
 
+    override suspend fun clearUserData() {
+        dataStore.clearExcept(AppDataStore.PreferencesKey.THEME_MODE)
+    }
+
     override fun observeThemeMode(): Flow<ThemeMode> {
         return dataStore.getValue(
             key = AppDataStore.PreferencesKey.THEME_MODE,
