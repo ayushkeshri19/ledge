@@ -1,4 +1,4 @@
-package com.ayush.home.domain.models
+package com.ayush.insights.domain.models
 
 import androidx.compose.ui.graphics.Color
 

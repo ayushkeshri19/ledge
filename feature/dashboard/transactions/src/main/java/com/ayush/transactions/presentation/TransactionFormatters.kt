@@ -21,13 +21,6 @@ internal fun formatTime(hour: Int, minute: Int): String {
     return SimpleDateFormat("hh:mm a", Locale.getDefault()).format(cal.time)
 }
 
-internal fun formatAmount(amount: Double): String =
-    if (amount == amount.toLong().toDouble()) {
-        String.format(Locale.getDefault(), "%,d", amount.toLong())
-    } else {
-        String.format(Locale.getDefault(), "%,.2f", amount)
-    }
-
 internal fun formatAmountForInput(amount: Double): String =
     if (amount == amount.toLong().toDouble()) {
         amount.toLong().toString()

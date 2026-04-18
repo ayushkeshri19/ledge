@@ -26,9 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,16 +42,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ayush.common.models.TimePeriod
 import com.ayush.common.utils.formatAmount
-import com.ayush.home.domain.models.CategorySpend
 import com.ayush.home.domain.models.RecentTransaction
-import com.ayush.home.domain.models.TimePeriod
 import com.ayush.ui.components.AnimatedAmount
 import com.ayush.ui.components.DashboardShimmer
 import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.SegmentOption
-import com.ayush.ui.components.charts.LedgePieChart
-import com.ayush.ui.components.charts.PieChartSegment
 import com.ayush.ui.components.noRippleClickable
 import com.ayush.ui.theme.DmSansFontFamily
 import com.ayush.ui.theme.LedgeTextStyle
@@ -125,12 +120,6 @@ private fun HomeContent(state: HomeState) {
                 BalanceOverviewCard(state = state.summaryState)
             }
 
-            if (state.categorySpending.isNotEmpty()) {
-                item {
-                    SpendingByCategoryCard(spending = state.categorySpending)
-                }
-            }
-
             if (state.recentTransactions.isNotEmpty()) {
                 item {
                     RecentTransactionsCard(
@@ -154,7 +143,7 @@ private fun TimePeriodToggle(
             SegmentOption(
                 value = period,
                 label = period.label,
-                selectedColor = gold
+                selectedColor = gold,
             )
         }
     }
@@ -162,7 +151,7 @@ private fun TimePeriodToggle(
     LedgeSegmentedToggle(
         options = options,
         selectedValue = selectedPeriod,
-        onSelect = onPeriodChanged
+        onSelect = onPeriodChanged,
     )
 }
 
@@ -240,110 +229,6 @@ private fun BalanceOverviewCard(state: SummaryState) {
                     text = "-\u20B9${formatAmount(state.totalExpense)}",
                     style = LedgeTextStyle.AmountMedium,
                     color = colors.semanticRed
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun SpendingByCategoryCard(spending: List<CategorySpend>) {
-    val colors = LedgeTheme.colors
-    var selectedIndex by remember { mutableStateOf<Int?>(null) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(colors.bgCard)
-            .padding(20.dp)
-    ) {
-        Text(
-            text = "Spending by Category",
-            style = LedgeTextStyle.HeadingCard,
-            color = colors.textPrimary
-        )
-        Spacer(Modifier.height(16.dp))
-
-        val totalExpense = spending.sumOf { it.amount }
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            LedgePieChart(
-                segments = spending.map { cat ->
-                    PieChartSegment(
-                        value = cat.amount.toFloat(),
-                        color = cat.color,
-                        label = cat.categoryName
-                    )
-                },
-                modifier = Modifier.size(180.dp),
-                strokeWidth = 24.dp,
-                selectedIndex = selectedIndex,
-                onSegmentTap = { index ->
-                    selectedIndex = if (selectedIndex == index) null else index
-                },
-                centerContent = {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "TOTAL",
-                            style = LedgeTextStyle.LabelCaps,
-                            color = colors.textMuted
-                        )
-                        Text(
-                            text = "\u20B9${formatAmount(totalExpense)}",
-                            style = LedgeTextStyle.AmountLarge,
-                            color = colors.textPrimary
-                        )
-                    }
-                }
-            )
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        spending.forEachIndexed { index, category ->
-            val isSelected = index == selectedIndex
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .then(
-                        if (isSelected) Modifier.background(category.color.copy(alpha = 0.08f))
-                        else Modifier
-                    )
-                    .clickable {
-                        selectedIndex = if (selectedIndex == index) null else index
-                    }
-                    .padding(vertical = 8.dp, horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(category.color)
-                )
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    text = category.categoryName,
-                    style = LedgeTextStyle.BodySmall,
-                    color = if (isSelected) colors.textPrimary else colors.textMuted2,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "\u20B9${formatAmount(category.amount)}",
-                    style = LedgeTextStyle.BodySmall,
-                    color = if (isSelected) colors.textPrimary else colors.textMuted2
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    text = "${(category.percentage * 100).toInt()}%",
-                    style = LedgeTextStyle.Caption,
-                    color = colors.textMuted
                 )
             }
         }

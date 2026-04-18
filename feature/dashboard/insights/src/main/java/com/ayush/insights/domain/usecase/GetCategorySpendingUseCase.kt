@@ -1,15 +1,15 @@
-package com.ayush.home.domain.usecase
+package com.ayush.insights.domain.usecase
 
-import com.ayush.home.domain.models.CategorySpend
-import com.ayush.home.domain.models.TimePeriod
-import com.ayush.home.domain.repository.HomeRepository
+import com.ayush.common.models.TimePeriod
+import com.ayush.insights.domain.models.CategorySpend
+import com.ayush.insights.domain.repository.InsightsRepository
 import com.ayush.ui.utils.hexToColor
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetCategorySpendingUseCase @Inject constructor(
-    private val repository: HomeRepository,
+    private val repository: InsightsRepository,
 ) {
     operator fun invoke(period: TimePeriod): Flow<List<CategorySpend>> {
         val (start, end) = period.dateRange()

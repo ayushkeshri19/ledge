@@ -136,7 +136,7 @@ internal fun SignInScreenContent(
 
         Spacer(Modifier.height(56.dp))
 
-        LedgeLogo(subtitle = "track · split · settle")
+        LedgeLogo()
 
         Spacer(Modifier.height(36.dp))
 

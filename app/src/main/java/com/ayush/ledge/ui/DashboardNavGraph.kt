@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,15 +15,11 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,6 +35,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.budget.presentation.BudgetScreen
 import com.ayush.home.presentation.HomeScreen
+import com.ayush.insights.presentation.InsightsScreen
 import com.ayush.transactions.presentation.AddTransactionScreen
 import com.ayush.ui.R
 import com.ayush.ui.components.FabButton
@@ -77,14 +73,14 @@ sealed interface DashboardBottomNavItems {
     }
 
     @Serializable
-    data object More : DashboardBottomNavItems {
-        override val label: String get() = "More"
-        override val icon: Int get() = R.drawable.ic_more
-        override val route: DashboardRoute get() = DashboardRoute.More
+    data object Insights : DashboardBottomNavItems {
+        override val label: String get() = "Insights"
+        override val icon: Int get() = R.drawable.ic_insights
+        override val route: DashboardRoute get() = DashboardRoute.Insights
     }
 
     companion object {
-        val items: List<DashboardBottomNavItems> = listOf(Home, Transactions, Budget, More)
+        val items: List<DashboardBottomNavItems> = listOf(Home, Budget, Insights, Transactions)
         val Saver: Saver<DashboardBottomNavItems, String> = Saver(
             save = { it::class.qualifiedName },
             restore = { name -> items.firstOrNull { it::class.qualifiedName == name } ?: Home }
@@ -103,7 +99,7 @@ internal fun DashboardNavGraph(
         DashboardRoute.Home -> DashboardBottomNavItems.Home
         DashboardRoute.Transactions -> DashboardBottomNavItems.Transactions
         DashboardRoute.Budget -> DashboardBottomNavItems.Budget
-        DashboardRoute.More -> DashboardBottomNavItems.More
+        DashboardRoute.Insights -> DashboardBottomNavItems.Insights
         else -> DashboardBottomNavItems.Home
     }
 
@@ -151,7 +147,7 @@ internal fun DashboardNavGraph(
                     }
                     entry<DashboardRoute.Transactions> { TransactionsListScreen() }
                     entry<DashboardRoute.Budget> { BudgetScreen() }
-                    entry<DashboardRoute.More> { MoreScreen(onSignOut = onSignOut) }
+                    entry<DashboardRoute.Insights> { InsightsScreen() }
                     entry<DashboardRoute.AddTransaction> {
                         AddTransactionScreen(onBack = ::pop)
                     }
@@ -263,39 +259,5 @@ private fun BottomNavItem(
             color = tintColor,
             style = NavLabelStyle
         )
-    }
-}
-
-@Composable
-private fun MoreScreen(onSignOut: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "More",
-            style = MaterialTheme.typography.headlineLarge,
-            color = LedgeTheme.colors.textPrimary
-        )
-
-        Spacer(Modifier.height(32.dp))
-
-        OutlinedButton(onClick = onSignOut) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.Logout,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-                Text("Sign Out")
-            }
-        }
     }
 }

@@ -2,7 +2,6 @@ package com.ayush.home.data.repository
 
 import com.ayush.common.models.User
 import com.ayush.database.dao.TransactionDao
-import com.ayush.database.data.CategorySpendTuple
 import com.ayush.database.data.TransactionWithCategory
 import com.ayush.home.domain.repository.HomeRepository
 import io.github.jan.supabase.SupabaseClient
@@ -40,9 +39,6 @@ class HomeRepositoryImpl @Inject constructor(
     override fun observeTotalExpense(startDate: Long, endDate: Long): Flow<Double> =
         transactionDao.observeTotalByTypeAndDateRange(EXPENSE, startDate, endDate)
             .map { it ?: 0.0 }
-
-    override fun observeExpensesByCategory(startDate: Long, endDate: Long): Flow<List<CategorySpendTuple>> =
-        transactionDao.observeExpensesByCategory(startDate, endDate)
 
     override fun observeRecentTransactions(limit: Int): Flow<List<TransactionWithCategory>> =
         transactionDao.observeRecentTransactions(limit)

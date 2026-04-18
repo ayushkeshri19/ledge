@@ -3,11 +3,9 @@ package com.ayush.home.presentation
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
 import com.ayush.common.auth.AuthStateProvider
+import com.ayush.common.models.TimePeriod
 import com.ayush.common.utils.observeAuthState
-import com.ayush.home.domain.models.CategorySpend
 import com.ayush.home.domain.models.RecentTransaction
-import com.ayush.home.domain.models.TimePeriod
-import com.ayush.home.domain.usecase.GetCategorySpendingUseCase
 import com.ayush.home.domain.usecase.GetDashboardSummaryUseCase
 import com.ayush.home.domain.usecase.GetRecentTransactionsUseCase
 import com.ayush.home.domain.usecase.HomeUserDetailsUseCase
@@ -27,7 +25,6 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val userDetailsUseCase: HomeUserDetailsUseCase,
     private val getDashboardSummaryUseCase: GetDashboardSummaryUseCase,
-    private val getCategorySpendingUseCase: GetCategorySpendingUseCase,
     private val getRecentTransactionsUseCase: GetRecentTransactionsUseCase,
     private val authStateProvider: AuthStateProvider,
 ) : BaseMviViewModel<HomeUiEvent, HomeState, HomeSideEffect>(
@@ -47,12 +44,11 @@ class HomeViewModel @Inject constructor(
             _selectedPeriod.flatMapLatest { period ->
                 combine(
                     getDashboardSummaryUseCase(period),
-                    getCategorySpendingUseCase(period),
                     getRecentTransactionsUseCase(),
-                ) { summary, spending, recent ->
-                    Triple(summary, spending, recent)
+                ) { summary, recent ->
+                    summary to recent
                 }.debounce(100)
-            }.collect { (summary, spending, recent) ->
+            }.collect { (summary, recent) ->
                 setState {
                     copy(
                         isDashboardLoading = false,
@@ -61,7 +57,6 @@ class HomeViewModel @Inject constructor(
                             totalExpense = summary.totalExpense,
                             netBalance = summary.netBalance,
                         ),
-                        categorySpending = spending,
                         recentTransactions = recent,
                     )
                 }
@@ -111,7 +106,6 @@ data class HomeState(
     val isDashboardLoading: Boolean = true,
     val showDot: Boolean = false,
     val summaryState: SummaryState = SummaryState(),
-    val categorySpending: List<CategorySpend> = emptyList(),
     val recentTransactions: List<RecentTransaction> = emptyList(),
 )
 
