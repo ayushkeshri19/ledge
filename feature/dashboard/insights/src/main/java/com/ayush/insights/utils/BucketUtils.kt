@@ -99,7 +99,6 @@ internal fun bucketIncomeExpenseByMonth(
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
     )
 
-    // Walk a cursor from the oldest month forward, building empty buckets in order.
     val cal = Calendar.getInstance().apply {
         set(Calendar.DAY_OF_MONTH, 1)
         add(Calendar.MONTH, -(monthsBack - 1))
