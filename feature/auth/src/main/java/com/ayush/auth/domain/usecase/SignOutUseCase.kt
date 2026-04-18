@@ -19,7 +19,7 @@ class SignOutUseCase @Inject constructor(
         withContext(Dispatchers.IO) {
             workManager.cancelUniqueWork(Workers.TRANSACTION_SYNC)
             database.clearAllTables()
-            dataStore.clearData()
+            dataStore.clearUserData()
             authRepository.signOut()
         }
     }
