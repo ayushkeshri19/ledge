@@ -1,5 +1,6 @@
 package com.ayush.insights.presentation
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,58 +26,140 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ayush.common.models.TimePeriod
 import com.ayush.common.utils.formatAmount
+import com.ayush.insights.domain.models.CategorySpend
+import com.ayush.ui.components.LedgeSegmentedToggle
+import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.components.charts.LedgePieChart
 import com.ayush.ui.components.charts.PieChartSegment
+import com.ayush.ui.components.noRippleClickable
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
 
-private data class InsightsCategory(
-    val name: String,
-    val amount: Double,
-    val color: Color,
-)
-
-private val MOCK_CATEGORIES = listOf(
-    InsightsCategory("Food & Dining", 3200.0, Color(0xFFC9A84C)),
-    InsightsCategory("Transport", 1240.0, Color(0xFF5B8DEF)),
-    InsightsCategory("Shopping", 5600.0, Color(0xFFE05A5A)),
-    InsightsCategory("Bills & Utilities", 2269.0, Color(0xFF9B72CF)),
-    InsightsCategory("Entertainment", 340.0, Color(0xFF4ECBA4)),
-)
+private val LocalEventSink = staticCompositionLocalOf<(InsightsEvent) -> Unit> { error { } }
 
 @Composable
 fun InsightsScreen() {
+    val viewModel: InsightsViewModel = hiltViewModel()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val onEvent = LocalEventSink.current
+
+    InsightsContent(
+        state = state,
+        onPeriodChanged = { onEvent(InsightsEvent.PeriodChanged(it)) },
+    )
+}
+
+@Composable
+private fun InsightsContent(
+    state: InsightsState,
+    onPeriodChanged: (TimePeriod) -> Unit,
+) {
     val colors = LedgeTheme.colors
+
+    var seeMore by remember { mutableStateOf(false) }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
-        contentPadding = PaddingValues(start = 20.dp, top = 16.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 80.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             Text(
                 text = "Insights",
                 style = LedgeTextStyle.HeadingScreen,
                 color = colors.textPrimary,
-                modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+                modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
             )
         }
+
         item {
-            SpendingByCategoryCard(categories = MOCK_CATEGORIES)
+            TimePeriodToggle(
+                selectedPeriod = state.selectedPeriod,
+                onPeriodChanged = onPeriodChanged
+            )
+        }
+
+        if (state.categorySpending.isNotEmpty()) {
+            item {
+                SpendingByCategoryCard(
+                    categories = state.categorySpending,
+                    seeMore = seeMore
+                ) {
+                    seeMore = !seeMore
+                }
+            }
+        } else if (!state.isLoading) {
+            item { EmptyState() }
         }
     }
 }
 
 @Composable
-private fun SpendingByCategoryCard(categories: List<InsightsCategory>) {
+private fun TimePeriodToggle(
+    selectedPeriod: TimePeriod,
+    onPeriodChanged: (TimePeriod) -> Unit,
+) {
+    val gold = LedgeTheme.colors.gold
+    val options = remember(gold) {
+        TimePeriod.entries.map { period ->
+            SegmentOption(
+                value = period,
+                label = period.label,
+                selectedColor = gold
+            )
+        }
+    }
+
+    LedgeSegmentedToggle(
+        options = options,
+        selectedValue = selectedPeriod,
+        onSelect = onPeriodChanged
+    )
+}
+
+@Composable
+private fun EmptyState() {
+    val colors = LedgeTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.bgCard)
+            .padding(vertical = 40.dp, horizontal = 20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(
+            text = "No spending this month",
+            style = LedgeTextStyle.HeadingCard,
+            color = colors.textPrimary
+        )
+        Text(
+            text = "Log a transaction to see your category breakdown.",
+            style = LedgeTextStyle.BodySmall,
+            color = colors.textMuted2
+        )
+    }
+}
+
+@Composable
+private fun SpendingByCategoryCard(
+    categories: List<CategorySpend>,
+    seeMore: Boolean,
+    onSeeMoreClicked: () -> Unit
+) {
     val colors = LedgeTheme.colors
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
     val totalExpense = categories.sumOf { it.amount }
@@ -85,6 +169,7 @@ private fun SpendingByCategoryCard(categories: List<InsightsCategory>) {
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(colors.bgCard)
+            .animateContentSize()
             .padding(20.dp)
     ) {
         Text(
@@ -105,7 +190,7 @@ private fun SpendingByCategoryCard(categories: List<InsightsCategory>) {
                     PieChartSegment(
                         value = cat.amount.toFloat(),
                         color = cat.color,
-                        label = cat.name,
+                        label = cat.categoryName
                     )
                 },
                 modifier = Modifier.size(200.dp),
@@ -133,9 +218,10 @@ private fun SpendingByCategoryCard(categories: List<InsightsCategory>) {
 
         Spacer(Modifier.height(16.dp))
 
-        categories.forEachIndexed { index, category ->
+        categories.take(
+            if (seeMore) categories.size else 5
+        ).forEachIndexed { index, category ->
             val isSelected = index == selectedIndex
-            val percent = if (totalExpense > 0) category.amount / totalExpense else 0.0
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,7 +244,7 @@ private fun SpendingByCategoryCard(categories: List<InsightsCategory>) {
                 )
                 Spacer(Modifier.width(10.dp))
                 Text(
-                    text = category.name,
+                    text = category.categoryName,
                     style = LedgeTextStyle.BodySmall,
                     color = if (isSelected) colors.textPrimary else colors.textMuted2,
                     modifier = Modifier.weight(1f)
@@ -170,11 +256,26 @@ private fun SpendingByCategoryCard(categories: List<InsightsCategory>) {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = "${(percent * 100).toInt()}%",
+                    text = "${(category.percentage * 100).toInt()}%",
                     style = LedgeTextStyle.Caption,
                     color = colors.textMuted
                 )
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+
+        Text(
+            text = if (seeMore) "See Less" else "See More",
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentWidth(Alignment.End)
+                .noRippleClickable(
+                    enabled = true,
+                    onClick = onSeeMoreClicked
+                ),
+            style = LedgeTextStyle.BodySmall,
+            color = colors.gold
+        )
     }
 }

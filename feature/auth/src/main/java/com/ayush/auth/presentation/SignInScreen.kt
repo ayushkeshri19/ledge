@@ -136,7 +136,7 @@ internal fun SignInScreenContent(
 
         Spacer(Modifier.height(56.dp))
 
-        LedgeLogo(subtitle = "know where it goes.")
+        LedgeLogo()
 
         Spacer(Modifier.height(36.dp))
 

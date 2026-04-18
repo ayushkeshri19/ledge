@@ -1,4 +1,4 @@
-package com.ayush.home.domain.models
+package com.ayush.common.models
 
 import com.ayush.common.utils.endOfDay
 import com.ayush.common.utils.startOfDay

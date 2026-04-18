@@ -42,10 +42,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ayush.common.models.TimePeriod
 import com.ayush.common.utils.formatAmount
 import com.ayush.home.domain.models.RecentTransaction
 import com.ayush.ui.components.AnimatedAmount
 import com.ayush.ui.components.DashboardShimmer
+import com.ayush.ui.components.LedgeSegmentedToggle
+import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.components.noRippleClickable
 import com.ayush.ui.theme.DmSansFontFamily
 import com.ayush.ui.theme.LedgeTextStyle
@@ -101,6 +104,13 @@ private fun HomeContent(state: HomeState) {
             )
         }
 
+        item {
+            TimePeriodToggle(
+                selectedPeriod = state.selectedPeriod,
+                onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) }
+            )
+        }
+
         if (state.isDashboardLoading) {
             item {
                 DashboardShimmer()
@@ -120,6 +130,29 @@ private fun HomeContent(state: HomeState) {
             }
         }
     }
+}
+
+@Composable
+private fun TimePeriodToggle(
+    selectedPeriod: TimePeriod,
+    onPeriodChanged: (TimePeriod) -> Unit,
+) {
+    val gold = LedgeTheme.colors.gold
+    val options = remember(gold) {
+        TimePeriod.entries.map { period ->
+            SegmentOption(
+                value = period,
+                label = period.label,
+                selectedColor = gold,
+            )
+        }
+    }
+
+    LedgeSegmentedToggle(
+        options = options,
+        selectedValue = selectedPeriod,
+        onSelect = onPeriodChanged,
+    )
 }
 
 @Composable
