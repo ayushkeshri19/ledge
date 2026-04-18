@@ -246,7 +246,7 @@ private fun DailySpendLineCard(
     val colors = LedgeTheme.colors
     var selectedIndex by remember(series) { mutableStateOf<Int?>(null) }
 
-    val title = when (period) {
+    val defaultTitle = when (period) {
         TimePeriod.WEEK -> "Last 7 days"
         TimePeriod.MONTH -> "This month by week"
         TimePeriod.YEAR -> "This year by month"
@@ -257,11 +257,14 @@ private fun DailySpendLineCard(
         TimePeriod.YEAR -> "MONTHLY SPEND"
     }
     val total = series.sumOf { it.amount }
+    val selected = selectedIndex?.let { series.getOrNull(it) }
+    val title = selected?.label ?: defaultTitle
+    val headlineAmount = selected?.amount ?: total
 
     ChartCard(
         capsLabel = caps,
         title = title,
-        headline = "\u20B9${formatAmount(total)}",
+        headline = "\u20B9${formatAmount(headlineAmount)}",
     ) {
         LedgeLineChart(
             points = series.map { LineChartPoint(label = it.label, value = it.amount.toFloat()) },
