@@ -13,7 +13,7 @@ import javax.inject.Inject
 class GetSpendTimeSeriesUseCase @Inject constructor(
     private val insightsRepository: InsightsRepository
 ) {
-    suspend operator fun invoke(period: TimePeriod): Flow<List<SpendBucket>> {
+    operator fun invoke(period: TimePeriod): Flow<List<SpendBucket>> {
         val (start, end) = period.dateRange()
         return insightsRepository.observeTransactions(start, end).map { txns ->
             val expenses = txns.filter { it.transaction.type == "expense" }
