@@ -47,4 +47,18 @@ class AppDataStoreRepositoryImpl @Inject constructor(
             value = mode.name
         )
     }
+
+    override fun observeBiometricsStatus(): Flow<Boolean> {
+        return dataStore.getValue(
+            key = AppDataStore.PreferencesKey.BIOMETRICS_ENABLED,
+            defaultValue = false
+        )
+    }
+
+    override suspend fun setBiometricsEnabled(enabled: Boolean) {
+        dataStore.putValue(
+            key = AppDataStore.PreferencesKey.BIOMETRICS_ENABLED,
+            value = enabled
+        )
+    }
 }

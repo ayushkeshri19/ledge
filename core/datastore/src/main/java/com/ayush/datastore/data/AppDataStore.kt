@@ -7,8 +7,10 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 private const val DATASTORE_NAME = "app_preferences"
@@ -24,14 +26,17 @@ class AppDataStore @Inject constructor(
     object PreferencesKey {
         val IS_LOGGED_IN = booleanPreferencesKey("IS_LOGGED_IN")
         val THEME_MODE = stringPreferencesKey("THEME_MODE")
+        val BIOMETRICS_ENABLED = booleanPreferencesKey("BIOMETRICS")
     }
 
     suspend fun <T> putValue(
         key: Preferences.Key<T>,
         value: T
     ) {
-        dataStore.edit { preferences ->
-            preferences[key] = value
+        withContext(Dispatchers.IO) {
+            dataStore.edit { preferences ->
+                preferences[key] = value
+            }
         }
     }
 
