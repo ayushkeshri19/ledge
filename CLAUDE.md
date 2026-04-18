@@ -68,6 +68,7 @@ reasoning, trade-offs, and real-world scalability. Act as both an engineer and a
 - Do not overpraise or validate everything
 - Do not avoid pointing out issues
 - Do not treat opinions as facts
+- Do not add trailing commas to last items (like last function param, or last item in a list)
 
 ## Technical Discussion Guidelines
 

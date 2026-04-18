@@ -29,6 +29,12 @@ data class BarChartData(
     val color: Color,
 )
 
+data class BarChartGroup(
+    val label: String,
+    val values: List<Float>,
+    val colors: List<Color>
+)
+
 @Composable
 fun LedgeBarChart(
     bars: List<BarChartData>,
@@ -37,7 +43,7 @@ fun LedgeBarChart(
     animationDurationMs: Int = 600,
     selectedIndex: Int? = null,
     onBarTap: ((Int) -> Unit)? = null,
-    labelColor: Color = Color(0x8CFFFFFF),
+    labelColor: Color = Color(0x8CFFFFFF)
 ) {
     if (bars.isEmpty()) return
 
@@ -89,7 +95,7 @@ fun LedgeBarChart(
                         }
                     }
                 } else Modifier
-            ),
+            )
     ) {
         val horizontalPadding = 24f
         val labelAreaHeight = 24.sp.toPx()
@@ -117,7 +123,7 @@ fun LedgeBarChart(
                     color = bar.color.copy(alpha = 0.2f),
                     topLeft = Offset(barX - 4f, barY - 4f),
                     size = Size(effectiveWidth + 8f, normalizedHeight + 4f),
-                    cornerRadius = CornerRadius(cornerRadius + 2f, cornerRadius + 2f),
+                    cornerRadius = CornerRadius(cornerRadius + 2f, cornerRadius + 2f)
                 )
             }
 
@@ -125,23 +131,36 @@ fun LedgeBarChart(
                 color = bar.color,
                 topLeft = Offset(barX, barY),
                 size = Size(effectiveWidth, normalizedHeight),
-                cornerRadius = CornerRadius(cornerRadius, cornerRadius),
+                cornerRadius = CornerRadius(cornerRadius, cornerRadius)
             )
 
             val labelText = textMeasurer.measure(
                 text = bar.label,
                 style = TextStyle(
                     color = if (isSelected) bar.color else labelColor,
-                    fontSize = 10.sp,
+                    fontSize = 10.sp
                 ),
             )
             drawText(
                 textLayoutResult = labelText,
                 topLeft = Offset(
                     x = slotStart + (slotWidth - labelText.size.width) / 2,
-                    y = topPadding + barAreaHeight + 6f,
-                ),
+                    y = topPadding + barAreaHeight + 6f
+                )
             )
         }
     }
+}
+
+@Composable
+fun LedgeGroupedBarChart(
+    groups: List<BarChartGroup>,
+    modifier: Modifier = Modifier,
+    barCornerRadius: Dp = 4.dp,
+    groupGap: Dp = 12.dp,
+    subBarGap: Dp = 3.dp,
+    animationDurationMs: Int = 600,
+    labelColor: Color = Color(0x8CFFFFFF),
+) {
+
 }
