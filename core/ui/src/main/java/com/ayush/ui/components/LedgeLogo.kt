@@ -53,13 +53,14 @@ fun LedgeLogo() {
                 )
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             Text(
                 text = "know where it goes",
                 style = LedgeTextStyle.Caption.copy(
                     color = colors.textMuted,
-                    fontFamily = DmSerifFontFamily
+                    fontFamily = DmSerifFontFamily,
+                    fontSize = 14.sp
                 )
             )
         }
