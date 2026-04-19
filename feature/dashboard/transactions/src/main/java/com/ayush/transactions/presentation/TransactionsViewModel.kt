@@ -16,6 +16,7 @@ import com.ayush.transactions.domain.repository.TransactionRepository
 import com.ayush.transactions.domain.usecase.DeleteTransactionUseCase
 import com.ayush.transactions.domain.usecase.GetCategoriesUseCase
 import com.ayush.transactions.domain.usecase.GetTransactionsUseCase
+import com.ayush.transactions.domain.usecase.StopRecurringSeriesUseCase
 import com.ayush.transactions.domain.usecase.UpdateTransactionUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,6 +39,7 @@ class TransactionsViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val repository: TransactionRepository,
     private val authStateProvider: AuthStateProvider,
+    private val stopRecurringSeriesUseCase: StopRecurringSeriesUseCase
 ) : BaseMviViewModel<TransactionsEvent, TransactionsState, TransactionsSideEffect>(
     initialState = TransactionsState()
 ) {
@@ -125,6 +127,10 @@ class TransactionsViewModel @Inject constructor(
                 setState { copy(searchQuery = "") }
                 invalidatePaging()
             }
+
+            is TransactionsEvent.StopSeriesRequested -> {
+                sendSideEffect(TransactionsSideEffect.ShowStopSeriesConfirmationDialog)
+            }
         }
     }
 
@@ -208,6 +214,8 @@ sealed interface TransactionsEvent {
         val recurrenceType: String?,
     ) : TransactionsEvent
 
+    data class StopSeriesRequested(val parentId: Long) : TransactionsEvent
+
     data class ApplyFilters(val filterState: FilterState) : TransactionsEvent
     data object ClearFilters : TransactionsEvent
     data object ClearSearch : TransactionsEvent
@@ -215,4 +223,5 @@ sealed interface TransactionsEvent {
 
 sealed interface TransactionsSideEffect {
     data class ShowToast(val message: String) : TransactionsSideEffect
+    data object ShowStopSeriesConfirmationDialog : TransactionsSideEffect
 }

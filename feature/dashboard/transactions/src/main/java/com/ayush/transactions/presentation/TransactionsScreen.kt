@@ -90,6 +90,7 @@ fun TransactionsScreen() {
             viewModel.sideEffect.collect { effect ->
                 when (effect) {
                     is TransactionsSideEffect.ShowToast -> effect.message.toast(context)
+                    TransactionsSideEffect.ShowStopSeriesConfirmationDialog -> {}
                 }
             }
         }
