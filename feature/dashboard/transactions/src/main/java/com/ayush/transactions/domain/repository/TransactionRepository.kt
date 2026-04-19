@@ -1,6 +1,7 @@
 package com.ayush.transactions.domain.repository
 
 import androidx.paging.PagingData
+import com.ayush.database.data.TransactionEntity
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
@@ -44,4 +45,10 @@ interface TransactionRepository {
     fun getAllCategories(): Flow<List<Category>>
     suspend fun ensureDefaultCategories()
     suspend fun syncFromRemote()
+
+    suspend fun getPendingSync(): List<TransactionEntity>
+    suspend fun currentUserId(): String?
+    suspend fun pushCreate(transaction: TransactionEntity, userId: String)
+    suspend fun pushUpdate(transaction: TransactionEntity, userId: String)
+    suspend fun pushDelete(transaction: TransactionEntity)
 }
