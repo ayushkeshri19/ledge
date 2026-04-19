@@ -24,15 +24,23 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.ayush.ui.components.noRippleClickable
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
 
 @Composable
-fun AccountDetailsRow(showDivider: Boolean = true) {
+fun AccountDetailsRow(
+    showDivider: Boolean = true,
+    onClick: () -> Unit
+) {
     val colors = LedgeTheme.colors
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .noRippleClickable { onClick() }
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier

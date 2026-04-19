@@ -23,7 +23,6 @@ import com.ayush.profile.presentation.components.SectionHeader
 import com.ayush.profile.presentation.components.SecurityRow
 import com.ayush.profile.presentation.components.SignOut
 import com.ayush.profile.presentation.components.ThemeModeRow
-import com.ayush.ui.components.LedgeDivider
 import com.ayush.ui.theme.LedgeTheme
 
 private val LocalEventSink = staticCompositionLocalOf<(ProfileEvent) -> Unit> { error { } }
@@ -90,11 +89,13 @@ private fun ProfileContent(
 
             item {
                 SectionCard {
-                    AccountDetailsRow()
+                    AccountDetailsRow {
 
-                    LedgeDivider()
+                    }
 
-                    SecurityRow()
+                    SecurityRow {
+
+                    }
                 }
                 Spacer(Modifier.height(24.dp))
             }
