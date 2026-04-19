@@ -12,15 +12,15 @@ import androidx.room.PrimaryKey
             entity = CategoryEntity::class,
             parentColumns = ["id"],
             childColumns = ["categoryId"],
-            onDelete = ForeignKey.SET_NULL,
-        ),
+            onDelete = ForeignKey.SET_NULL
+        )
     ],
     indices = [
         Index("categoryId"),
         Index("date"),
         Index("type"),
         Index("syncStatus")
-    ],
+    ]
 )
 data class TransactionEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
@@ -35,4 +35,6 @@ data class TransactionEntity(
     val remoteId: String? = null,
     val userId: String = "",
     val syncStatus: SyncStatus = SyncStatus.SYNCED,
+    val parentId: Long? = null,
+    val lastExecutedDate: Long? = null
 )

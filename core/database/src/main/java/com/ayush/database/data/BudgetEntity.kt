@@ -11,7 +11,7 @@ import androidx.room.PrimaryKey
         entity = CategoryEntity::class,
         parentColumns = ["id"],
         childColumns = ["categoryId"],
-        onDelete = ForeignKey.CASCADE,
+        onDelete = ForeignKey.CASCADE
     )],
     indices = [Index("categoryId", unique = true)]
 )
@@ -25,5 +25,5 @@ data class BudgetEntity(
     val syncStatus: SyncStatus = SyncStatus.SYNCED,
     val warningNotified: Boolean = false,
     val exceededNotified: Boolean = false,
-    val createdAt: Long = System.currentTimeMillis(),
+    val createdAt: Long = System.currentTimeMillis()
 )
