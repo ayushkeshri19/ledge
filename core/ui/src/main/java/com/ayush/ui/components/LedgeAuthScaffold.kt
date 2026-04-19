@@ -20,13 +20,13 @@ import com.ayush.ui.theme.LedgeTheme
 @Composable
 fun LedgeAuthScaffold(
     modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit,
+    content: @Composable ColumnScope.() -> Unit
 ) {
     val colors = LedgeTheme.colors
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(colors.bgDeep),
+            .background(colors.bgDeep)
     ) {
         Box(
             modifier = Modifier
@@ -37,9 +37,9 @@ fun LedgeAuthScaffold(
                     brush = Brush.radialGradient(
                         colors = listOf(
                             colors.gold.copy(alpha = 0.07f),
-                            Color.Transparent,
+                            Color.Transparent
                         ),
-                        radius = 700f,
+                        radius = 700f
                     )
                 )
         )
@@ -50,7 +50,7 @@ fun LedgeAuthScaffold(
                 .safeDrawingPadding()
                 .padding(horizontal = 28.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            content = content,
+            content = content
         )
     }
 }

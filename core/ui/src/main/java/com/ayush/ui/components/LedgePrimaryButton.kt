@@ -26,7 +26,7 @@ fun LedgePrimaryButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    isLoading: Boolean = false,
+    isLoading: Boolean = false
 ) {
     val colors = LedgeTheme.colors
     val gradient = Brush.horizontalGradient(
@@ -41,21 +41,21 @@ fun LedgePrimaryButton(
             .clip(RoundedCornerShape(LedgeRadius.large))
             .background(gradient)
             .clickable(enabled = enabled && !isLoading, onClick = onClick),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.Center
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(22.dp),
                 color = colors.bgDeep,
-                strokeWidth = 2.dp,
+                strokeWidth = 2.dp
             )
         } else {
             Text(
                 text = text,
                 style = LedgeTextStyle.Button.copy(
                     color = if (enabled) colors.bgDeep else colors.textMuted,
-                    fontSize = 15.sp,
-                ),
+                    fontSize = 15.sp
+                )
             )
         }
     }

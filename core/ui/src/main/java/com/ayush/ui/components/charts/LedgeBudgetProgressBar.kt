@@ -17,36 +17,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/**
- * Animated horizontal progress bar for budget tracking.
- *
- * Color transitions:
- * - Gold (< warningThreshold)
- * - Amber (warningThreshold – 100%)
- * - Red (> 100%)
- *
- * Shows a small marker line at the warning threshold position.
- *
- * @param progress Ratio of spent/limit (0f = empty, 1f = 100%, can exceed 1f).
- * @param warningThreshold Fraction (0f–1f) where the bar turns amber.
- * @param height Bar height.
- * @param normalColor Color below warning threshold.
- * @param warningColor Color between warning and 100%.
- * @param exceededColor Color above 100%.
- * @param trackColor Background track color.
- * @param animationDurationMs Entrance animation duration.
- */
 @Composable
 fun LedgeBudgetProgressBar(
     progress: Float,
     warningThreshold: Float = 0.8f,
     modifier: Modifier = Modifier,
     height: Dp = 8.dp,
-    normalColor: Color = Color(0xFFC9A84C),      // Gold
-    warningColor: Color = Color(0xFFFF9F43),      // Amber
-    exceededColor: Color = Color(0xFFE05A5A),     // SemanticRed
-    trackColor: Color = Color(0xFF13161E),        // BgCard
-    animationDurationMs: Int = 600,
+    normalColor: Color = Color(0xFFC9A84C),
+    warningColor: Color = Color(0xFFFF9F43),
+    exceededColor: Color = Color(0xFFE05A5A),
+    trackColor: Color = Color(0xFF13161E),
+    animationDurationMs: Int = 600
 ) {
     val animatedProgress = remember { Animatable(0f) }
 
@@ -65,7 +46,6 @@ fun LedgeBudgetProgressBar(
         val barHeight = size.height
         val cornerRadius = CornerRadius(barHeight / 2, barHeight / 2)
 
-        // Track (background)
         drawRoundRect(
             color = trackColor,
             topLeft = Offset.Zero,
@@ -73,7 +53,6 @@ fun LedgeBudgetProgressBar(
             cornerRadius = cornerRadius,
         )
 
-        // Progress fill
         val currentProgress = animatedProgress.value
         val fillWidth = (size.width * currentProgress.coerceAtMost(1f))
         val fillColor = when {
@@ -91,7 +70,6 @@ fun LedgeBudgetProgressBar(
             )
         }
 
-        // Overflow indicator (subtle glow if over 100%)
         if (currentProgress > 1f) {
             drawRoundRect(
                 color = exceededColor.copy(alpha = 0.3f),
@@ -101,7 +79,7 @@ fun LedgeBudgetProgressBar(
             )
         }
 
-        // Warning threshold marker line
+
         val markerX = size.width * warningThreshold
         if (warningThreshold in 0.05f..0.95f) {
             drawLine(

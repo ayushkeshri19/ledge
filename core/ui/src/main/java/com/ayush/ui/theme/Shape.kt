@@ -20,5 +20,5 @@ val LedgeShapes = Shapes(
     small = RoundedCornerShape(LedgeRadius.medium),
     medium = RoundedCornerShape(LedgeRadius.large),
     large = RoundedCornerShape(LedgeRadius.xxl),
-    extraLarge = RoundedCornerShape(LedgeRadius.phone),
+    extraLarge = RoundedCornerShape(LedgeRadius.phone)
 )

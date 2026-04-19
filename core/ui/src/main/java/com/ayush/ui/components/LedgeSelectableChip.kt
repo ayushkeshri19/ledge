@@ -30,18 +30,18 @@ fun LedgeSelectableChip(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    leadingDotColor: Color? = null,
+    leadingDotColor: Color? = null
 ) {
     val colors = LedgeTheme.colors
     val borderColor by animateColorAsState(
         targetValue = if (isSelected) colors.gold else colors.borderSubtle,
         animationSpec = tween(200),
-        label = "chipBorder",
+        label = "chipBorder"
     )
     val bgColor by animateColorAsState(
         targetValue = if (isSelected) colors.goldDim else colors.bgCard,
         animationSpec = tween(200),
-        label = "chipBg",
+        label = "chipBg"
     )
 
     Row(
@@ -52,20 +52,20 @@ fun LedgeSelectableChip(
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         leadingDotColor?.let { dotColor ->
             Box(
                 modifier = Modifier
                     .size(8.dp)
                     .clip(CircleShape)
-                    .background(dotColor),
+                    .background(dotColor)
             )
         }
         Text(
             text = label,
             style = LedgeTextStyle.BodySmall,
-            color = if (isSelected) colors.gold else colors.textPrimary,
+            color = if (isSelected) colors.gold else colors.textPrimary
         )
     }
 }

@@ -31,7 +31,7 @@ fun LedgePasswordField(
     isError: Boolean = false,
     errorMessage: String? = null,
     imeAction: ImeAction = ImeAction.Done,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     var showPassword by remember { mutableStateOf(false) }
 
@@ -45,7 +45,7 @@ fun LedgePasswordField(
         modifier = modifier,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Password,
-            imeAction = imeAction,
+            imeAction = imeAction
         ),
         keyboardActions = keyboardActions,
         trailingIcon = {
@@ -54,12 +54,12 @@ fun LedgePasswordField(
                     imageVector = if (showPassword) Icons.Default.RemoveRedEye else Icons.Filled.PanoramaFishEye,
                     contentDescription = if (showPassword) "Hide password" else "Show password",
                     tint = LedgeTheme.colors.textMuted2,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(20.dp)
                 )
             }
         },
         visualTransformation =
             if (showPassword) VisualTransformation.None
-            else PasswordVisualTransformation(),
+            else PasswordVisualTransformation()
     )
 }

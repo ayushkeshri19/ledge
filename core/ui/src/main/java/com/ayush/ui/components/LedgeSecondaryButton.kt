@@ -20,7 +20,7 @@ fun LedgeSecondaryButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
+    enabled: Boolean = true
 ) {
     val colors = LedgeTheme.colors
     OutlinedButton(
@@ -34,16 +34,16 @@ fun LedgeSecondaryButton(
             containerColor = Color.Transparent,
             contentColor = colors.textMuted2,
             disabledContainerColor = Color.Transparent,
-            disabledContentColor = colors.textMuted,
+            disabledContentColor = colors.textMuted
         ),
         border = androidx.compose.foundation.BorderStroke(
             width = 1.dp,
             color = if (enabled) colors.borderMid else colors.borderSubtle,
-        ),
+        )
     ) {
         Text(
             text = text,
-            style = LedgeTextStyle.Button.copy(fontSize = 15.sp),
+            style = LedgeTextStyle.Button.copy(fontSize = 15.sp)
         )
     }
 }

@@ -42,7 +42,7 @@ internal fun BiometricToggleRow(
     val colors = LedgeTheme.colors
 
     val subtitle = when (status) {
-        BiometricStatus.AVAILABLE -> "Locks after 5 minutes of inactivity"
+        BiometricStatus.AVAILABLE -> "Locks as you leave the app"
         BiometricStatus.NONE_ENROLLED -> "Set up fingerprint or face unlock in device settings"
         BiometricStatus.HARDWARE_UNAVAILABLE -> "Sensor temporarily unavailable"
         BiometricStatus.NO_HARDWARE,

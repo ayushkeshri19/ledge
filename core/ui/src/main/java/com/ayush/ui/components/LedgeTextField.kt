@@ -38,7 +38,7 @@ fun LedgeTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
-    enabled: Boolean = true,
+    enabled: Boolean = true
 ) {
     val colors = LedgeTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
@@ -51,7 +51,7 @@ fun LedgeTextField(
             else -> colors.borderSubtle
         },
         animationSpec = tween(200),
-        label = "borderColor",
+        label = "borderColor"
     )
 
     Column(modifier = modifier) {
@@ -60,9 +60,9 @@ fun LedgeTextField(
                 text = label,
                 style = LedgeTextStyle.Caption.copy(
                     color = if (isError) colors.semanticRed else colors.textMuted2,
-                    letterSpacing = 0.8.sp,
+                    letterSpacing = 0.8.sp
                 ),
-                modifier = Modifier.padding(bottom = 6.dp),
+                modifier = Modifier.padding(bottom = 6.dp)
             )
         }
 
@@ -72,7 +72,7 @@ fun LedgeTextField(
             placeholder = {
                 Text(
                     text = placeholder,
-                    style = LedgeTextStyle.Body.copy(color = colors.textMuted),
+                    style = LedgeTextStyle.Body.copy(color = colors.textMuted)
                 )
             },
             leadingIcon = leadingIcon,
@@ -99,15 +99,15 @@ fun LedgeTextField(
                 focusedLeadingIconColor = colors.gold,
                 unfocusedLeadingIconColor = colors.textMuted,
                 focusedTrailingIconColor = colors.gold,
-                unfocusedTrailingIconColor = colors.textMuted,
+                unfocusedTrailingIconColor = colors.textMuted
             ),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (isError && !errorMessage.isNullOrEmpty()) {
             LedgeErrorText(
                 message = errorMessage,
-                modifier = Modifier.padding(top = 4.dp, start = 4.dp),
+                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
             )
         }
     }
@@ -125,7 +125,7 @@ fun LedgeTextField(
     keyboardOptions: KeyboardOptions,
     keyboardActions: KeyboardActions,
     trailingIcon: @Composable (() -> Unit)?,
-    visualTransformation: VisualTransformation,
+    visualTransformation: VisualTransformation
 ) {
     val colors = LedgeTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
@@ -137,9 +137,9 @@ fun LedgeTextField(
                 text = label,
                 style = LedgeTextStyle.Caption.copy(
                     color = if (isError) colors.semanticRed else colors.textMuted2,
-                    letterSpacing = 0.8.sp,
+                    letterSpacing = 0.8.sp
                 ),
-                modifier = Modifier.padding(bottom = 6.dp),
+                modifier = Modifier.padding(bottom = 6.dp)
             )
         }
 
@@ -149,7 +149,7 @@ fun LedgeTextField(
             placeholder = {
                 Text(
                     text = placeholder,
-                    style = LedgeTextStyle.Body.copy(color = colors.textMuted),
+                    style = LedgeTextStyle.Body.copy(color = colors.textMuted)
                 )
             },
             trailingIcon = trailingIcon,
@@ -172,15 +172,15 @@ fun LedgeTextField(
                 unfocusedTextColor = colors.textPrimary,
                 cursorColor = colors.gold,
                 focusedTrailingIconColor = colors.gold,
-                unfocusedTrailingIconColor = colors.textMuted,
+                unfocusedTrailingIconColor = colors.textMuted
             ),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (isError && !errorMessage.isNullOrEmpty()) {
             LedgeErrorText(
                 message = errorMessage,
-                modifier = Modifier.padding(top = 4.dp, start = 4.dp),
+                modifier = Modifier.padding(top = 4.dp, start = 4.dp)
             )
         }
     }

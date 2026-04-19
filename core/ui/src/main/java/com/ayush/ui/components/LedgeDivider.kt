@@ -22,25 +22,25 @@ fun LedgeDivider(
     Row(
         modifier = modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         HorizontalDivider(
             modifier = Modifier.weight(1f),
             color = colors.borderSubtle,
-            thickness = 1.dp,
+            thickness = 1.dp
         )
         label?.let {
             Text(
                 text = label,
                 style = LedgeTextStyle.Caption.copy(
                     color = colors.textMuted,
-                    letterSpacing = 0.4.sp,
+                    letterSpacing = 0.4.sp
                 ),
             )
             HorizontalDivider(
                 modifier = Modifier.weight(1f),
                 color = colors.borderSubtle,
-                thickness = 1.dp,
+                thickness = 1.dp
             )
         }
     }
