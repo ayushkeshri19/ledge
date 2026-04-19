@@ -129,8 +129,17 @@ class TransactionsViewModel @Inject constructor(
             }
 
             is TransactionsEvent.StopSeriesRequested -> {
-                sendSideEffect(TransactionsSideEffect.ShowStopSeriesConfirmationDialog)
+                sendSideEffect(TransactionsSideEffect.ShowStopSeriesConfirmation(event.parentId))
             }
+
+            is TransactionsEvent.StopSeriesConfirmed -> stopSeries(event.parentId)
+        }
+    }
+
+    private fun stopSeries(parentId: Long) {
+        viewModelScope.launch {
+            stopRecurringSeriesUseCase(parentId)
+            sendSideEffect(TransactionsSideEffect.ShowToast("Recurring series stopped"))
         }
     }
 
@@ -215,6 +224,7 @@ sealed interface TransactionsEvent {
     ) : TransactionsEvent
 
     data class StopSeriesRequested(val parentId: Long) : TransactionsEvent
+    data class StopSeriesConfirmed(val parentId: Long) : TransactionsEvent
 
     data class ApplyFilters(val filterState: FilterState) : TransactionsEvent
     data object ClearFilters : TransactionsEvent
@@ -223,5 +233,5 @@ sealed interface TransactionsEvent {
 
 sealed interface TransactionsSideEffect {
     data class ShowToast(val message: String) : TransactionsSideEffect
-    data object ShowStopSeriesConfirmationDialog : TransactionsSideEffect
+    data class ShowStopSeriesConfirmation(val parentId: Long) : TransactionsSideEffect
 }

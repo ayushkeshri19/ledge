@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -85,19 +86,25 @@ fun TransactionsScreen() {
     val lazyPagingItems = viewModel.transactionsPagingFlow.collectAsLazyPagingItems()
     val context = LocalContext.current
 
+    var stopSeriesParentId by remember { mutableStateOf<Long?>(null) }
+
     CompositionLocalProvider(LocalEventSink provides viewModel::onEvent) {
         LaunchedEffect(Unit) {
             viewModel.sideEffect.collect { effect ->
                 when (effect) {
                     is TransactionsSideEffect.ShowToast -> effect.message.toast(context)
-                    TransactionsSideEffect.ShowStopSeriesConfirmationDialog -> {}
+                    is TransactionsSideEffect.ShowStopSeriesConfirmation -> {
+                        stopSeriesParentId = effect.parentId
+                    }
                 }
             }
         }
 
         TransactionsContent(
             state = state,
-            lazyPagingItems = lazyPagingItems
+            lazyPagingItems = lazyPagingItems,
+            stopSeriesParentId = stopSeriesParentId,
+            onStopSeriesDismiss = { stopSeriesParentId = null }
         )
     }
 }
@@ -106,7 +113,9 @@ fun TransactionsScreen() {
 @Composable
 private fun TransactionsContent(
     state: TransactionsState,
-    lazyPagingItems: LazyPagingItems<TransactionListItem>
+    lazyPagingItems: LazyPagingItems<TransactionListItem>,
+    stopSeriesParentId: Long?,
+    onStopSeriesDismiss: () -> Unit
 ) {
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
     var transactionToEdit by remember { mutableStateOf<Transaction?>(null) }
@@ -114,6 +123,7 @@ private fun TransactionsContent(
     val deleteSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val editSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val filterSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val stopSeriesSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
 
     val focusManager = LocalFocusManager.current
@@ -421,10 +431,41 @@ private fun TransactionsContent(
                         transactionToEdit = null
                     }
                 },
+                onStopSeries = { parentId ->
+                    scope.launch {
+                        editSheetState.hide()
+                        transactionToEdit = null
+                        onEvent(TransactionsEvent.StopSeriesRequested(parentId))
+                    }
+                },
                 onDismiss = {
                     scope.launch {
                         editSheetState.hide()
                         transactionToEdit = null
+                    }
+                }
+            )
+        }
+    }
+
+    stopSeriesParentId?.let { parentId ->
+        ModalBottomSheet(
+            onDismissRequest = onStopSeriesDismiss,
+            sheetState = stopSeriesSheetState,
+            containerColor = colors.bgSurface
+        ) {
+            StopSeriesConfirmationSheet(
+                onConfirm = {
+                    scope.launch {
+                        stopSeriesSheetState.hide()
+                        onEvent(TransactionsEvent.StopSeriesConfirmed(parentId))
+                        onStopSeriesDismiss()
+                    }
+                },
+                onDismiss = {
+                    scope.launch {
+                        stopSeriesSheetState.hide()
+                        onStopSeriesDismiss()
                     }
                 }
             )
@@ -595,13 +636,27 @@ private fun TransactionItem(transaction: Transaction) {
         Spacer(Modifier.width(12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = transaction.note,
-                style = LedgeTextStyle.HeadingCard,
-                color = colors.textPrimary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = transaction.note,
+                    style = LedgeTextStyle.HeadingCard,
+                    color = colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (transaction.isRecurring || transaction.parentId != null) {
+                    Icon(
+                        imageVector = Icons.Filled.Autorenew,
+                        contentDescription = "Recurring",
+                        tint = colors.textMuted,
+                        modifier = Modifier.size(14.dp)
+                    )
+                }
+            }
             Spacer(Modifier.height(2.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 transaction.category?.let { cat ->
