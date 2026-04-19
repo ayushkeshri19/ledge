@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
 import com.ayush.security.domain.models.BiometricResult
@@ -46,20 +47,25 @@ fun LockScreen(
     val colors = LedgeTheme.colors
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var isAuthenticating by remember { mutableStateOf(false) }
+    val view = LocalView.current
 
     val authenticate: () -> Unit = authenticate@{
         if (isAuthenticating) return@authenticate
         isAuthenticating = true
         errorMessage = null
         scope.launch {
+            val activity = context as FragmentActivity
             val result = biometricAuthenticator.authenticate(
-                activity = context as FragmentActivity,
+                activity = activity,
                 title = "Unlock Ledge",
                 subtitle = "Confirm it's you to continue"
             )
             isAuthenticating = false
             when (result) {
-                is BiometricResult.Success -> onUnlock()
+                is BiometricResult.Success -> {
+                    onUnlock()
+                    view.postInvalidateOnAnimation()
+                }
                 is BiometricResult.UserCancelled -> {
                     /** stay locked */
                 }

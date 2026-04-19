@@ -31,11 +31,6 @@ class AppLockManagerImpl @Inject constructor(
     private val _locked = MutableStateFlow(false)
     override val locked: StateFlow<Boolean> = _locked.asStateFlow()
 
-    /**
-     * Lock-on-background: if biometric is enabled, any time the app leaves the foreground
-     * we flip to locked. Cold start is intentionally unlocked — a fresh process constructs a
-     * new instance with `_locked = false`, and `onAppForegrounded` is a no-op.
-     */
     override fun onAppBackgrounded() {
         if (biometricEnabled.value) {
             _locked.value = true
@@ -43,8 +38,7 @@ class AppLockManagerImpl @Inject constructor(
     }
 
     override fun onAppForegrounded() {
-        // Intentional no-op. Locking decision is made at background time so that FLAG_SECURE
-        // (driven by biometricEnabled) takes effect before the OS captures the recents thumbnail.
+        /** Intentionally kept no-op so that OS does not show the thumbnail for app in recents*/
     }
 
     override fun onBiometricDisabled() {
