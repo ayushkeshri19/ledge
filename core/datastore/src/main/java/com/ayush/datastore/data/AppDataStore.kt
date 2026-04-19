@@ -50,21 +50,27 @@ class AppDataStore @Inject constructor(
     }
 
     suspend fun removeKey(key: Preferences.Key<*>) {
-        dataStore.edit { preferences ->
-            preferences.remove(key)
+        withContext(Dispatchers.IO) {
+            dataStore.edit { preferences ->
+                preferences.remove(key)
+            }
         }
     }
 
     suspend fun clear() {
-        dataStore.edit { it.clear() }
+        withContext(Dispatchers.IO) {
+            dataStore.edit { it.clear() }
+        }
     }
 
     suspend fun clearExcept(vararg preservedKeys: Preferences.Key<*>) {
-        val preserved = preservedKeys.toSet()
-        dataStore.edit { preferences ->
-            preferences.asMap().keys
-                .filterNot { it in preserved }
-                .forEach { preferences.remove(it) }
+        withContext(Dispatchers.IO) {
+            val preserved = preservedKeys.toSet()
+            dataStore.edit { preferences ->
+                preferences.asMap().keys
+                    .filterNot { it in preserved }
+                    .forEach { preferences.remove(it) }
+            }
         }
     }
 }

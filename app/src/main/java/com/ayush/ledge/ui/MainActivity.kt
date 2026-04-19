@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,6 +19,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.deeplink.DeepLinkHandler
+import com.ayush.security.domain.repository.AppLockManager
+import com.ayush.security.domain.repository.BiometricAuthenticator
 import com.ayush.ui.theme.LedgeTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -28,8 +31,15 @@ class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var deepLinkHandler: DeepLinkHandler
+
     @Inject
     lateinit var authStateProvider: AuthStateProvider
+
+    @Inject
+    lateinit var biometricAuthenticator: BiometricAuthenticator
+
+    @Inject
+    lateinit var appLockManager: AppLockManager
 
     private val mainViewModel: MainViewModel by viewModels()
 
@@ -38,13 +48,43 @@ class MainActivity : FragmentActivity() {
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
         )
         super.onCreate(savedInstanceState)
+
+        lifecycleScope.launch {
+            appLockManager.locked.collect { isLocked ->
+                if (isLocked) {
+                    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                } else {
+                    window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                }
+            }
+        }
+
         deepLinkHandler.handle(intent)
         requestNotificationPermission()
         setContent {
             val themeMode by mainViewModel.themeMode.collectAsStateWithLifecycle()
+
+            val isLocked by appLockManager.locked.collectAsStateWithLifecycle()
+
             LedgeTheme(themeMode = themeMode) {
                 LedgeNavGraph(mainViewModel = mainViewModel)
+
+                if (isLocked) {
+                    LockScreen(
+                        biometricAuthenticator = biometricAuthenticator,
+                        onUnlock = { appLockManager.unlock() },
+                        onSignOut = ::disableBiometricAndSignOut
+                    )
+                }
             }
+        }
+    }
+
+    private fun disableBiometricAndSignOut() {
+        appLockManager.onBiometricDisabled()
+        with(mainViewModel) {
+            disableBiometric()
+            signOut()
         }
     }
 

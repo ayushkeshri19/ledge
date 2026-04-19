@@ -1,4 +1,4 @@
-package com.ayush.profile.presentation
+package com.ayush.profile.presentation.profile
 
 import androidx.lifecycle.viewModelScope
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase

@@ -1,4 +1,4 @@
-package com.ayush.profile.presentation
+package com.ayush.profile.presentation.profile
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Spacer

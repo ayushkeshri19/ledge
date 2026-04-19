@@ -1,4 +1,4 @@
-package com.ayush.profile.presentation
+package com.ayush.profile.presentation.profile
 
 import androidx.compose.runtime.Stable
 import com.ayush.common.theme.ThemeMode

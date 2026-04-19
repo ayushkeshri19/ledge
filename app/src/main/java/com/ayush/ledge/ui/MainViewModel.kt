@@ -7,6 +7,7 @@ import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.theme.ThemeMode
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
+import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +19,7 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     authStateProvider: AuthStateProvider,
     private val signOutUseCase: SignOutUseCase,
+    private val setBiometricsEnabledUseCase: SetBiometricsEnabledUseCase,
     getThemeModeUseCase: GetThemeModeUseCase
 ) : ViewModel() {
 
@@ -37,5 +39,11 @@ class MainViewModel @Inject constructor(
 
     fun signOut() {
         viewModelScope.launch { signOutUseCase.invoke() }
+    }
+
+    fun disableBiometric() {
+        viewModelScope.launch {
+            setBiometricsEnabledUseCase(false)
+        }
     }
 }
