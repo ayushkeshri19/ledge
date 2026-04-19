@@ -19,11 +19,13 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -93,7 +95,8 @@ internal fun EditTransactionSheet(
     transaction: Transaction,
     categories: List<Category>,
     onSave: (TransactionsEvent.UpdateTransaction) -> Unit,
-    onDismiss: () -> Unit,
+    onStopSeries: (Long) -> Unit,
+    onDismiss: () -> Unit
 ) {
     val colors = LedgeTheme.colors
     var form by remember { mutableStateOf(EditFormState.from(transaction)) }
@@ -282,11 +285,22 @@ internal fun EditTransactionSheet(
                         note = form.note.trim(),
                         date = form.combinedDateMillis,
                         isRecurring = form.isRecurring,
-                        recurrenceType = form.recurrenceType?.value,
+                        recurrenceType = form.recurrenceType?.value
                     )
                 )
             },
         )
+
+        transaction.parentId?.let { parentId ->
+            Spacer(Modifier.height(8.dp))
+            TextButton(
+                onClick = { onStopSeries(parentId) },
+                colors = ButtonDefaults.textButtonColors(contentColor = colors.semanticRed),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = "Stop recurring series", style = LedgeTextStyle.Button)
+            }
+        }
 
         Spacer(Modifier.height(16.dp))
     }

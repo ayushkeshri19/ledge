@@ -350,6 +350,25 @@ class TransactionRepositoryImpl @Inject constructor(
 
     }
 
+    override suspend fun stopRecurringSeries(templateId: Long) {
+        withContext(Dispatchers.IO) {
+            val existing = transactionDao.getTransactionById(templateId) ?: return@withContext
+            val newSyncStatus = if (existing.syncStatus == SyncStatus.PENDING_CREATE) {
+                SyncStatus.PENDING_CREATE
+            } else {
+                SyncStatus.PENDING_UPDATE
+            }
+            transactionDao.update(
+                existing.copy(
+                    isRecurring = false,
+                    recurrenceType = null,
+                    syncStatus = newSyncStatus
+                )
+            )
+            enqueueSync()
+        }
+    }
+
     private suspend fun checkBudgetAlerts() {
         try {
             val (monthStart, monthEnd) = currentMonthRange()

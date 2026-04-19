@@ -18,7 +18,6 @@ interface TransactionRepository {
         minAmount: Double? = null,
         maxAmount: Double? = null,
     ): Flow<PagingData<Transaction>>
-
     suspend fun getTransactionById(id: Long): Transaction?
     suspend fun addTransaction(
         amount: Double,
@@ -29,7 +28,6 @@ interface TransactionRepository {
         isRecurring: Boolean = false,
         recurrenceType: String? = null,
     ): Long
-
     suspend fun updateTransaction(
         id: Long,
         amount: Double,
@@ -40,19 +38,17 @@ interface TransactionRepository {
         isRecurring: Boolean = false,
         recurrenceType: String? = null,
     )
-
     suspend fun deleteTransaction(id: Long)
     fun getAllCategories(): Flow<List<Category>>
     suspend fun ensureDefaultCategories()
     suspend fun syncFromRemote()
-
     suspend fun getPendingSync(): List<TransactionEntity>
     suspend fun currentUserId(): String?
     suspend fun pushCreate(transaction: TransactionEntity, userId: String)
     suspend fun pushUpdate(transaction: TransactionEntity, userId: String)
     suspend fun pushDelete(transaction: TransactionEntity)
-
     suspend fun getRecurringTransactions(): List<Transaction>
     suspend fun createRecurringInstance(template: Transaction, date: Long)
     suspend fun updateLastExecutedDate(id: Long, date: Long)
+    suspend fun stopRecurringSeries(templateId: Long)
 }
