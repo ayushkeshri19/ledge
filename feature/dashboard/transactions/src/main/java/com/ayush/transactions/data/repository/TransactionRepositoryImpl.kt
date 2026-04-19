@@ -213,6 +213,7 @@ class TransactionRepositoryImpl @Inject constructor(
 
     override suspend fun pushCreate(transaction: TransactionEntity, userId: String) = withContext(Dispatchers.IO) {
         val categoryName = transaction.categoryId?.let { categoryDao.getCategoryById(it)?.name }
+        val parentRemoteId = transaction.parentId?.let { transactionDao.getTransactionById(it)?.remoteId }
         val dto = SupabaseTransactionDto(
             userId = userId,
             amount = transaction.amount,
@@ -223,6 +224,8 @@ class TransactionRepositoryImpl @Inject constructor(
             isRecurring = transaction.isRecurring,
             recurrenceType = transaction.recurrenceType,
             createdAt = transaction.createdAt,
+            parentRemoteId = parentRemoteId,
+            lastExecutedDate = transaction.lastExecutedDate
         )
         val response = supabaseDataSource.insert(dto)
         transactionDao.update(
@@ -236,6 +239,7 @@ class TransactionRepositoryImpl @Inject constructor(
     override suspend fun pushUpdate(transaction: TransactionEntity, userId: String) = withContext(Dispatchers.IO) {
         val remoteId = transaction.remoteId ?: return@withContext
         val categoryName = transaction.categoryId?.let { categoryDao.getCategoryById(it)?.name }
+        val parentRemoteId = transaction.parentId?.let { transactionDao.getTransactionById(it)?.remoteId }
         val dto = SupabaseTransactionDto(
             userId = userId,
             amount = transaction.amount,
@@ -246,6 +250,8 @@ class TransactionRepositoryImpl @Inject constructor(
             isRecurring = transaction.isRecurring,
             recurrenceType = transaction.recurrenceType,
             createdAt = transaction.createdAt,
+            parentRemoteId = parentRemoteId,
+            lastExecutedDate = transaction.lastExecutedDate
         )
         supabaseDataSource.update(remoteId, dto)
         transactionDao.updateSyncStatus(transaction.id, SyncStatus.SYNCED)
@@ -262,11 +268,16 @@ class TransactionRepositoryImpl @Inject constructor(
             return@withContext
         }
         try {
-            val remoteTransactions = supabaseDataSource.fetchAllForUser(userId)
+            val remoteTransactions = supabaseDataSource
+                .fetchAllForUser(userId)
+                .sortedBy { it.createdAt }
             remoteTransactions.forEach { dto ->
                 val remoteId = dto.id ?: return@forEach
                 if (transactionDao.getByRemoteId(remoteId) == null) {
                     val category = dto.categoryName?.let { categoryDao.getCategoryByName(it) }
+                    val localParentId = dto.parentRemoteId?.let {
+                        transactionDao.getByRemoteId(it)?.id
+                    }
                     transactionDao.insert(
                         TransactionEntity(
                             amount = dto.amount,
@@ -280,6 +291,8 @@ class TransactionRepositoryImpl @Inject constructor(
                             remoteId = remoteId,
                             userId = dto.userId,
                             syncStatus = SyncStatus.SYNCED,
+                            parentId = localParentId,
+                            lastExecutedDate = dto.lastExecutedDate
                         )
                     )
                 }
@@ -287,6 +300,54 @@ class TransactionRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Timber.e(e, "syncFromRemote: FAILED")
         }
+    }
+
+    override suspend fun getRecurringTransactions(): List<Transaction> {
+        return withContext(Dispatchers.IO) {
+            transactionDao.getRecurringTransactions()
+                .map { it.toDomain() }
+        }
+    }
+
+    override suspend fun updateLastExecutedDate(id: Long, date: Long) {
+        withContext(Dispatchers.IO) {
+            val existing = transactionDao.getTransactionById(id) ?: return@withContext
+            val newSyncStatus = if (existing.syncStatus == SyncStatus.PENDING_CREATE) {
+                SyncStatus.PENDING_CREATE
+            } else {
+                SyncStatus.PENDING_UPDATE
+            }
+            transactionDao.update(
+                existing.copy(
+                    lastExecutedDate = date,
+                    syncStatus = newSyncStatus
+                )
+            )
+            enqueueSync()
+        }
+    }
+
+    override suspend fun createRecurringInstance(
+        template: Transaction,
+        date: Long
+    ) {
+        transactionDao.insert(
+            TransactionEntity(
+                amount = template.amount,
+                type = template.type.value,
+                categoryId = template.category?.id,
+                note = template.note,
+                date = date,
+                isRecurring = false,
+                recurrenceType = null,
+                parentId = template.id,
+                userId = currentUserId().orEmpty(),
+                syncStatus = SyncStatus.PENDING_CREATE
+            )
+        )
+        enqueueSync()
+        checkBudgetAlerts()
+
     }
 
     private suspend fun checkBudgetAlerts() {

@@ -11,6 +11,8 @@ data class Transaction(
     val date: Long,
     val isRecurring: Boolean,
     val recurrenceType: RecurrenceType?,
+    val parentId: Long? = null,
+    val lastExecutedDate: Long? = null
 )
 
 fun TransactionWithCategory.toDomain(): Transaction = Transaction(
@@ -22,4 +24,6 @@ fun TransactionWithCategory.toDomain(): Transaction = Transaction(
     date = transaction.date,
     isRecurring = transaction.isRecurring,
     recurrenceType = RecurrenceType.fromValue(transaction.recurrenceType),
+    parentId = transaction.parentId,
+    lastExecutedDate = transaction.lastExecutedDate
 )

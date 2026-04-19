@@ -194,4 +194,14 @@ interface TransactionDao {
         """
     )
     fun observeRecentTransactions(limit: Int): Flow<List<TransactionWithCategory>>
+
+    @Query(
+        """
+            SELECT * FROM transactions
+            WHERE isRecurring = 1 AND syncStatus != 'PENDING_DELETE'
+            ORDER BY date DESC, createdAt DESC
+        """
+    )
+    suspend fun getRecurringTransactions(): List<TransactionWithCategory>
+
 }

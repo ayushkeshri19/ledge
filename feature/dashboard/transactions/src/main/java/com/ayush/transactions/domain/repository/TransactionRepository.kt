@@ -51,4 +51,8 @@ interface TransactionRepository {
     suspend fun pushCreate(transaction: TransactionEntity, userId: String)
     suspend fun pushUpdate(transaction: TransactionEntity, userId: String)
     suspend fun pushDelete(transaction: TransactionEntity)
+
+    suspend fun getRecurringTransactions(): List<Transaction>
+    suspend fun createRecurringInstance(template: Transaction, date: Long)
+    suspend fun updateLastExecutedDate(id: Long, date: Long)
 }

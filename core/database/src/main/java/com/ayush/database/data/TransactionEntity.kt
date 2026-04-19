@@ -35,5 +35,6 @@ data class TransactionEntity(
     val remoteId: String? = null,
     val userId: String = "",
     val syncStatus: SyncStatus = SyncStatus.SYNCED,
-    val parentId: String? = null
+    val parentId: Long? = null,
+    val lastExecutedDate: Long? = null
 )

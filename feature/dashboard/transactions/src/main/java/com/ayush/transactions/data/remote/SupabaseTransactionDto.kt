@@ -18,4 +18,6 @@ data class SupabaseTransactionDto(
     @SerialName("is_recurring") val isRecurring: Boolean = false,
     @SerialName("recurrence_type") val recurrenceType: String? = null,
     @SerialName("created_at") val createdAt: Long,
+    @SerialName("parent_remote_id") val parentRemoteId: String? = null,
+    @SerialName("last_executed_date") val lastExecutedDate: Long? = null
 )
