@@ -207,7 +207,7 @@ internal fun SignInScreenContent(
 
         Spacer(Modifier.height(24.dp))
 
-        LedgeDivider()
+        LedgeDivider(label = "or continue with")
 
         Spacer(Modifier.height(16.dp))
 
