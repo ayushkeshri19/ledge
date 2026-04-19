@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.deeplink.DeepLinkHandler
+import com.ayush.ledge.ui.lock.LockScreen
 import com.ayush.security.domain.repository.AppLockManager
 import com.ayush.security.domain.repository.BiometricAuthenticator
 import com.ayush.ui.theme.LedgeTheme
@@ -50,8 +51,8 @@ class MainActivity : FragmentActivity() {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
-            appLockManager.locked.collect { isLocked ->
-                if (isLocked) {
+            appLockManager.biometricEnabled.collect { enabled ->
+                if (enabled) {
                     window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                 } else {
                     window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)

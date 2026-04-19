@@ -32,8 +32,9 @@ android {
 
 dependencies {
 
-    implementation(project(":core:common"))
     implementation(project(":core:ui"))
+    implementation(project(":core:common"))
+    implementation(project(":core:security"))
     implementation(project(":core:datastore"))
 
     implementation(libs.androidx.core.ktx)

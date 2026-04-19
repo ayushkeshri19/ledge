@@ -22,7 +22,10 @@ import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
 
 @Composable
-internal fun ProfileTopBar(onBack: () -> Unit) {
+internal fun ProfileTopBar(
+    title: String = "Profile",
+    onBack: () -> Unit
+) {
     val colors = LedgeTheme.colors
     Row(
         modifier = Modifier
@@ -46,7 +49,7 @@ internal fun ProfileTopBar(onBack: () -> Unit) {
         }
         Spacer(Modifier.height(0.dp))
         Text(
-            text = "Profile",
+            text = title,
             style = LedgeTextStyle.HeadingScreen,
             color = colors.textPrimary
         )

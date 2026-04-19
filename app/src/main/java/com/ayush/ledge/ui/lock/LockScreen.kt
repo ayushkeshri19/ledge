@@ -1,4 +1,4 @@
-package com.ayush.ledge.ui
+package com.ayush.ledge.ui.lock
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -66,7 +66,6 @@ fun LockScreen(
 
                 is BiometricResult.Error -> errorMessage = result.message
                 is BiometricResult.Failed -> Unit
-                /** not emitted; retries stay in prompt */
             }
         }
     }
