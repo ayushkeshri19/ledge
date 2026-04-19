@@ -25,7 +25,7 @@ import com.ayush.ui.theme.LedgeTheme
 fun LedgeFilterChip(
     label: String,
     onRemove: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val colors = LedgeTheme.colors
     Row(
@@ -35,7 +35,7 @@ fun LedgeFilterChip(
             .border(1.dp, colors.gold, RoundedCornerShape(LedgeRadius.pill))
             .padding(start = 12.dp, end = 4.dp, top = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(text = label, style = LedgeTextStyle.Caption, color = colors.gold)
         IconButton(onClick = onRemove, modifier = Modifier.size(18.dp)) {
@@ -43,7 +43,7 @@ fun LedgeFilterChip(
                 Icons.Filled.Close,
                 contentDescription = "Remove filter",
                 tint = colors.gold,
-                modifier = Modifier.size(12.dp),
+                modifier = Modifier.size(12.dp)
             )
         }
     }

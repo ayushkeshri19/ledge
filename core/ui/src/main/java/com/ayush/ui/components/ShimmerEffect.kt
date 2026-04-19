@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.dp
 fun DashboardShimmer(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
 
         Box(
@@ -27,7 +27,7 @@ fun DashboardShimmer(modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .height(150.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .shimmerEffect(),
+                .shimmerEffect()
         )
 
 
@@ -36,7 +36,7 @@ fun DashboardShimmer(modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .height(300.dp)
                 .clip(RoundedCornerShape(20.dp))
-                .shimmerEffect(),
+                .shimmerEffect()
         )
 
 
@@ -46,12 +46,12 @@ fun DashboardShimmer(modifier: Modifier = Modifier) {
                 .height(20.dp)
                 .width(160.dp)
                 .clip(RoundedCornerShape(8.dp))
-                .shimmerEffect(),
+                .shimmerEffect()
         )
         repeat(3) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -68,14 +68,14 @@ fun DashboardShimmer(modifier: Modifier = Modifier) {
                             .fillMaxWidth(0.6f)
                             .height(14.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect(),
+                            .shimmerEffect()
                     )
                     Box(
                         modifier = Modifier
                             .fillMaxWidth(0.4f)
                             .height(10.dp)
                             .clip(RoundedCornerShape(4.dp))
-                            .shimmerEffect(),
+                            .shimmerEffect()
                     )
                 }
                 Box(
@@ -83,7 +83,7 @@ fun DashboardShimmer(modifier: Modifier = Modifier) {
                         .width(60.dp)
                         .height(14.dp)
                         .clip(RoundedCornerShape(4.dp))
-                        .shimmerEffect(),
+                        .shimmerEffect()
                 )
             }
         }

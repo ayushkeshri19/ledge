@@ -26,17 +26,17 @@ fun Modifier.shimmerEffect(): Modifier = composed {
         targetValue = 300f,
         animationSpec = infiniteRepeatable(
             animation = tween(durationMillis = 1000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart,
+            repeatMode = RepeatMode.Restart
         ),
-        label = "shimmerX",
+        label = "shimmerX"
     )
 
     background(
         brush = Brush.linearGradient(
             colors = listOf(colors.bgCard, colors.bgCard2, colors.bgCard),
             start = Offset(translateX, 0f),
-            end = Offset(translateX + 200f, 0f),
-        ),
+            end = Offset(translateX + 200f, 0f)
+        )
     )
 }
 

@@ -31,7 +31,7 @@ fun LedgeSocialButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    isLoading: Boolean = false,
+    isLoading: Boolean = false
 ) {
     val colors = LedgeTheme.colors
     OutlinedButton(
@@ -43,31 +43,31 @@ fun LedgeSocialButton(
         shape = RoundedCornerShape(LedgeRadius.large),
         colors = ButtonDefaults.outlinedButtonColors(
             containerColor = colors.bgCard,
-            contentColor = colors.textPrimary,
+            contentColor = colors.textPrimary
         ),
-        border = androidx.compose.foundation.BorderStroke(1.dp, colors.borderSubtle),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.borderSubtle)
     ) {
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(22.dp),
                 color = colors.textPrimary,
-                strokeWidth = 2.dp,
+                strokeWidth = 2.dp
             )
         } else {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
+                horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     painter = iconPainter,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp),
-                    tint = Color.Unspecified,
+                    tint = Color.Unspecified
                 )
                 Spacer(Modifier.width(12.dp))
                 Text(
                     text = label,
-                    style = LedgeTextStyle.Button.copy(fontSize = 14.sp),
+                    style = LedgeTextStyle.Button.copy(fontSize = 14.sp)
                 )
             }
         }

@@ -45,10 +45,10 @@ private val LocalEventSink = staticCompositionLocalOf<(ProfileEvent) -> Unit> { 
 
 @Composable
 fun UserProfileScreen(
-    viewModel: ProfileViewModel = hiltViewModel(),
     onBack: () -> Unit,
     onSignOut: () -> Unit
 ) {
+    val viewModel = hiltViewModel<ProfileViewModel>()
     val context = LocalContext.current
     val activity = context as FragmentActivity
     val state by viewModel.uiState.collectAsStateWithLifecycle()

@@ -22,12 +22,12 @@ import com.ayush.ui.theme.LedgeTheme
 @Composable
 fun FabButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val colors = LedgeTheme.colors
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.TopCenter,
+        contentAlignment = Alignment.TopCenter
     ) {
         Box(
             modifier = Modifier
@@ -35,7 +35,7 @@ fun FabButton(
                     elevation = 12.dp,
                     shape = CircleShape,
                     ambientColor = colors.gold.copy(alpha = 0.2f),
-                    spotColor = colors.gold.copy(alpha = 0.4f),
+                    spotColor = colors.gold.copy(alpha = 0.4f)
                 )
                 .size(52.dp)
                 .background(colors.bgSurface, CircleShape)
@@ -46,17 +46,17 @@ fun FabButton(
                         start = Offset.Zero,
                         end = Offset(Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY),
                     ),
-                    shape = CircleShape,
+                    shape = CircleShape
                 )
                 .clip(CircleShape)
                 .clickable(onClick = onClick),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = Icons.Filled.Add,
                 contentDescription = "Add Transaction",
                 tint = colors.bgDeep,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(24.dp)
             )
         }
     }

@@ -13,17 +13,17 @@ import com.ayush.ui.theme.LedgeTheme
 fun LedgeTextLink(
     text: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Text(
         text = text,
         style = LedgeTextStyle.BodySmall.copy(
-            color = LedgeTheme.colors.gold,
+            color = LedgeTheme.colors.gold
         ),
         modifier = modifier.clickable(
             interactionSource = remember { MutableInteractionSource() },
             indication = null,
-            onClick = onClick,
+            onClick = onClick
         )
     )
 }

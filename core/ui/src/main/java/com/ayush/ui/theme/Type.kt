@@ -17,13 +17,13 @@ val DmSansFontFamily = FontFamily(
     Font(R.font.dm_sans_regular,    FontWeight.Normal),
     Font(R.font.dm_sans_medium,     FontWeight.Medium),
     Font(R.font.dm_sans_semibold,   FontWeight.SemiBold),
-    Font(R.font.dm_sans_lightitalic,FontWeight.Light, FontStyle.Italic),
+    Font(R.font.dm_sans_lightitalic, FontWeight.Light, FontStyle.Italic)
 )
 
 val DmMonoFontFamily = FontFamily(
     Font(R.font.dm_mono_light,   FontWeight.Light),
     Font(R.font.dm_mono_regular, FontWeight.Normal),
-    Font(R.font.dm_mono_medium,  FontWeight.Medium),
+    Font(R.font.dm_mono_medium, FontWeight.Medium)
 )
 
 object LedgeTextStyle {
@@ -33,7 +33,7 @@ object LedgeTextStyle {
         fontWeight  = FontWeight.ExtraBold,
         fontSize    = 42.sp,
         lineHeight  = 42.sp,
-        letterSpacing = (-2).sp,
+        letterSpacing = (-2).sp
     )
 
     /** Section amounts / stats — 22 sp, Syne Bold */
@@ -41,7 +41,7 @@ object LedgeTextStyle {
         fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 22.sp,
-        letterSpacing = (-0.5).sp,
+        letterSpacing = (-0.5).sp
     )
 
     /** Card amounts / prices — 18 sp, Syne Bold */
@@ -49,14 +49,14 @@ object LedgeTextStyle {
         fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 18.sp,
-        letterSpacing = (-0.5).sp,
+        letterSpacing = (-0.5).sp
     )
 
     /** Tabular transaction amounts — DM Mono Medium */
     val AmountMono = TextStyle(
         fontFamily  = DmMonoFontFamily,
         fontWeight  = FontWeight.Medium,
-        fontSize    = 15.sp,
+        fontSize = 15.sp
     )
 
     /** Screen / section headers — Syne Bold 20 sp */
@@ -64,7 +64,7 @@ object LedgeTextStyle {
         fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 20.sp,
-        letterSpacing = (-0.3).sp,
+        letterSpacing = (-0.3).sp
     )
 
     /** Card titles / section labels — Syne Bold 15 sp */
@@ -72,7 +72,7 @@ object LedgeTextStyle {
         fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.Bold,
         fontSize      = 15.sp,
-        letterSpacing = (-0.2).sp,
+        letterSpacing = (-0.2).sp
     )
 
     /** ALL-CAPS micro labels — Syne SemiBold 11 sp, +3 tracking */
@@ -80,21 +80,21 @@ object LedgeTextStyle {
         fontFamily = DmSansFontFamily,
         fontWeight    = FontWeight.SemiBold,
         fontSize      = 11.sp,
-        letterSpacing = 3.sp,
+        letterSpacing = 3.sp
     )
 
     /** Body default — DM Sans Regular 14 sp */
     val Body = TextStyle(
         fontFamily = DmSansFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize   = 14.sp,
+        fontSize = 14.sp
     )
 
     /** Body small — DM Sans Regular 12 sp */
     val BodySmall = TextStyle(
         fontFamily = DmSansFontFamily,
         fontWeight = FontWeight.Normal,
-        fontSize   = 12.sp,
+        fontSize = 12.sp
     )
 
     /** Caption — DM Sans Light 10 sp, +0.8 tracking */
@@ -102,7 +102,7 @@ object LedgeTextStyle {
         fontFamily    = DmSansFontFamily,
         fontWeight    = FontWeight.Light,
         fontSize      = 10.sp,
-        letterSpacing = 0.8.sp,
+        letterSpacing = 0.8.sp
     )
 
     /** Button label — DM Sans Medium 14 sp */
@@ -110,7 +110,7 @@ object LedgeTextStyle {
         fontFamily    = DmSansFontFamily,
         fontWeight    = FontWeight.Medium,
         fontSize      = 14.sp,
-        letterSpacing = 0.3.sp,
+        letterSpacing = 0.3.sp
     )
 }
 
@@ -125,7 +125,7 @@ val LedgeTypography = Typography(
     headlineSmall  = TextStyle(
         fontFamily = DmSansFontFamily,
         fontWeight = FontWeight.SemiBold,
-        fontSize   = 13.sp,
+        fontSize = 13.sp
     ),
 
     titleLarge  = LedgeTextStyle.HeadingCard,
@@ -133,13 +133,13 @@ val LedgeTypography = Typography(
         fontFamily    = DmSansFontFamily,
         fontWeight    = FontWeight.Medium,
         fontSize      = 16.sp,
-        letterSpacing = 0.15.sp,
+        letterSpacing = 0.15.sp
     ),
     titleSmall  = TextStyle(
         fontFamily    = DmSansFontFamily,
         fontWeight    = FontWeight.Medium,
         fontSize      = 14.sp,
-        letterSpacing = 0.1.sp,
+        letterSpacing = 0.1.sp
     ),
 
     bodyLarge  = LedgeTextStyle.Body,
@@ -148,7 +148,7 @@ val LedgeTypography = Typography(
 
     labelLarge  = LedgeTextStyle.Button,
     labelMedium = LedgeTextStyle.LabelCaps,
-    labelSmall  = LedgeTextStyle.Caption,
+    labelSmall = LedgeTextStyle.Caption
 )
 
 
@@ -156,5 +156,5 @@ val NavLabelStyle = TextStyle(
     fontFamily = DmSansFontFamily,
     fontWeight = FontWeight.SemiBold,
     fontSize = 9.sp,
-    letterSpacing = 0.4.sp,
+    letterSpacing = 0.4.sp
 )
