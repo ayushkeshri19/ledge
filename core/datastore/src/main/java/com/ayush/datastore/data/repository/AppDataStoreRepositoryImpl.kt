@@ -29,7 +29,10 @@ class AppDataStoreRepositoryImpl @Inject constructor(
     }
 
     override suspend fun clearUserData() {
-        dataStore.clearExcept(AppDataStore.PreferencesKey.THEME_MODE)
+        dataStore.clearExcept(
+            AppDataStore.PreferencesKey.THEME_MODE,
+            AppDataStore.PreferencesKey.BIOMETRICS_ENABLED
+        )
     }
 
     override fun observeThemeMode(): Flow<ThemeMode> {
