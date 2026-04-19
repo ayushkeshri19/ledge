@@ -15,7 +15,7 @@ import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun LedgeDivider(
-    label: String = "or continue with",
+    label: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val colors = LedgeTheme.colors
@@ -29,17 +29,19 @@ fun LedgeDivider(
             color = colors.borderSubtle,
             thickness = 1.dp,
         )
-        Text(
-            text = label,
-            style = LedgeTextStyle.Caption.copy(
-                color = colors.textMuted,
-                letterSpacing = 0.4.sp,
-            ),
-        )
-        HorizontalDivider(
-            modifier = Modifier.weight(1f),
-            color = colors.borderSubtle,
-            thickness = 1.dp,
-        )
+        label?.let {
+            Text(
+                text = label,
+                style = LedgeTextStyle.Caption.copy(
+                    color = colors.textMuted,
+                    letterSpacing = 0.4.sp,
+                ),
+            )
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                color = colors.borderSubtle,
+                thickness = 1.dp,
+            )
+        }
     }
 }

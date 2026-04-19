@@ -14,7 +14,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.common.auth.AuthState
-import com.ayush.profile.presentation.UserProfileScreen
+import com.ayush.profile.presentation.profile.UserProfileScreen
 
 @Composable
 internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {

@@ -56,10 +56,11 @@ kotlin {
 }
 
 dependencies {
-    implementation(project(":core:common"))
-    implementation(project(":core:ui"))
 
+    implementation(project(":core:ui"))
+    implementation(project(":core:common"))
     implementation(project(":core:database"))
+    implementation(project(":core:security"))
     implementation(project(":core:datastore"))
 
     implementation(project(":feature:auth"))

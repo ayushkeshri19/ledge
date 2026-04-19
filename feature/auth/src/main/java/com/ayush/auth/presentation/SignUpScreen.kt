@@ -263,7 +263,7 @@ internal fun SignUpScreenContent(
 
         Spacer(Modifier.height(24.dp))
 
-        LedgeDivider()
+        LedgeDivider(label = "or continue with")
 
         Spacer(Modifier.height(16.dp))
 

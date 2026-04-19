@@ -11,4 +11,7 @@ interface AppDataStoreRepository {
 
     fun observeThemeMode(): Flow<ThemeMode>
     suspend fun setThemeMode(mode: ThemeMode)
+
+    fun observeBiometricsStatus(): Flow<Boolean>
+    suspend fun setBiometricsEnabled(enabled: Boolean)
 }
