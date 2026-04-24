@@ -2,4 +2,11 @@
 <resources>
 
     <style name="Theme.Ledge" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="Theme.Ledge.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_deep</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_ledge</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/bg_deep</item>
+        <item name="postSplashScreenTheme">@style/Theme.Ledge</item>
+    </style>
 </resources>
