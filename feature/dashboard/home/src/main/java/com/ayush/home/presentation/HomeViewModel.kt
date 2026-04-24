@@ -4,6 +4,7 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.models.TimePeriod
+import com.ayush.common.sync.SyncStateHolder
 import com.ayush.common.utils.observeAuthState
 import com.ayush.home.domain.models.RecentTransaction
 import com.ayush.home.domain.usecase.GetDashboardSummaryUseCase
@@ -27,6 +28,7 @@ class HomeViewModel @Inject constructor(
     private val getDashboardSummaryUseCase: GetDashboardSummaryUseCase,
     private val getRecentTransactionsUseCase: GetRecentTransactionsUseCase,
     private val authStateProvider: AuthStateProvider,
+    private val syncStateHolder: SyncStateHolder,
 ) : BaseMviViewModel<HomeUiEvent, HomeState, HomeSideEffect>(
     initialState = HomeState()
 ) {
@@ -41,17 +43,20 @@ class HomeViewModel @Inject constructor(
     @OptIn(FlowPreview::class)
     private fun observeDashboardData() {
         viewModelScope.launch {
-            _selectedPeriod.flatMapLatest { period ->
+            val dashboardData = _selectedPeriod.flatMapLatest { period ->
                 combine(
                     getDashboardSummaryUseCase(period),
                     getRecentTransactionsUseCase(),
                 ) { summary, recent ->
                     summary to recent
                 }.debounce(100)
-            }.collect { (summary, recent) ->
+            }
+            combine(dashboardData, syncStateHolder.isSyncing) { (summary, recent), syncing ->
+                Triple(summary, recent, syncing)
+            }.collect { (summary, recent, syncing) ->
                 setState {
                     copy(
-                        isDashboardLoading = false,
+                        isDashboardLoading = syncing,
                         summaryState = SummaryState(
                             totalIncome = summary.totalIncome,
                             totalExpense = summary.totalExpense,

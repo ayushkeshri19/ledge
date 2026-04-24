@@ -6,13 +6,11 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
-import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.result.ApiResult
-import com.ayush.common.utils.observeAuthState
+import com.ayush.common.sync.SyncStateHolder
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
-import com.ayush.transactions.domain.repository.TransactionRepository
 import com.ayush.transactions.domain.usecase.DeleteTransactionUseCase
 import com.ayush.transactions.domain.usecase.GetCategoriesUseCase
 import com.ayush.transactions.domain.usecase.GetTransactionsUseCase
@@ -37,20 +35,28 @@ class TransactionsViewModel @Inject constructor(
     private val deleteTransactionUseCase: DeleteTransactionUseCase,
     private val updateTransactionUseCase: UpdateTransactionUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val repository: TransactionRepository,
-    private val authStateProvider: AuthStateProvider,
+    private val syncStateHolder: SyncStateHolder,
     private val stopRecurringSeriesUseCase: StopRecurringSeriesUseCase
 ) : BaseMviViewModel<TransactionsEvent, TransactionsState, TransactionsSideEffect>(
     initialState = TransactionsState()
 ) {
 
     init {
-        observeAuthState(
-            authStateProvider = authStateProvider,
-            onAuthenticated = {
-                loadDataAndSyncRemote()
+        loadCategories()
+        observeSyncState()
+    }
+
+    private fun observeSyncState() {
+        viewModelScope.launch {
+            var wasSyncing: Boolean? = null
+            syncStateHolder.isSyncing.collect { syncing ->
+                setState { copy(isSyncing = syncing) }
+                if (wasSyncing == true && !syncing) {
+                    invalidatePaging()
+                }
+                wasSyncing = syncing
             }
-        )
+        }
     }
 
     private var categoriesJob: Job? = null
@@ -95,18 +101,6 @@ class TransactionsViewModel @Inject constructor(
             }
         }.cachedIn(viewModelScope)
 
-
-    private fun loadDataAndSyncRemote() {
-        viewModelScope.launch {
-            repository.ensureDefaultCategories()
-            loadCategories()
-            invalidatePaging()
-            setState { copy(isSyncing = true) }
-            repository.syncFromRemote()
-            setState { copy(isSyncing = false) }
-            invalidatePaging()
-        }
-    }
 
     override fun onEvent(event: TransactionsEvent) {
         when (event) {

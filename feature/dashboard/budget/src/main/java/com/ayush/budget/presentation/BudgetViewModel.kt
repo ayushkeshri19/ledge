@@ -4,16 +4,15 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
 import com.ayush.budget.domain.models.BudgetWithSpent
 import com.ayush.budget.domain.models.Category
-import com.ayush.budget.domain.repository.BudgetRepository
 import com.ayush.budget.domain.usecase.DeleteBudgetUseCase
 import com.ayush.budget.domain.usecase.GetBudgetsUseCase
 import com.ayush.budget.domain.usecase.GetCategoriesUseCase
 import com.ayush.budget.domain.usecase.SaveBudgetUseCase
-import com.ayush.common.auth.AuthStateProvider
-import com.ayush.common.utils.observeAuthState
+import com.ayush.common.sync.SyncStateHolder
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,8 +22,7 @@ class BudgetViewModel @Inject constructor(
     private val saveBudgetUseCase: SaveBudgetUseCase,
     private val deleteBudgetUseCase: DeleteBudgetUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val repository: BudgetRepository,
-    authStateProvider: AuthStateProvider,
+    private val syncStateHolder: SyncStateHolder,
 ) : BaseMviViewModel<BudgetEvent, BudgetState, BudgetSideEffect>(
     initialState = BudgetState()
 ) {
@@ -33,9 +31,6 @@ class BudgetViewModel @Inject constructor(
     private var categoriesJob: Job? = null
 
     init {
-        observeAuthState(authStateProvider) {
-            viewModelScope.launch { repository.syncFromRemote() }
-        }
         observeBudgets()
         loadCategories()
     }
@@ -43,17 +38,21 @@ class BudgetViewModel @Inject constructor(
     private fun observeBudgets() {
         budgetsJob?.cancel()
         budgetsJob = viewModelScope.launch {
-            getBudgetsUseCase().collect { budgets ->
-                val overall = budgets.find { it.budget.categoryId == null }
-                val categoryBudgets = budgets.filter { it.budget.categoryId != null }
-                setState {
-                    copy(
-                        isLoading = false,
-                        overallBudget = overall,
-                        categoryBudgets = categoryBudgets,
-                    )
+            combine(
+                getBudgetsUseCase(),
+                syncStateHolder.isSyncing,
+            ) { budgets, syncing -> budgets to syncing }
+                .collect { (budgets, syncing) ->
+                    val overall = budgets.find { it.budget.categoryId == null }
+                    val categoryBudgets = budgets.filter { it.budget.categoryId != null }
+                    setState {
+                        copy(
+                            isLoading = syncing,
+                            overallBudget = overall,
+                            categoryBudgets = categoryBudgets,
+                        )
+                    }
                 }
-            }
         }
     }
 

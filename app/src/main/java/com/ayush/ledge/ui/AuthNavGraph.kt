@@ -1,6 +1,7 @@
 package com.ayush.ledge.ui
 
 import androidx.compose.runtime.Composable
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
@@ -13,7 +14,7 @@ import com.ayush.auth.presentation.SignUpScreen
 internal fun AuthNavGraph(
     onAuthSuccess: () -> Unit,
 ) {
-    val viewModel = androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel<AuthViewModel>()
+    val viewModel = hiltViewModel<AuthViewModel>()
     val backStack = rememberNavBackStack(AuthRoute.SignUp)
 
     fun popAuth() {
