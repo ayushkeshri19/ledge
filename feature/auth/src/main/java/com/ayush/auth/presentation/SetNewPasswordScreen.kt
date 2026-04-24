@@ -17,6 +17,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -69,7 +71,10 @@ fun SetNewPasswordScreen(
         onConfirmChange = { viewModel.onEvent(SetNewPasswordUiEvent.ConfirmPasswordChanged(it)) },
         onSubmit = { viewModel.onEvent(SetNewPasswordUiEvent.SubmitClicked) },
         onContinue = { viewModel.onEvent(SetNewPasswordUiEvent.ContinueToSignInClicked) },
-        onCancel = { viewModel.onEvent(SetNewPasswordUiEvent.CancelClicked) }
+        onCancel = { viewModel.onEvent(SetNewPasswordUiEvent.CancelClicked) },
+        onBackFromInvalidLink = {
+            viewModel.onEvent(SetNewPasswordUiEvent.BackToSignInFromInvalidLinkClicked)
+        }
     )
 }
 
@@ -81,6 +86,7 @@ internal fun SetNewPasswordScreenContent(
     onSubmit: () -> Unit,
     onContinue: () -> Unit,
     onCancel: () -> Unit,
+    onBackFromInvalidLink: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     LedgeAuthScaffold(modifier = modifier) {
@@ -110,6 +116,8 @@ internal fun SetNewPasswordScreenContent(
                 )
 
                 SetNewPasswordStep.SUCCESS -> SuccessStep(onContinue = onContinue)
+
+                SetNewPasswordStep.INVALID_LINK -> InvalidLinkStep(onBack = onBackFromInvalidLink)
             }
         }
     }
@@ -265,6 +273,75 @@ private fun SuccessStep(onContinue: () -> Unit) {
     }
 }
 
+@Composable
+private fun InvalidLinkStep(onBack: () -> Unit) {
+    val colors = LedgeTheme.colors
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Box(contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .size(88.dp)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                colors.semanticRed.copy(alpha = 0.25f),
+                                androidx.compose.ui.graphics.Color.Transparent
+                            )
+                        ),
+                        shape = RoundedCornerShape(50)
+                    )
+            )
+            Box(
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(colors.bgCard2, RoundedCornerShape(20.dp))
+                    .border(1.dp, colors.semanticRed, RoundedCornerShape(20.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.ErrorOutline,
+                    contentDescription = null,
+                    tint = colors.semanticRed,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Text(
+            text = "Link expired or invalid",
+            style = LedgeTextStyle.HeadingScreen.copy(
+                fontSize = 24.sp,
+                color = colors.textPrimary
+            ),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        Text(
+            text = "This password reset link is no longer valid.\nSign in and request a new one.",
+            style = LedgeTextStyle.BodySmall.copy(
+                color = colors.textMuted2,
+                lineHeight = 18.sp
+            ),
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(Modifier.height(36.dp))
+
+        LedgePrimaryButton(
+            text = "Back to sign in",
+            onClick = onBack
+        )
+    }
+}
+
 @Preview(showBackground = true, backgroundColor = 0xFF080A0F)
 @Composable
 private fun SetNewPasswordRequestPreview() {
@@ -275,7 +352,8 @@ private fun SetNewPasswordRequestPreview() {
             onConfirmChange = {},
             onSubmit = {},
             onContinue = {},
-            onCancel = {}
+            onCancel = {},
+            onBackFromInvalidLink = {}
         )
     }
 }
@@ -294,7 +372,8 @@ private fun SetNewPasswordMismatchPreview() {
             onConfirmChange = {},
             onSubmit = {},
             onContinue = {},
-            onCancel = {}
+            onCancel = {},
+            onBackFromInvalidLink = {}
         )
     }
 }
@@ -309,7 +388,24 @@ private fun SetNewPasswordSuccessPreview() {
             onConfirmChange = {},
             onSubmit = {},
             onContinue = {},
-            onCancel = {}
+            onCancel = {},
+            onBackFromInvalidLink = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF080A0F, name = "Invalid link")
+@Composable
+private fun SetNewPasswordInvalidLinkPreview() {
+    LedgeTheme {
+        SetNewPasswordScreenContent(
+            uiState = SetNewPasswordUiState(step = SetNewPasswordStep.INVALID_LINK),
+            onPasswordChange = {},
+            onConfirmChange = {},
+            onSubmit = {},
+            onContinue = {},
+            onCancel = {},
+            onBackFromInvalidLink = {}
         )
     }
 }

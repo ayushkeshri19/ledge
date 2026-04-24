@@ -6,6 +6,7 @@ import com.ayush.auth.domain.usecase.SignOutUseCase
 import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.auth.PasswordRecoveryStateHolder
+import com.ayush.common.auth.RecoveryState
 import com.ayush.common.theme.ThemeMode
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
@@ -32,7 +33,7 @@ class MainViewModel @Inject constructor(
             initialValue = AuthState.Loading
         )
 
-    val recoveryActive: StateFlow<Boolean> = passwordRecoveryStateHolder.recoveryActive
+    val recoveryState: StateFlow<RecoveryState> = passwordRecoveryStateHolder.state
 
     val themeMode: StateFlow<ThemeMode> = getThemeModeUseCase()
         .stateIn(

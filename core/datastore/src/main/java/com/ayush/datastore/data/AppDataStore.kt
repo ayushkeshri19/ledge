@@ -27,6 +27,7 @@ class AppDataStore @Inject constructor(
         val IS_LOGGED_IN = booleanPreferencesKey("IS_LOGGED_IN")
         val THEME_MODE = stringPreferencesKey("THEME_MODE")
         val BIOMETRICS_ENABLED = booleanPreferencesKey("BIOMETRICS")
+        val PASSWORD_RECOVERY_PENDING = booleanPreferencesKey("PASSWORD_RECOVERY_PENDING")
     }
 
     suspend fun <T> putValue(
