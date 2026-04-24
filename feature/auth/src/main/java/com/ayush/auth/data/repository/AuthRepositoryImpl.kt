@@ -107,6 +107,15 @@ class AuthRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun updatePassword(newPassword: String): ApiResult<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            supabaseClient.auth.updateUser { password = newPassword }
+        }.fold(
+            onSuccess = { ApiResult.Success(Unit) },
+            onFailure = { ApiResult.Error(it.message ?: "Password update failed", it) }
+        )
+    }
+
     override suspend fun signOut() {
         withContext(Dispatchers.Main) {
             "Signed out successfully".toast(context)
