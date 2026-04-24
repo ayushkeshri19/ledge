@@ -27,9 +27,12 @@ fun LedgeBudgetProgressBar(
     warningColor: Color = Color(0xFFFF9F43),
     exceededColor: Color = Color(0xFFE05A5A),
     trackColor: Color = Color(0xFF13161E),
-    animationDurationMs: Int = 600
+    animationDurationMs: Int = 600,
+    animateInitialAppearance: Boolean = true
 ) {
-    val animatedProgress = remember { Animatable(0f) }
+    val animatedProgress = remember {
+        Animatable(if (animateInitialAppearance) 0f else progress.coerceAtLeast(0f))
+    }
 
     LaunchedEffect(progress) {
         animatedProgress.animateTo(

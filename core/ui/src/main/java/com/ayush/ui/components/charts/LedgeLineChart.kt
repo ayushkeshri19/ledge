@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
@@ -46,6 +49,7 @@ fun LedgeLineChart(
     onPointTap: ((Int) -> Unit)? = null,
     labelColor: Color = Color(0x8CFFFFFF),
     gridLineColor: Color = Color(0x0FFFFFFF),
+    animateInitialAppearance: Boolean = true
 ) {
     if (points.size < 2) return
 
@@ -56,16 +60,23 @@ fun LedgeLineChart(
     val valueRange = (maxValue - minValue).let { if (it == 0f) 1f else it }
 
 
-    val animationProgress = remember { Animatable(0f) }
+    val animationProgress = remember { Animatable(if (animateInitialAppearance) 0f else 1f) }
+    var firstPointsRun by remember { mutableStateOf(true) }
     LaunchedEffect(points) {
-        animationProgress.snapTo(0f)
-        animationProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = animationDurationMs,
-                easing = EaseOutCubic,
-            ),
-        )
+        val shouldAnimate = !firstPointsRun || animateInitialAppearance
+        firstPointsRun = false
+        if (shouldAnimate) {
+            animationProgress.snapTo(0f)
+            animationProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = animationDurationMs,
+                    easing = EaseOutCubic,
+                ),
+            )
+        } else {
+            animationProgress.snapTo(1f)
+        }
     }
 
 
