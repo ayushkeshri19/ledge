@@ -6,13 +6,13 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
-import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.result.ApiResult
-import com.ayush.common.utils.observeAuthState
+import com.ayush.common.sync.SyncOrchestrator
+import com.ayush.common.sync.SyncState
+import com.ayush.common.sync.SyncStateHolder
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
-import com.ayush.transactions.domain.repository.TransactionRepository
 import com.ayush.transactions.domain.usecase.DeleteTransactionUseCase
 import com.ayush.transactions.domain.usecase.GetCategoriesUseCase
 import com.ayush.transactions.domain.usecase.GetTransactionsUseCase
@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val MANUAL_REFRESH_DEBOUNCE_MS = 2_000L
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TransactionsViewModel @Inject constructor(
@@ -37,20 +39,44 @@ class TransactionsViewModel @Inject constructor(
     private val deleteTransactionUseCase: DeleteTransactionUseCase,
     private val updateTransactionUseCase: UpdateTransactionUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
-    private val repository: TransactionRepository,
-    private val authStateProvider: AuthStateProvider,
+    private val syncStateHolder: SyncStateHolder,
+    private val syncOrchestrator: SyncOrchestrator,
     private val stopRecurringSeriesUseCase: StopRecurringSeriesUseCase
 ) : BaseMviViewModel<TransactionsEvent, TransactionsState, TransactionsSideEffect>(
     initialState = TransactionsState()
 ) {
 
+    private var lastManualRefreshAt: Long = 0L
+
     init {
-        observeAuthState(
-            authStateProvider = authStateProvider,
-            onAuthenticated = {
-                loadDataAndSyncRemote()
+        loadCategories()
+        observeSyncState()
+    }
+
+    private fun observeSyncState() {
+        viewModelScope.launch {
+            var wasSyncing: Boolean? = null
+            syncStateHolder.state.collect { syncState ->
+                val syncing = syncState is SyncState.Syncing
+                setState {
+                    copy(
+                        isSyncing = syncing,
+                        hasSyncError = syncState is SyncState.Failed
+                    )
+                }
+                if (wasSyncing == true && !syncing) {
+                    invalidatePaging()
+                }
+                wasSyncing = syncing
             }
-        )
+        }
+    }
+
+    private fun triggerManualRefresh() {
+        val now = System.currentTimeMillis()
+        if (now - lastManualRefreshAt < MANUAL_REFRESH_DEBOUNCE_MS) return
+        lastManualRefreshAt = now
+        viewModelScope.launch { syncOrchestrator.syncAll() }
     }
 
     private var categoriesJob: Job? = null
@@ -96,18 +122,6 @@ class TransactionsViewModel @Inject constructor(
         }.cachedIn(viewModelScope)
 
 
-    private fun loadDataAndSyncRemote() {
-        viewModelScope.launch {
-            repository.ensureDefaultCategories()
-            loadCategories()
-            invalidatePaging()
-            setState { copy(isSyncing = true) }
-            repository.syncFromRemote()
-            setState { copy(isSyncing = false) }
-            invalidatePaging()
-        }
-    }
-
     override fun onEvent(event: TransactionsEvent) {
         when (event) {
             is TransactionsEvent.SearchQueryChanged -> onSearchChanged(event.query)
@@ -133,6 +147,9 @@ class TransactionsViewModel @Inject constructor(
             }
 
             is TransactionsEvent.StopSeriesConfirmed -> stopSeries(event.parentId)
+
+            TransactionsEvent.RefreshRequested -> triggerManualRefresh()
+            TransactionsEvent.DismissSyncError -> syncStateHolder.onSyncErrorDismissed()
         }
     }
 
@@ -207,6 +224,7 @@ data class TransactionsState(
     val filterState: FilterState = FilterState(),
     val searchQuery: String = "",
     val isSyncing: Boolean = false,
+    val hasSyncError: Boolean = false
 )
 
 sealed interface TransactionsEvent {
@@ -229,6 +247,8 @@ sealed interface TransactionsEvent {
     data class ApplyFilters(val filterState: FilterState) : TransactionsEvent
     data object ClearFilters : TransactionsEvent
     data object ClearSearch : TransactionsEvent
+    data object RefreshRequested : TransactionsEvent
+    data object DismissSyncError : TransactionsEvent
 }
 
 sealed interface TransactionsSideEffect {

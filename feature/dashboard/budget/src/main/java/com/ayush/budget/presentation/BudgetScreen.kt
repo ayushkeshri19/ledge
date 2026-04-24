@@ -26,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -44,6 +45,7 @@ import com.ayush.budget.domain.models.BudgetStatus
 import com.ayush.budget.domain.models.BudgetWithSpent
 import com.ayush.common.utils.formatAmount
 import com.ayush.common.utils.toast
+import com.ayush.ui.components.LedgeSyncErrorBanner
 import com.ayush.ui.components.charts.LedgeBudgetProgressBar
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
@@ -112,85 +114,105 @@ private fun BudgetContent(state: BudgetState) {
             }
         }
 
-        when {
-            state.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CircularProgressIndicator(
-                        color = colors.gold,
-                        modifier = Modifier.size(32.dp),
-                        strokeWidth = 2.dp
-                    )
-                }
-            }
+        if (state.hasSyncError) {
+            LedgeSyncErrorBanner(
+                message = "Couldn't refresh data. Check your connection and try again.",
+                onRetry = { onEvent(BudgetEvent.RefreshRequested) },
+                onDismiss = { onEvent(BudgetEvent.DismissSyncError) },
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+            )
+        }
 
-            state.overallBudget == null && state.categoryBudgets.isEmpty() -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+        PullToRefreshBox(
+            isRefreshing = state.isLoading,
+            onRefresh = { onEvent(BudgetEvent.RefreshRequested) },
+            modifier = Modifier.fillMaxSize()
+        ) {
+            when {
+                state.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center,
                     ) {
-                        Text(
-                            text = "No budgets yet",
-                            style = LedgeTextStyle.HeadingCard,
-                            color = colors.textMuted
-                        )
-                        Text(
-                            text = "Set spending limits to stay on track",
-                            style = LedgeTextStyle.BodySmall,
-                            color = colors.textMuted
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        Text(
-                            text = "Tap + to create one",
-                            style = LedgeTextStyle.BodySmall,
-                            color = colors.gold
+                        CircularProgressIndicator(
+                            color = colors.gold,
+                            modifier = Modifier.size(32.dp),
+                            strokeWidth = 2.dp
                         )
                     }
                 }
-            }
 
-            else -> {
-                LazyColumn(
-                    contentPadding = PaddingValues(
-                        start = 20.dp,
-                        end = 20.dp,
-                        bottom = 80.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    state.overallBudget?.let { overall ->
-                        item(key = "overall") {
-                            OverallBudgetCard(
-                                budget = overall,
-                                onClick = { onEvent(BudgetEvent.ShowEditSheet(overall)) }
-                            )
+                state.overallBudget == null && state.categoryBudgets.isEmpty() -> {
+                    LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.padding(top = 80.dp)
+                                ) {
+                                    Text(
+                                        text = "No budgets yet",
+                                        style = LedgeTextStyle.HeadingCard,
+                                        color = colors.textMuted
+                                    )
+                                    Text(
+                                        text = "Set spending limits to stay on track",
+                                        style = LedgeTextStyle.BodySmall,
+                                        color = colors.textMuted
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = "Tap + to create one",
+                                        style = LedgeTextStyle.BodySmall,
+                                        color = colors.gold
+                                    )
+                                }
+                            }
                         }
                     }
+                }
 
-                    if (state.categoryBudgets.isNotEmpty()) {
-                        item(key = "header") {
-                            Text(
-                                text = "CATEGORY BUDGETS",
-                                style = LedgeTextStyle.LabelCaps,
-                                color = colors.textMuted,
-                                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
-                            )
+                else -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(
+                            start = 20.dp,
+                            end = 20.dp,
+                            bottom = 80.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        state.overallBudget?.let { overall ->
+                            item(key = "overall") {
+                                OverallBudgetCard(
+                                    budget = overall,
+                                    onClick = { onEvent(BudgetEvent.ShowEditSheet(overall)) }
+                                )
+                            }
                         }
 
-                        items(
-                            items = state.categoryBudgets,
-                            key = { it.budget.id },
-                        ) { budget ->
-                            CategoryBudgetCard(
-                                budget = budget,
-                                onClick = { onEvent(BudgetEvent.ShowEditSheet(budget)) }
-                            )
+                        if (state.categoryBudgets.isNotEmpty()) {
+                            item(key = "header") {
+                                Text(
+                                    text = "CATEGORY BUDGETS",
+                                    style = LedgeTextStyle.LabelCaps,
+                                    color = colors.textMuted,
+                                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                                )
+                            }
+
+                            items(
+                                items = state.categoryBudgets,
+                                key = { it.budget.id },
+                            ) { budget ->
+                                CategoryBudgetCard(
+                                    budget = budget,
+                                    onClick = { onEvent(BudgetEvent.ShowEditSheet(budget)) }
+                                )
+                            }
                         }
                     }
                 }

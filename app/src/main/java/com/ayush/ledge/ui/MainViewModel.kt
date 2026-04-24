@@ -7,6 +7,7 @@ import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.auth.PasswordRecoveryStateHolder
 import com.ayush.common.auth.RecoveryState
+import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.theme.ThemeMode
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
@@ -19,10 +20,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    authStateProvider: AuthStateProvider,
+    private val authStateProvider: AuthStateProvider,
     passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
     private val signOutUseCase: SignOutUseCase,
     private val setBiometricsEnabledUseCase: SetBiometricsEnabledUseCase,
+    private val syncOrchestrator: SyncOrchestrator,
     getThemeModeUseCase: GetThemeModeUseCase
 ) : ViewModel() {
 
@@ -41,6 +43,26 @@ class MainViewModel @Inject constructor(
             started = SharingStarted.Eagerly,
             initialValue = ThemeMode.SYSTEM
         )
+
+    init {
+        viewModelScope.launch {
+            var syncedForSession = false
+            authStateProvider.authState.collect { state ->
+                when (state) {
+                    AuthState.Authenticated -> {
+                        if (!syncedForSession) {
+                            syncedForSession = true
+                            launch { syncOrchestrator.syncAll() }
+                        }
+                    }
+
+                    AuthState.NotAuthenticated -> syncedForSession = false
+
+                    else -> {}
+                }
+            }
+        }
+    }
 
     fun signOut() {
         viewModelScope.launch { signOutUseCase.invoke() }
