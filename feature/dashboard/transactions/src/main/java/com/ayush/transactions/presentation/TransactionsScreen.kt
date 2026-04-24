@@ -40,6 +40,7 @@ import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxState
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -71,6 +72,7 @@ import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.ui.components.LedgeFilterChip
+import com.ayush.ui.components.LedgeSyncErrorBanner
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
@@ -282,8 +284,25 @@ private fun TransactionsContent(
             Spacer(Modifier.height(16.dp))
         }
 
+        if (state.hasSyncError) {
+            LedgeSyncErrorBanner(
+                message = "Couldn't refresh data. Check your connection and try again.",
+                onRetry = { onEvent(TransactionsEvent.RefreshRequested) },
+                onDismiss = { onEvent(TransactionsEvent.DismissSyncError) },
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 4.dp)
+            )
+        }
+
+        PullToRefreshBox(
+            isRefreshing = state.isSyncing,
+            onRefresh = { onEvent(TransactionsEvent.RefreshRequested) },
+            modifier = Modifier.fillMaxSize()
+        ) {
         when {
-            isInitialLoad || state.isSyncing -> {
+            // Paging's own initial-load signal. Don't also gate on state.isSyncing
+            // or the list would disappear every time the user pulls to refresh —
+            // PullToRefreshBox already shows its own top indicator for that case.
+            isInitialLoad -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -387,6 +406,7 @@ private fun TransactionsContent(
                     }
                 }
             }
+        }
         }
     }
 

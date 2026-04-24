@@ -3,7 +3,8 @@ package com.ayush.common.sync
 import kotlinx.coroutines.flow.StateFlow
 
 interface SyncStateHolder {
-    val isSyncing: StateFlow<Boolean>
+    val state: StateFlow<SyncState>
     fun onSyncStarted()
-    fun onSyncCompleted()
+    fun onSyncCompleted(error: Throwable? = null)
+    fun onSyncErrorDismissed()
 }

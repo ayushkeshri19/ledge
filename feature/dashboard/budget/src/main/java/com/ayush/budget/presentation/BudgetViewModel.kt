@@ -8,6 +8,8 @@ import com.ayush.budget.domain.usecase.DeleteBudgetUseCase
 import com.ayush.budget.domain.usecase.GetBudgetsUseCase
 import com.ayush.budget.domain.usecase.GetCategoriesUseCase
 import com.ayush.budget.domain.usecase.SaveBudgetUseCase
+import com.ayush.common.sync.SyncOrchestrator
+import com.ayush.common.sync.SyncState
 import com.ayush.common.sync.SyncStateHolder
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,6 +18,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val MANUAL_REFRESH_DEBOUNCE_MS = 2_000L
+
 @HiltViewModel
 class BudgetViewModel @Inject constructor(
     private val getBudgetsUseCase: GetBudgetsUseCase,
@@ -23,12 +27,14 @@ class BudgetViewModel @Inject constructor(
     private val deleteBudgetUseCase: DeleteBudgetUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val syncStateHolder: SyncStateHolder,
+    private val syncOrchestrator: SyncOrchestrator
 ) : BaseMviViewModel<BudgetEvent, BudgetState, BudgetSideEffect>(
     initialState = BudgetState()
 ) {
 
     private var budgetsJob: Job? = null
     private var categoriesJob: Job? = null
+    private var lastManualRefreshAt: Long = 0L
 
     init {
         observeBudgets()
@@ -40,16 +46,17 @@ class BudgetViewModel @Inject constructor(
         budgetsJob = viewModelScope.launch {
             combine(
                 getBudgetsUseCase(),
-                syncStateHolder.isSyncing,
-            ) { budgets, syncing -> budgets to syncing }
-                .collect { (budgets, syncing) ->
+                syncStateHolder.state,
+            ) { budgets, syncState -> budgets to syncState }
+                .collect { (budgets, syncState) ->
                     val overall = budgets.find { it.budget.categoryId == null }
                     val categoryBudgets = budgets.filter { it.budget.categoryId != null }
                     setState {
                         copy(
-                            isLoading = syncing,
+                            isLoading = syncState is SyncState.Syncing,
+                            hasSyncError = syncState is SyncState.Failed,
                             overallBudget = overall,
-                            categoryBudgets = categoryBudgets,
+                            categoryBudgets = categoryBudgets
                         )
                     }
                 }
@@ -81,7 +88,16 @@ class BudgetViewModel @Inject constructor(
 
             is BudgetEvent.SaveBudget -> saveBudget(event)
             is BudgetEvent.DeleteBudget -> deleteBudget(event.id)
+            BudgetEvent.RefreshRequested -> triggerManualRefresh()
+            BudgetEvent.DismissSyncError -> syncStateHolder.onSyncErrorDismissed()
         }
+    }
+
+    private fun triggerManualRefresh() {
+        val now = System.currentTimeMillis()
+        if (now - lastManualRefreshAt < MANUAL_REFRESH_DEBOUNCE_MS) return
+        lastManualRefreshAt = now
+        viewModelScope.launch { syncOrchestrator.syncAll() }
     }
 
     private fun saveBudget(event: BudgetEvent.SaveBudget) {
@@ -115,6 +131,7 @@ class BudgetViewModel @Inject constructor(
 @Stable
 data class BudgetState(
     val isLoading: Boolean = true,
+    val hasSyncError: Boolean = false,
     val overallBudget: BudgetWithSpent? = null,
     val categoryBudgets: List<BudgetWithSpent> = emptyList(),
     val categories: List<Category> = emptyList(),
@@ -133,6 +150,8 @@ sealed interface BudgetEvent {
     ) : BudgetEvent
 
     data class DeleteBudget(val id: Long) : BudgetEvent
+    data object RefreshRequested : BudgetEvent
+    data object DismissSyncError : BudgetEvent
 }
 
 sealed interface BudgetSideEffect {

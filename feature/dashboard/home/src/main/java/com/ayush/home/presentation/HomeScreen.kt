@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -48,6 +50,7 @@ import com.ayush.home.domain.models.RecentTransaction
 import com.ayush.ui.components.AnimatedAmount
 import com.ayush.ui.components.DashboardShimmer
 import com.ayush.ui.components.LedgeSegmentedToggle
+import com.ayush.ui.components.LedgeSyncErrorBanner
 import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.components.noRippleClickable
 import com.ayush.ui.theme.DmSansFontFamily
@@ -83,49 +86,66 @@ fun HomeScreen(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun HomeContent(state: HomeState) {
 
     val onEvent = LocalEventSink.current
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    PullToRefreshBox(
+        isRefreshing = state.isDashboardLoading,
+        onRefresh = { onEvent(HomeUiEvent.RefreshRequested) },
+        modifier = Modifier.fillMaxSize()
     ) {
-        item {
-            UserDetailsRow(
-                greeting = state.userDetails.greeting,
-                name = state.userDetails.name,
-                initials = state.userDetails.initials,
-                showDot = state.showDot
-            )
-        }
-
-        item {
-            TimePeriodToggle(
-                selectedPeriod = state.selectedPeriod,
-                onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) }
-            )
-        }
-
-        if (state.isDashboardLoading) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding(),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
             item {
-                DashboardShimmer()
-            }
-        } else {
-            item {
-                BalanceOverviewCard(state = state.summaryState)
+                UserDetailsRow(
+                    greeting = state.userDetails.greeting,
+                    name = state.userDetails.name,
+                    initials = state.userDetails.initials,
+                    showDot = state.showDot
+                )
             }
 
-            if (state.recentTransactions.isNotEmpty()) {
+            if (state.hasSyncError) {
                 item {
-                    RecentTransactionsCard(
-                        transactions = state.recentTransactions,
-                        onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) }
+                    LedgeSyncErrorBanner(
+                        message = "Couldn't refresh data. Check your connection and try again.",
+                        onRetry = { onEvent(HomeUiEvent.RefreshRequested) },
+                        onDismiss = { onEvent(HomeUiEvent.DismissSyncError) }
                     )
+                }
+            }
+
+            item {
+                TimePeriodToggle(
+                    selectedPeriod = state.selectedPeriod,
+                    onPeriodChanged = { onEvent(HomeUiEvent.PeriodChanged(it)) }
+                )
+            }
+
+            if (state.isDashboardLoading) {
+                item {
+                    DashboardShimmer()
+                }
+            } else {
+                item {
+                    BalanceOverviewCard(state = state.summaryState)
+                }
+
+                if (state.recentTransactions.isNotEmpty()) {
+                    item {
+                        RecentTransactionsCard(
+                            transactions = state.recentTransactions,
+                            onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) }
+                        )
+                    }
                 }
             }
         }

@@ -4,6 +4,8 @@ import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
 import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.models.TimePeriod
+import com.ayush.common.sync.SyncOrchestrator
+import com.ayush.common.sync.SyncState
 import com.ayush.common.sync.SyncStateHolder
 import com.ayush.common.utils.observeAuthState
 import com.ayush.home.domain.models.RecentTransaction
@@ -21,19 +23,23 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+private const val MANUAL_REFRESH_DEBOUNCE_MS = 2_000L
+
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val userDetailsUseCase: HomeUserDetailsUseCase,
     private val getDashboardSummaryUseCase: GetDashboardSummaryUseCase,
     private val getRecentTransactionsUseCase: GetRecentTransactionsUseCase,
-    private val authStateProvider: AuthStateProvider,
+    authStateProvider: AuthStateProvider,
     private val syncStateHolder: SyncStateHolder,
+    private val syncOrchestrator: SyncOrchestrator,
 ) : BaseMviViewModel<HomeUiEvent, HomeState, HomeSideEffect>(
     initialState = HomeState()
 ) {
 
     private val _selectedPeriod = MutableStateFlow(TimePeriod.MONTH)
+    private var lastManualRefreshAt: Long = 0L
 
     init {
         observeAuthState(authStateProvider) { loadUserDetails() }
@@ -51,12 +57,13 @@ class HomeViewModel @Inject constructor(
                     summary to recent
                 }.debounce(100)
             }
-            combine(dashboardData, syncStateHolder.isSyncing) { (summary, recent), syncing ->
-                Triple(summary, recent, syncing)
-            }.collect { (summary, recent, syncing) ->
+            combine(dashboardData, syncStateHolder.state) { (summary, recent), syncState ->
+                Triple(summary, recent, syncState)
+            }.collect { (summary, recent, syncState) ->
                 setState {
                     copy(
-                        isDashboardLoading = syncing,
+                        isDashboardLoading = syncState is SyncState.Syncing,
+                        hasSyncError = syncState is SyncState.Failed,
                         summaryState = SummaryState(
                             totalIncome = summary.totalIncome,
                             totalExpense = summary.totalExpense,
@@ -83,7 +90,18 @@ class HomeViewModel @Inject constructor(
             HomeUiEvent.ProfileClicked -> {
                 sendSideEffect(HomeSideEffect.NavigateToProfile)
             }
+
+            HomeUiEvent.RefreshRequested -> triggerManualRefresh()
+
+            HomeUiEvent.DismissSyncError -> syncStateHolder.onSyncErrorDismissed()
         }
+    }
+
+    private fun triggerManualRefresh() {
+        val now = System.currentTimeMillis()
+        if (now - lastManualRefreshAt < MANUAL_REFRESH_DEBOUNCE_MS) return
+        lastManualRefreshAt = now
+        viewModelScope.launch { syncOrchestrator.syncAll() }
     }
 
     private fun loadUserDetails() {
@@ -109,6 +127,7 @@ data class HomeState(
     val userDetails: UserDetailsState = UserDetailsState(),
     val selectedPeriod: TimePeriod = TimePeriod.MONTH,
     val isDashboardLoading: Boolean = true,
+    val hasSyncError: Boolean = false,
     val showDot: Boolean = false,
     val summaryState: SummaryState = SummaryState(),
     val recentTransactions: List<RecentTransaction> = emptyList(),
@@ -132,10 +151,11 @@ sealed interface HomeUiEvent {
     data class PeriodChanged(val period: TimePeriod) : HomeUiEvent
     data object SeeAllTransactionsClicked : HomeUiEvent
     data object ProfileClicked : HomeUiEvent
+    data object RefreshRequested : HomeUiEvent
+    data object DismissSyncError : HomeUiEvent
 }
 
 sealed interface HomeSideEffect {
     data object NavigateToTransactions : HomeSideEffect
     data object NavigateToProfile : HomeSideEffect
-
 }
