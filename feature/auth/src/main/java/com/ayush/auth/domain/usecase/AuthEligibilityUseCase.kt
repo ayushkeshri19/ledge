@@ -27,6 +27,14 @@ class AuthEligibilityUseCase {
 
     private val specialCharRegex = Regex("[^A-Za-z0-9]")
 
+    fun validatePassword(password: String): String? {
+        if (password.isBlank()) return "Password cannot be empty"
+        if (password.length < 8) return "Password must be at least 8 characters long"
+        if (!password.any { it.isUpperCase() }) return "Password must contain at least one uppercase letter"
+        if (!specialCharRegex.containsMatchIn(password)) return "Password must contain at least one special character"
+        return null
+    }
+
     fun canProceed(
         email: String,
         password: String,
@@ -40,24 +48,7 @@ class AuthEligibilityUseCase {
             return AuthEligibilityResult.Error("Invalid email format")
         }
         if (authFlow == AuthFlow.SIGN_UP) {
-            if (password.isBlank()) {
-                return AuthEligibilityResult.Error("Password cannot be empty")
-            }
-            if (password.length < 8) {
-                return AuthEligibilityResult.Error(
-                    "Password must be at least 8 characters long"
-                )
-            }
-            if (!password.any { it.isUpperCase() }) {
-                return AuthEligibilityResult.Error(
-                    "Password must contain at least one uppercase letter"
-                )
-            }
-            if (!specialCharRegex.containsMatchIn(password)) {
-                return AuthEligibilityResult.Error(
-                    "Password must contain at least one special character"
-                )
-            }
+            validatePassword(password)?.let { return AuthEligibilityResult.Error(it) }
         }
 
         return AuthEligibilityResult.Eligible
