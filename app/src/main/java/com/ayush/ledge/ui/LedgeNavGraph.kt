@@ -13,6 +13,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
+import com.ayush.auth.presentation.SetNewPasswordScreen
 import com.ayush.common.auth.AuthState
 import com.ayush.profile.presentation.profile.UserProfileScreen
 
@@ -20,38 +21,45 @@ import com.ayush.profile.presentation.profile.UserProfileScreen
 internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
 
     val authState by mainViewModel.authState.collectAsState()
+    val recoveryActive by mainViewModel.recoveryActive.collectAsState()
 
-    if (authState == AuthState.Loading) {
+    if (authState == AuthState.Loading && !recoveryActive) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
         return
     }
 
-    val startDestination: LedgeRoute = when (authState) {
-        AuthState.Authenticated -> DashboardRoute.Dashboard
+    val startDestination: LedgeRoute = when {
+        recoveryActive -> AuthRoute.SetNewPassword
+        authState == AuthState.Authenticated -> DashboardRoute.Dashboard
         else -> AuthRoute.Auth
     }
 
     val backStack = rememberNavBackStack(startDestination)
 
-    LaunchedEffect(authState) {
-        when (authState) {
-            AuthState.Authenticated -> {
+    LaunchedEffect(authState, recoveryActive) {
+        when {
+            recoveryActive -> {
+                if (backStack.lastOrNull() !is AuthRoute.SetNewPassword) {
+                    backStack.clear()
+                    backStack.add(AuthRoute.SetNewPassword)
+                }
+            }
+
+            authState == AuthState.Authenticated -> {
                 if (backStack.lastOrNull() !is DashboardRoute) {
                     backStack.clear()
                     backStack.add(DashboardRoute.Dashboard)
                 }
             }
 
-            AuthState.NotAuthenticated -> {
+            authState == AuthState.NotAuthenticated -> {
                 if (backStack.lastOrNull() !is AuthRoute) {
                     backStack.clear()
                     backStack.add(AuthRoute.Auth)
                 }
             }
-
-            else -> {}
         }
     }
 
@@ -63,7 +71,16 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
                     onAuthSuccess = {
                         backStack.clear()
                         backStack.add(DashboardRoute.Dashboard)
-                    },
+                    }
+                )
+            }
+
+            entry<AuthRoute.SetNewPassword> {
+                SetNewPasswordScreen(
+                    onComplete = {
+                        backStack.clear()
+                        backStack.add(AuthRoute.Auth)
+                    }
                 )
             }
 

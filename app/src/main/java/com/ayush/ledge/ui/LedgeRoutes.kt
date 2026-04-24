@@ -20,6 +20,9 @@ sealed interface AuthRoute : LedgeRoute {
 
     @Serializable
     data object ForgotPassword : AuthRoute
+
+    @Serializable
+    data object SetNewPassword : AuthRoute
 }
 
 sealed interface DashboardRoute : LedgeRoute {
