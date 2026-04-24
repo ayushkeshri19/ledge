@@ -1,12 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Ledge" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.Ledge" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/bg_deep</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
 
     <style name="Theme.Ledge.Starting" parent="Theme.SplashScreen">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="windowSplashScreenBackground">@color/bg_deep</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_ledge</item>
         <item name="windowSplashScreenIconBackgroundColor">@color/bg_deep</item>
         <item name="postSplashScreenTheme">@style/Theme.Ledge</item>
     </style>
+
 </resources>
