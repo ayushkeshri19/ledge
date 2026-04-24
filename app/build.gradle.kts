@@ -98,4 +98,5 @@ dependencies {
     implementation(libs.androidx.navigation3.ui)
 
     implementation(libs.splashscreen)
+    implementation(libs.material)
 }

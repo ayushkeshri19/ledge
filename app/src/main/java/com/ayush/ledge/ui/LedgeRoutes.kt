@@ -13,6 +13,9 @@ sealed interface AuthRoute : LedgeRoute {
     data object Auth : AuthRoute
 
     @Serializable
+    data object Onboarding : AuthRoute
+
+    @Serializable
     data object SignIn : AuthRoute
 
     @Serializable

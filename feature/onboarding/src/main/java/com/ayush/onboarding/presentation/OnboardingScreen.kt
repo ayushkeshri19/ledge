@@ -25,7 +25,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -205,7 +204,7 @@ private fun StepIndicator(
                     .width(width)
                     .height(6.dp)
                     .clip(RoundedCornerShape(LedgeRadius.pill))
-                    .background(if (i == current) colors.gold else Color.White.copy(alpha = 0.12f))
+                    .background(if (i == current) colors.gold else colors.borderMid)
             )
         }
     }

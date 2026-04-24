@@ -1,21 +1,18 @@
 package com.ayush.ledge.ui
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.auth.presentation.SetNewPasswordScreen
 import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.RecoveryState
+import com.ayush.onboarding.presentation.OnboardingScreen
 import com.ayush.profile.presentation.profile.UserProfileScreen
 
 @Composable
@@ -23,17 +20,16 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
 
     val authState by mainViewModel.authState.collectAsState()
     val recoveryState by mainViewModel.recoveryState.collectAsState()
+    val hasSeenOnboarding by mainViewModel.hasSeenOnboarding.collectAsStateWithLifecycle()
 
-    if (authState == AuthState.Loading || recoveryState == RecoveryState.Loading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
+    if (authState == AuthState.Loading || recoveryState == RecoveryState.Loading || hasSeenOnboarding == null) {
         return
     }
 
     val startDestination: LedgeRoute = when {
         recoveryState == RecoveryState.Active -> AuthRoute.SetNewPassword
         authState == AuthState.Authenticated -> DashboardRoute.Dashboard
+        hasSeenOnboarding == false -> AuthRoute.Onboarding
         else -> AuthRoute.Auth
     }
 
@@ -107,6 +103,13 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
                         mainViewModel.signOut()
                     }
                 )
+            }
+
+            entry<AuthRoute.Onboarding> {
+                OnboardingScreen {
+                    backStack.clear()
+                    backStack.add(AuthRoute.Auth)
+                }
             }
         },
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }

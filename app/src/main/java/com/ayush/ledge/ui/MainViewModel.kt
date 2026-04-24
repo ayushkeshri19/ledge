@@ -10,6 +10,7 @@ import com.ayush.common.auth.RecoveryState
 import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.theme.ThemeMode
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
+import com.ayush.datastore.domain.usecase.ObserveHasSeenOnboardingUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,11 +22,12 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val authStateProvider: AuthStateProvider,
-    passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
     private val signOutUseCase: SignOutUseCase,
     private val setBiometricsEnabledUseCase: SetBiometricsEnabledUseCase,
     private val syncOrchestrator: SyncOrchestrator,
-    getThemeModeUseCase: GetThemeModeUseCase
+    observeHasSeenOnboardingUseCase: ObserveHasSeenOnboardingUseCase,
+    getThemeModeUseCase: GetThemeModeUseCase,
+    passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
 ) : ViewModel() {
 
     val authState: StateFlow<AuthState> = authStateProvider.authState
@@ -42,6 +44,13 @@ class MainViewModel @Inject constructor(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
             initialValue = ThemeMode.SYSTEM
+        )
+
+    val hasSeenOnboarding: StateFlow<Boolean?> = observeHasSeenOnboardingUseCase()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = null
         )
 
     init {
