@@ -14,4 +14,7 @@ interface AppDataStoreRepository {
 
     fun observeBiometricsStatus(): Flow<Boolean>
     suspend fun setBiometricsEnabled(enabled: Boolean)
+
+    fun observeHasSeenOnboarding(): Flow<Boolean>
+    suspend fun setOnboardingSeen()
 }

@@ -31,7 +31,8 @@ class AppDataStoreRepositoryImpl @Inject constructor(
     override suspend fun clearUserData() {
         dataStore.clearExcept(
             AppDataStore.PreferencesKey.THEME_MODE,
-            AppDataStore.PreferencesKey.BIOMETRICS_ENABLED
+            AppDataStore.PreferencesKey.BIOMETRICS_ENABLED,
+            AppDataStore.PreferencesKey.HAS_SEEN_ONBOARDING
         )
     }
 
@@ -62,6 +63,20 @@ class AppDataStoreRepositoryImpl @Inject constructor(
         dataStore.putValue(
             key = AppDataStore.PreferencesKey.BIOMETRICS_ENABLED,
             value = enabled
+        )
+    }
+
+    override fun observeHasSeenOnboarding(): Flow<Boolean> {
+        return dataStore.getValue(
+            key = AppDataStore.PreferencesKey.HAS_SEEN_ONBOARDING,
+            defaultValue = false
+        )
+    }
+
+    override suspend fun setOnboardingSeen() {
+        dataStore.putValue(
+            key = AppDataStore.PreferencesKey.HAS_SEEN_ONBOARDING,
+            value = true
         )
     }
 }
