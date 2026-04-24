@@ -14,10 +14,13 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
+import com.ayush.common.auth.RecoveryState
 import com.ayush.common.deeplink.DeepLinkHandler
 import com.ayush.ledge.ui.lock.LockScreen
 import com.ayush.security.domain.repository.AppLockManager
@@ -48,6 +51,14 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge(
             navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
         )
+
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition {
+            mainViewModel.authState.value == AuthState.Loading ||
+                    mainViewModel.recoveryState.value == RecoveryState.Loading ||
+                    mainViewModel.hasSeenOnboarding.value == null
+        }
+
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {

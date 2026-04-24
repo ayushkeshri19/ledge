@@ -66,6 +66,7 @@ dependencies {
     implementation(project(":feature:auth"))
     implementation(project(":feature:profile"))
     implementation(project(":feature:dashboard"))
+    implementation(project(":feature:onboarding"))
     implementation(project(":feature:dashboard:home"))
     implementation(project(":feature:dashboard:budget"))
     implementation(project(":feature:dashboard:insights"))
@@ -95,4 +96,7 @@ dependencies {
 
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
+
+    implementation(libs.splashscreen)
+    implementation(libs.material)
 }

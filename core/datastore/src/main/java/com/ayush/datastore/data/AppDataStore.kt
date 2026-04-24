@@ -28,6 +28,7 @@ class AppDataStore @Inject constructor(
         val THEME_MODE = stringPreferencesKey("THEME_MODE")
         val BIOMETRICS_ENABLED = booleanPreferencesKey("BIOMETRICS")
         val PASSWORD_RECOVERY_PENDING = booleanPreferencesKey("PASSWORD_RECOVERY_PENDING")
+        val HAS_SEEN_ONBOARDING = booleanPreferencesKey("HAS_SEEN_ONBOARDING")
     }
 
     suspend fun <T> putValue(
