@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.ayush.auth.domain.usecase.SignOutUseCase
 import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
+import com.ayush.common.auth.PasswordRecoveryStateHolder
 import com.ayush.common.theme.ThemeMode
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
@@ -18,6 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MainViewModel @Inject constructor(
     authStateProvider: AuthStateProvider,
+    passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
     private val signOutUseCase: SignOutUseCase,
     private val setBiometricsEnabledUseCase: SetBiometricsEnabledUseCase,
     getThemeModeUseCase: GetThemeModeUseCase
@@ -29,6 +31,8 @@ class MainViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = AuthState.Loading
         )
+
+    val recoveryActive: StateFlow<Boolean> = passwordRecoveryStateHolder.recoveryActive
 
     val themeMode: StateFlow<ThemeMode> = getThemeModeUseCase()
         .stateIn(
