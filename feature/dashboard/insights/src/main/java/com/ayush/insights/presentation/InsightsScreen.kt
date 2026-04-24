@@ -40,6 +40,8 @@ import com.ayush.common.utils.formatAmount
 import com.ayush.insights.domain.models.CategorySpend
 import com.ayush.insights.domain.models.IncomeExpenseBucket
 import com.ayush.insights.domain.models.SpendBucket
+import com.ayush.ui.animation.rememberOneShotAnimationTracker
+import com.ayush.ui.animation.rememberOneShotFlag
 import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.SegmentOption
 import com.ayush.ui.components.charts.BarChartData
@@ -73,26 +75,28 @@ private fun InsightsContent(state: InsightsState) {
 
     var seeMore by remember { mutableStateOf(false) }
 
+    val animationTracker = rememberOneShotAnimationTracker()
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .statusBarsPadding(),
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             Text(
                 text = "Insights",
                 style = LedgeTextStyle.HeadingScreen,
                 color = colors.textPrimary,
-                modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+                modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
             )
         }
 
         item {
             TimePeriodToggle(
                 selectedPeriod = state.selectedPeriod,
-                onPeriodChanged = { onEvent(InsightsEvent.PeriodChanged(it)) },
+                onPeriodChanged = { onEvent(InsightsEvent.PeriodChanged(it)) }
             )
         }
 
@@ -102,6 +106,7 @@ private fun InsightsContent(state: InsightsState) {
                     categories = state.categorySpending,
                     seeMore = seeMore,
                     onSeeMoreClicked = { seeMore = !seeMore },
+                    animateInitialAppearance = rememberOneShotFlag(animationTracker, "insights_category_pie")
                 )
             }
         } else if (!state.isLoading) {
@@ -113,24 +118,36 @@ private fun InsightsContent(state: InsightsState) {
                 DailySpendLineCard(
                     series = state.spendSeries,
                     period = state.selectedPeriod,
+                    animateInitialAppearance = rememberOneShotFlag(animationTracker, "insights_spend_line"),
                 )
             }
         }
 
         if (state.incomeExpenseHistory.isNotEmpty()) {
-            item { IncomeVsExpenseCard(history = state.incomeExpenseHistory) }
+            item {
+                IncomeVsExpenseCard(
+                    history = state.incomeExpenseHistory,
+                    animateInitialAppearance = rememberOneShotFlag(animationTracker, "insights_income_expense")
+                )
+            }
         }
 
         if (state.weeklyPace.isNotEmpty()) {
-            item { WeeklyPaceCard(series = state.weeklyPace) }
+            item {
+                WeeklyPaceCard(
+                    series = state.weeklyPace,
+                    animateInitialAppearance = rememberOneShotFlag(animationTracker, "insights_weekly_pace")
+                )
+            }
         }
     }
 }
 
+
 @Composable
 private fun TimePeriodToggle(
     selectedPeriod: TimePeriod,
-    onPeriodChanged: (TimePeriod) -> Unit,
+    onPeriodChanged: (TimePeriod) -> Unit
 ) {
     val gold = LedgeTheme.colors.gold
     val options = remember(gold) {
@@ -138,7 +155,7 @@ private fun TimePeriodToggle(
             SegmentOption(
                 value = period,
                 label = period.label,
-                selectedColor = gold,
+                selectedColor = gold
             )
         }
     }
@@ -146,7 +163,7 @@ private fun TimePeriodToggle(
     LedgeSegmentedToggle(
         options = options,
         selectedValue = selectedPeriod,
-        onSelect = onPeriodChanged,
+        onSelect = onPeriodChanged
     )
 }
 
@@ -160,17 +177,17 @@ private fun EmptyState() {
             .background(colors.bgCard)
             .padding(vertical = 40.dp, horizontal = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text(
             text = "No spending this month",
             style = LedgeTextStyle.HeadingCard,
-            color = colors.textPrimary,
+            color = colors.textPrimary
         )
         Text(
             text = "Log a transaction to see your category breakdown.",
             style = LedgeTextStyle.BodySmall,
-            color = colors.textMuted2,
+            color = colors.textMuted2
         )
     }
 }
@@ -183,7 +200,7 @@ private fun ChartCard(
     trend: String? = null,
     trendColor: Color? = null,
     footer: String? = null,
-    content: @Composable () -> Unit,
+    content: @Composable () -> Unit
 ) {
     val colors = LedgeTheme.colors
     Column(
@@ -191,23 +208,23 @@ private fun ChartCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(20.dp))
             .background(colors.bgCard)
-            .padding(20.dp),
+            .padding(20.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = capsLabel,
                 style = LedgeTextStyle.LabelCaps,
-                color = colors.textMuted,
+                color = colors.textMuted
             )
             if (trend != null) {
                 Text(
                     text = trend,
                     style = LedgeTextStyle.Caption,
-                    color = trendColor ?: colors.gold,
+                    color = trendColor ?: colors.gold
                 )
             }
         }
@@ -215,14 +232,14 @@ private fun ChartCard(
         Text(
             text = title,
             style = LedgeTextStyle.HeadingCard,
-            color = colors.textPrimary,
+            color = colors.textPrimary
         )
         if (headline != null) {
             Spacer(Modifier.height(6.dp))
             Text(
                 text = headline,
                 style = LedgeTextStyle.AmountLarge,
-                color = colors.gold,
+                color = colors.gold
             )
         }
         Spacer(Modifier.height(16.dp))
@@ -232,7 +249,7 @@ private fun ChartCard(
             Text(
                 text = footer,
                 style = LedgeTextStyle.Caption,
-                color = colors.textMuted2,
+                color = colors.textMuted2
             )
         }
     }
@@ -242,6 +259,7 @@ private fun ChartCard(
 private fun DailySpendLineCard(
     series: List<SpendBucket>,
     period: TimePeriod,
+    animateInitialAppearance: Boolean = true,
 ) {
     val colors = LedgeTheme.colors
     var selectedIndex by remember(series) { mutableStateOf<Int?>(null) }
@@ -270,13 +288,17 @@ private fun DailySpendLineCard(
             points = series.map { LineChartPoint(label = it.label, value = it.amount.toFloat()) },
             lineColor = colors.gold,
             selectedIndex = selectedIndex,
-            onPointTap = { idx -> selectedIndex = if (selectedIndex == idx) null else idx }
+            onPointTap = { idx -> selectedIndex = if (selectedIndex == idx) null else idx },
+            animateInitialAppearance = animateInitialAppearance
         )
     }
 }
 
 @Composable
-private fun IncomeVsExpenseCard(history: List<IncomeExpenseBucket>) {
+private fun IncomeVsExpenseCard(
+    history: List<IncomeExpenseBucket>,
+    animateInitialAppearance: Boolean = true,
+) {
     val colors = LedgeTheme.colors
     val incomeTotal = history.sumOf { it.income }
     val expenseTotal = history.sumOf { it.expense }
@@ -290,30 +312,34 @@ private fun IncomeVsExpenseCard(history: List<IncomeExpenseBucket>) {
                     colors = listOf(colors.semanticGreen, colors.semanticRed)
                 )
             },
+            animateInitialAppearance = animateInitialAppearance
         )
         Spacer(Modifier.height(14.dp))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             LegendItem(
                 color = colors.semanticGreen,
                 label = "Income",
-                amount = "\u20B9${formatAmount(incomeTotal)}",
+                amount = "\u20B9${formatAmount(incomeTotal)}"
             )
             Spacer(Modifier.width(20.dp))
             LegendItem(
                 color = colors.semanticRed,
                 label = "Expense",
-                amount = "\u20B9${formatAmount(expenseTotal)}",
+                amount = "\u20B9${formatAmount(expenseTotal)}"
             )
         }
     }
 }
 
 @Composable
-private fun WeeklyPaceCard(series: List<SpendBucket>) {
+private fun WeeklyPaceCard(
+    series: List<SpendBucket>,
+    animateInitialAppearance: Boolean = true,
+) {
     val colors = LedgeTheme.colors
     var selectedIndex by remember(series) { mutableStateOf<Int?>(null) }
     val total = series.sumOf { it.amount }
@@ -329,6 +355,7 @@ private fun WeeklyPaceCard(series: List<SpendBucket>) {
             onBarTap = { idx -> selectedIndex = if (selectedIndex == idx) null else idx },
             showValues = true,
             valueFormatter = { compactAmount(it.toDouble()) },
+            animateInitialAppearance = animateInitialAppearance
         )
     }
 }
@@ -341,20 +368,20 @@ private fun LegendItem(color: Color, label: String, amount: String? = null) {
             modifier = Modifier
                 .size(8.dp)
                 .clip(RoundedCornerShape(2.dp))
-                .background(color),
+                .background(color)
         )
         Spacer(Modifier.width(8.dp))
         Text(
             text = label,
             style = LedgeTextStyle.BodySmall,
-            color = colors.textMuted2,
+            color = colors.textMuted2
         )
         if (amount != null) {
             Spacer(Modifier.width(6.dp))
             Text(
                 text = amount,
                 style = LedgeTextStyle.AmountMono,
-                color = color,
+                color = color
             )
         }
     }
@@ -387,6 +414,7 @@ private fun SpendingByCategoryCard(
     categories: List<CategorySpend>,
     seeMore: Boolean,
     onSeeMoreClicked: () -> Unit,
+    animateInitialAppearance: Boolean = true
 ) {
     val colors = LedgeTheme.colors
     var selectedIndex by remember { mutableStateOf<Int?>(null) }
@@ -427,6 +455,7 @@ private fun SpendingByCategoryCard(
                 onSegmentTap = { index ->
                     selectedIndex = if (selectedIndex == index) null else index
                 },
+                animateInitialAppearance = animateInitialAppearance,
                 centerContent = {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
@@ -437,7 +466,7 @@ private fun SpendingByCategoryCard(
                         Text(
                             text = "\u20B9${formatAmount(totalExpense)}",
                             style = LedgeTextStyle.AmountLarge,
-                            color = colors.textPrimary,
+                            color = colors.textPrimary
                         )
                     }
                 },

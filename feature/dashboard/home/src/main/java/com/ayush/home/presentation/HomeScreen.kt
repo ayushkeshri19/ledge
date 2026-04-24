@@ -47,6 +47,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.common.models.TimePeriod
 import com.ayush.common.utils.formatAmount
 import com.ayush.home.domain.models.RecentTransaction
+import com.ayush.ui.animation.OneShotAnimationTracker
+import com.ayush.ui.animation.rememberOneShotAnimationTracker
 import com.ayush.ui.components.AnimatedAmount
 import com.ayush.ui.components.DashboardShimmer
 import com.ayush.ui.components.LedgeSegmentedToggle
@@ -91,6 +93,8 @@ fun HomeScreen(
 private fun HomeContent(state: HomeState) {
 
     val onEvent = LocalEventSink.current
+
+    val animationTracker = rememberOneShotAnimationTracker()
 
     PullToRefreshBox(
         isRefreshing = state.isDashboardLoading,
@@ -143,7 +147,8 @@ private fun HomeContent(state: HomeState) {
                     item {
                         RecentTransactionsCard(
                             transactions = state.recentTransactions,
-                            onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) }
+                            onSeeAll = { onEvent(HomeUiEvent.SeeAllTransactionsClicked) },
+                            animationTracker = animationTracker
                         )
                     }
                 }
@@ -259,6 +264,7 @@ private fun BalanceOverviewCard(state: SummaryState) {
 private fun RecentTransactionsCard(
     transactions: List<RecentTransaction>,
     onSeeAll: () -> Unit,
+    animationTracker: OneShotAnimationTracker,
 ) {
     val colors = LedgeTheme.colors
     Column(
@@ -291,10 +297,26 @@ private fun RecentTransactionsCard(
         Spacer(Modifier.height(12.dp))
 
         transactions.forEachIndexed { index, transaction ->
-            val offsetY = remember { Animatable(30f) }
-            val alpha = remember { Animatable(0f) }
+            // Stable per-transaction key; tracker lives above LazyColumn so
+            // this check survives scroll-off / scroll-back.
+            val animationKey = "recent_txn_${transaction.id}"
+            val alreadyPlayed = animationTracker.hasPlayed(animationKey)
 
-            LaunchedEffect(Unit) {
+            // Start at final values when already played → snap in at
+            // (translationY=0, alpha=1) and skip the LaunchedEffect body.
+            val offsetY = remember(animationKey) {
+                Animatable(if (alreadyPlayed) 0f else 30f)
+            }
+            val alpha = remember(animationKey) {
+                Animatable(if (alreadyPlayed) 1f else 0f)
+            }
+
+            LaunchedEffect(animationKey) {
+                if (alreadyPlayed) return@LaunchedEffect
+                // Mark at the START: if the user scrolls away mid-animation,
+                // we still consider it "played" — avoids re-animating on
+                // every half-visible scroll return.
+                animationTracker.markPlayed(animationKey)
                 delay(index * 60L)
                 launch { offsetY.animateTo(0f, tween(300, easing = EaseOutCubic)) }
                 launch { alpha.animateTo(1f, tween(300)) }

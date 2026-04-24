@@ -45,6 +45,8 @@ import com.ayush.budget.domain.models.BudgetStatus
 import com.ayush.budget.domain.models.BudgetWithSpent
 import com.ayush.common.utils.formatAmount
 import com.ayush.common.utils.toast
+import com.ayush.ui.animation.rememberOneShotAnimationTracker
+import com.ayush.ui.animation.rememberOneShotFlag
 import com.ayush.ui.components.LedgeSyncErrorBanner
 import com.ayush.ui.components.charts.LedgeBudgetProgressBar
 import com.ayush.ui.theme.LedgeTextStyle
@@ -79,6 +81,10 @@ private fun BudgetContent(state: BudgetState) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     val onEvent = LocalEventSink.current
+
+    // Hoisted above LazyColumn so per-budget "has animated" flags survive
+    // scroll-off / scroll-back item disposal.
+    val animationTracker = rememberOneShotAnimationTracker()
 
     Column(
         modifier = Modifier
@@ -189,7 +195,11 @@ private fun BudgetContent(state: BudgetState) {
                             item(key = "overall") {
                                 OverallBudgetCard(
                                     budget = overall,
-                                    onClick = { onEvent(BudgetEvent.ShowEditSheet(overall)) }
+                                    onClick = { onEvent(BudgetEvent.ShowEditSheet(overall)) },
+                                    animateInitialAppearance = rememberOneShotFlag(
+                                        animationTracker,
+                                        "budget_overall"
+                                    ),
                                 )
                             }
                         }
@@ -210,7 +220,11 @@ private fun BudgetContent(state: BudgetState) {
                             ) { budget ->
                                 CategoryBudgetCard(
                                     budget = budget,
-                                    onClick = { onEvent(BudgetEvent.ShowEditSheet(budget)) }
+                                    onClick = { onEvent(BudgetEvent.ShowEditSheet(budget)) },
+                                    animateInitialAppearance = rememberOneShotFlag(
+                                        animationTracker,
+                                        "budget_category_${budget.budget.id}"
+                                    ),
                                 )
                             }
                         }
@@ -256,6 +270,7 @@ private fun BudgetContent(state: BudgetState) {
 private fun OverallBudgetCard(
     budget: BudgetWithSpent,
     onClick: () -> Unit,
+    animateInitialAppearance: Boolean = true,
 ) {
     val colors = LedgeTheme.colors
     val statusColor = when (budget.status) {
@@ -304,7 +319,8 @@ private fun OverallBudgetCard(
         LedgeBudgetProgressBar(
             progress = budget.ratio,
             warningThreshold = budget.warningRatio,
-            height = 10.dp
+            height = 10.dp,
+            animateInitialAppearance = animateInitialAppearance,
         )
     }
 }
@@ -312,7 +328,8 @@ private fun OverallBudgetCard(
 @Composable
 private fun CategoryBudgetCard(
     budget: BudgetWithSpent,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    animateInitialAppearance: Boolean = true,
 ) {
     val colors = LedgeTheme.colors
     Row(
@@ -373,7 +390,8 @@ private fun CategoryBudgetCard(
             LedgeBudgetProgressBar(
                 progress = budget.ratio,
                 warningThreshold = budget.warningRatio,
-                height = 6.dp
+                height = 6.dp,
+                animateInitialAppearance = animateInitialAppearance,
             )
         }
     }

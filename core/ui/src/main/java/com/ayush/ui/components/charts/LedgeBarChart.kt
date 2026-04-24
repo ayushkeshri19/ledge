@@ -9,7 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -54,22 +57,30 @@ fun LedgeBarChart(
     showValues: Boolean = false,
     valueFormatter: (Float) -> String = { it.toInt().toString() },
     valueColor: Color = Color(0xCCFFFFFF),
+    animateInitialAppearance: Boolean = true
 ) {
     if (bars.isEmpty()) return
 
     val maxValue = bars.maxOf { it.value }
     if (maxValue == 0f) return
 
-    val animationProgress = remember { Animatable(0f) }
+    val animationProgress = remember { Animatable(if (animateInitialAppearance) 0f else 1f) }
+    var firstBarsRun by remember { mutableStateOf(true) }
     LaunchedEffect(bars) {
-        animationProgress.snapTo(0f)
-        animationProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = animationDurationMs,
-                easing = EaseOutCubic,
-            ),
-        )
+        val shouldAnimate = !firstBarsRun || animateInitialAppearance
+        firstBarsRun = false
+        if (shouldAnimate) {
+            animationProgress.snapTo(0f)
+            animationProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = animationDurationMs,
+                    easing = EaseOutCubic,
+                ),
+            )
+        } else {
+            animationProgress.snapTo(1f)
+        }
     }
 
     val selectedScale = remember { Animatable(1f) }
@@ -188,7 +199,8 @@ fun LedgeGroupedBarChart(
     groupGap: Dp = 12.dp,
     subBarGap: Dp = 3.dp,
     animationDurationMs: Int = 600,
-    labelColor: Color = Color(0x8CFFFFFF)
+    labelColor: Color = Color(0x8CFFFFFF),
+    animateInitialAppearance: Boolean = true
 ) {
     if (groups.isEmpty()) return
 
@@ -200,16 +212,23 @@ fun LedgeGroupedBarChart(
     val maxValue = groups.maxOf { g -> g.values.maxOrNull() ?: 0f }
     if (maxValue == 0f) return
 
-    val animationProgress = remember { Animatable(0f) }
+    val animationProgress = remember { Animatable(if (animateInitialAppearance) 0f else 1f) }
+    var firstGroupsRun by remember { mutableStateOf(true) }
     LaunchedEffect(groups) {
-        animationProgress.snapTo(0f)
-        animationProgress.animateTo(
-            targetValue = 1f,
-            animationSpec = tween(
-                durationMillis = animationDurationMs,
-                easing = EaseOutCubic
+        val shouldAnimate = !firstGroupsRun || animateInitialAppearance
+        firstGroupsRun = false
+        if (shouldAnimate) {
+            animationProgress.snapTo(0f)
+            animationProgress.animateTo(
+                targetValue = 1f,
+                animationSpec = tween(
+                    durationMillis = animationDurationMs,
+                    easing = EaseOutCubic
+                )
             )
-        )
+        } else {
+            animationProgress.snapTo(1f)
+        }
     }
 
     val textMeasurer = rememberTextMeasurer()
