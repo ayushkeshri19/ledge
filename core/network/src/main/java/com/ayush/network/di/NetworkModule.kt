@@ -4,7 +4,6 @@ import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.auth.PasswordRecoveryStateHolder
 import com.ayush.common.deeplink.DeepLinkHandler
 import com.ayush.network.BuildConfig
-import com.ayush.network.data.auth.DefaultPasswordRecoveryStateHolder
 import com.ayush.network.data.auth.SupabaseAuthStateProvider
 import com.ayush.network.data.deeplink.SupabaseDeepLinkHandler
 import dagger.Module
@@ -48,12 +47,6 @@ object NetworkModule {
                 }
             }
         }
-    }
-
-    @Provides
-    @Singleton
-    fun providePasswordRecoveryStateHolder(): PasswordRecoveryStateHolder {
-        return DefaultPasswordRecoveryStateHolder()
     }
 
     @Provides

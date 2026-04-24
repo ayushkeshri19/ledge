@@ -5,22 +5,50 @@ import androidx.lifecycle.viewModelScope
 import com.ayush.auth.domain.usecase.AuthEligibilityUseCase
 import com.ayush.auth.domain.usecase.SignOutUseCase
 import com.ayush.auth.domain.usecase.UpdatePasswordUseCase
+import com.ayush.common.auth.AuthState
+import com.ayush.common.auth.AuthStateProvider
 import com.ayush.common.auth.PasswordRecoveryStateHolder
 import com.ayush.common.result.ApiResult
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import javax.inject.Inject
+
+private const val SESSION_SETTLE_TIMEOUT_MS = 5_000L
 
 @HiltViewModel
 class SetNewPasswordViewModel @Inject constructor(
     private val updatePasswordUseCase: UpdatePasswordUseCase,
     private val signOutUseCase: SignOutUseCase,
     private val authEligibilityUseCase: AuthEligibilityUseCase,
-    private val passwordRecoveryStateHolder: PasswordRecoveryStateHolder
+    private val passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
+    authStateProvider: AuthStateProvider
 ) : BaseMviViewModel<SetNewPasswordUiEvent, SetNewPasswordUiState, SetNewPasswordUiSideEffect>(
     initialState = SetNewPasswordUiState()
 ) {
+
+    private val authState: StateFlow<AuthState> = authStateProvider.authState
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = AuthState.Loading
+        )
+
+    init {
+        viewModelScope.launch {
+            val authenticated = withTimeoutOrNull(SESSION_SETTLE_TIMEOUT_MS) {
+                authState.first { it == AuthState.Authenticated }
+            }
+            if (authenticated == null && currentState().step == SetNewPasswordStep.REQUEST) {
+                setState { copy(step = SetNewPasswordStep.INVALID_LINK) }
+            }
+        }
+    }
 
     override fun onEvent(event: SetNewPasswordUiEvent) {
         when (event) {
@@ -50,6 +78,8 @@ class SetNewPasswordViewModel @Inject constructor(
             SetNewPasswordUiEvent.ContinueToSignInClicked -> exitToSignIn()
 
             SetNewPasswordUiEvent.CancelClicked -> exitToSignIn()
+
+            SetNewPasswordUiEvent.BackToSignInFromInvalidLinkClicked -> exitFromInvalidLink()
 
             SetNewPasswordUiEvent.ResetState -> resetState()
         }
@@ -92,6 +122,16 @@ class SetNewPasswordViewModel @Inject constructor(
         }
     }
 
+    private fun exitFromInvalidLink() {
+        viewModelScope.launch {
+            passwordRecoveryStateHolder.onRecoveryCompleted()
+            if (authState.value == AuthState.Authenticated) {
+                signOutUseCase()
+            }
+            sendSideEffect(SetNewPasswordUiSideEffect.NavigateToSignIn)
+        }
+    }
+
     private fun computeConfirmError(password: String, confirm: String): String? = when {
         confirm.isBlank() -> null
         password != confirm -> "Passwords don't match"
@@ -105,6 +145,7 @@ sealed interface SetNewPasswordUiEvent {
     data object SubmitClicked : SetNewPasswordUiEvent
     data object ContinueToSignInClicked : SetNewPasswordUiEvent
     data object CancelClicked : SetNewPasswordUiEvent
+    data object BackToSignInFromInvalidLinkClicked : SetNewPasswordUiEvent
     data object ResetState : SetNewPasswordUiEvent
 }
 
@@ -112,7 +153,7 @@ sealed interface SetNewPasswordUiSideEffect {
     data object NavigateToSignIn : SetNewPasswordUiSideEffect
 }
 
-enum class SetNewPasswordStep { REQUEST, SUCCESS }
+enum class SetNewPasswordStep { REQUEST, SUCCESS, INVALID_LINK }
 
 @Stable
 data class SetNewPasswordUiState(

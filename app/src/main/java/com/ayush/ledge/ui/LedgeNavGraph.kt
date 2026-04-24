@@ -15,15 +15,16 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.ayush.auth.presentation.SetNewPasswordScreen
 import com.ayush.common.auth.AuthState
+import com.ayush.common.auth.RecoveryState
 import com.ayush.profile.presentation.profile.UserProfileScreen
 
 @Composable
 internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
 
     val authState by mainViewModel.authState.collectAsState()
-    val recoveryActive by mainViewModel.recoveryActive.collectAsState()
+    val recoveryState by mainViewModel.recoveryState.collectAsState()
 
-    if (authState == AuthState.Loading && !recoveryActive) {
+    if (authState == AuthState.Loading || recoveryState == RecoveryState.Loading) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
@@ -31,16 +32,16 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
     }
 
     val startDestination: LedgeRoute = when {
-        recoveryActive -> AuthRoute.SetNewPassword
+        recoveryState == RecoveryState.Active -> AuthRoute.SetNewPassword
         authState == AuthState.Authenticated -> DashboardRoute.Dashboard
         else -> AuthRoute.Auth
     }
 
     val backStack = rememberNavBackStack(startDestination)
 
-    LaunchedEffect(authState, recoveryActive) {
+    LaunchedEffect(authState, recoveryState) {
         when {
-            recoveryActive -> {
+            recoveryState == RecoveryState.Active -> {
                 if (backStack.lastOrNull() !is AuthRoute.SetNewPassword) {
                     backStack.clear()
                     backStack.add(AuthRoute.SetNewPassword)

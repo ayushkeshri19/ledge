@@ -3,7 +3,9 @@ package com.ayush.datastore.di
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.ayush.common.auth.PasswordRecoveryStateHolder
 import com.ayush.datastore.data.AppDataStore
+import com.ayush.datastore.data.auth.PersistedPasswordRecoveryStateHolder
 import com.ayush.datastore.data.dataStore
 import com.ayush.datastore.data.repository.AppDataStoreRepositoryImpl
 import com.ayush.datastore.domain.repository.AppDataStoreRepository
@@ -38,4 +40,10 @@ object DataStoreModule {
     fun providesAppDataStoreRepository(
         appDataStore: AppDataStore
     ): AppDataStoreRepository = AppDataStoreRepositoryImpl(appDataStore)
+
+    @Provides
+    @Singleton
+    fun providePasswordRecoveryStateHolder(
+        appDataStore: AppDataStore
+    ): PasswordRecoveryStateHolder = PersistedPasswordRecoveryStateHolder(appDataStore)
 }
