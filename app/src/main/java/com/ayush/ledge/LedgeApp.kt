@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.ayush.common.utils.Workers
@@ -44,12 +46,21 @@ class LedgeApp : Application(), Configuration.Provider {
         val request = PeriodicWorkRequestBuilder<RecurringTransactionWorker>(
             repeatInterval = 1,
             repeatIntervalTimeUnit = TimeUnit.DAYS,
+            flexTimeInterval = 1,
+            flexTimeIntervalUnit = TimeUnit.HOURS
         ).build()
 
         workManager.enqueueUniquePeriodicWork(
             Workers.RECURRING_TRANSACTION,
             ExistingPeriodicWorkPolicy.KEEP,
             request
+        )
+
+        val immediateRequest = OneTimeWorkRequestBuilder<RecurringTransactionWorker>().build()
+        workManager.enqueueUniqueWork(
+            Workers.RECURRING_TRANSACTION_IMMEDIATE,
+            ExistingWorkPolicy.KEEP,
+            immediateRequest
         )
     }
 
