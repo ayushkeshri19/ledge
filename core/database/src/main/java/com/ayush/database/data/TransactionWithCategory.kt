@@ -7,7 +7,7 @@ data class TransactionWithCategory(
     @Embedded val transaction: TransactionEntity,
     @Relation(
         parentColumn = "categoryId",
-        entityColumn = "id",
+        entityColumn = "id"
     )
-    val category: CategoryEntity?,
+    val category: CategoryEntity?
 )

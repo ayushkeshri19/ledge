@@ -26,20 +26,27 @@ class RecurringTransactionWorker @AssistedInject constructor(
         transactionRepository.getRecurringTransactions().forEach { template ->
             val recurrence = template.recurrenceType ?: return@forEach
             val baseMillis = template.lastExecutedDate ?: template.date
-            val baseDate = Instant.ofEpochMilli(baseMillis).atZone(zone).toLocalDate()
+            var nextDueDate = Instant.ofEpochMilli(baseMillis).atZone(zone).toLocalDate()
+                .let { base ->
+                    when (recurrence) {
+                        RecurrenceType.DAILY -> base.plusDays(1)
+                        RecurrenceType.WEEKLY -> base.plusWeeks(1)
+                        RecurrenceType.MONTHLY -> base.plusMonths(1)
+                    }
+                }
 
-            val nextDueDate = when (recurrence) {
-                RecurrenceType.DAILY -> baseDate.plusDays(1)
-                RecurrenceType.WEEKLY -> baseDate.plusWeeks(1)
-                RecurrenceType.MONTHLY -> baseDate.plusMonths(1)
-            }
-
-            if (!nextDueDate.isAfter(today)) {
+            while (!nextDueDate.isAfter(today)) {
                 val nextDueMillis = nextDueDate.atStartOfDay(zone).toInstant().toEpochMilli()
                 transactionRepository.createRecurringInstance(template, nextDueMillis)
                 transactionRepository.updateLastExecutedDate(template.id, nextDueMillis)
+                nextDueDate = when (recurrence) {
+                    RecurrenceType.DAILY -> nextDueDate.plusDays(1)
+                    RecurrenceType.WEEKLY -> nextDueDate.plusWeeks(1)
+                    RecurrenceType.MONTHLY -> nextDueDate.plusMonths(1)
+                }
             }
         }
+
 
         return Result.success()
     }
