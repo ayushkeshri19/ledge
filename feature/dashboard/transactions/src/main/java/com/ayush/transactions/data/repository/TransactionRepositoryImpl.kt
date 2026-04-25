@@ -369,6 +369,12 @@ class TransactionRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun recurringInstanceExists(parentId: Long, date: Long): Boolean {
+        return withContext(Dispatchers.IO) {
+            transactionDao.countRecurringInstanceByParentAndDate(parentId, date) > 0
+        }
+    }
+
     private suspend fun checkBudgetAlerts() {
         try {
             val (monthStart, monthEnd) = currentMonthRange()

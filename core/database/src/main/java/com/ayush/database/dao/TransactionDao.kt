@@ -204,4 +204,12 @@ interface TransactionDao {
     )
     suspend fun getRecurringTransactions(): List<TransactionWithCategory>
 
+    @Query(
+        """
+    SELECT COUNT(*) FROM transactions
+    WHERE parentId = :parentId AND date = :date AND syncStatus != 'PENDING_DELETE'
+"""
+    )
+    suspend fun countRecurringInstanceByParentAndDate(parentId: Long, date: Long): Int
+
 }

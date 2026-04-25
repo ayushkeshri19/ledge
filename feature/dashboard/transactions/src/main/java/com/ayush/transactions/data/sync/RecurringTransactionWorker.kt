@@ -37,7 +37,9 @@ class RecurringTransactionWorker @AssistedInject constructor(
 
             while (!nextDueDate.isAfter(today)) {
                 val nextDueMillis = nextDueDate.atStartOfDay(zone).toInstant().toEpochMilli()
-                transactionRepository.createRecurringInstance(template, nextDueMillis)
+                if (!transactionRepository.recurringInstanceExists(template.id, nextDueMillis)) {
+                    transactionRepository.createRecurringInstance(template, nextDueMillis)
+                }
                 transactionRepository.updateLastExecutedDate(template.id, nextDueMillis)
                 nextDueDate = when (recurrence) {
                     RecurrenceType.DAILY -> nextDueDate.plusDays(1)
