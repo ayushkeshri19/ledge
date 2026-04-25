@@ -51,4 +51,5 @@ interface TransactionRepository {
     suspend fun createRecurringInstance(template: Transaction, date: Long)
     suspend fun updateLastExecutedDate(id: Long, date: Long)
     suspend fun stopRecurringSeries(templateId: Long)
+    suspend fun recurringInstanceExists(parentId: Long, date: Long): Boolean
 }

@@ -2,6 +2,9 @@ package com.ayush.ledge.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.ayush.auth.domain.usecase.SignOutUseCase
 import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.AuthStateProvider
@@ -9,9 +12,11 @@ import com.ayush.common.auth.PasswordRecoveryStateHolder
 import com.ayush.common.auth.RecoveryState
 import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.theme.ThemeMode
+import com.ayush.common.utils.Workers
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
 import com.ayush.datastore.domain.usecase.ObserveHasSeenOnboardingUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
+import com.ayush.transactions.data.sync.RecurringTransactionWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +30,7 @@ class MainViewModel @Inject constructor(
     private val signOutUseCase: SignOutUseCase,
     private val setBiometricsEnabledUseCase: SetBiometricsEnabledUseCase,
     private val syncOrchestrator: SyncOrchestrator,
+    private val workManager: WorkManager,
     observeHasSeenOnboardingUseCase: ObserveHasSeenOnboardingUseCase,
     getThemeModeUseCase: GetThemeModeUseCase,
     passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
@@ -61,7 +67,14 @@ class MainViewModel @Inject constructor(
                     AuthState.Authenticated -> {
                         if (!syncedForSession) {
                             syncedForSession = true
-                            launch { syncOrchestrator.syncAll() }
+                            launch {
+                                syncOrchestrator.syncAll()
+                                workManager.enqueueUniqueWork(
+                                    Workers.RECURRING_TRANSACTION_IMMEDIATE,
+                                    ExistingWorkPolicy.KEEP,
+                                    OneTimeWorkRequestBuilder<RecurringTransactionWorker>().build()
+                                )
+                            }
                         }
                     }
 
