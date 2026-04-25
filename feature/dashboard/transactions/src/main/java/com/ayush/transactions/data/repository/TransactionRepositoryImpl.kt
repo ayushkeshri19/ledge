@@ -461,7 +461,7 @@ class TransactionRepositoryImpl @Inject constructor(
 
         workManager.enqueueUniqueWork(
             Workers.TRANSACTION_SYNC,
-            ExistingWorkPolicy.KEEP,
+            ExistingWorkPolicy.APPEND_OR_REPLACE,
             request
         )
     }

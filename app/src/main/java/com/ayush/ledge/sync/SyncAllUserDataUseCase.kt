@@ -4,6 +4,7 @@ import com.ayush.budget.domain.repository.BudgetRepository
 import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.sync.SyncState
 import com.ayush.common.sync.SyncStateHolder
+import com.ayush.database.data.SyncStatus
 import com.ayush.transactions.domain.repository.TransactionRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,6 +30,24 @@ class SyncAllUserDataUseCase @Inject constructor(
             transactionRepository.ensureDefaultCategories()
         }.onFailure { Timber.e(it, "ensureDefaultCategories failed") }
 
+        val pushResult = runCatching {
+            val userId = transactionRepository.currentUserId() ?: return@runCatching
+            transactionRepository.getPendingSync().forEach { transaction ->
+                when (transaction.syncStatus) {
+                    SyncStatus.PENDING_CREATE ->
+                        transactionRepository.pushCreate(transaction, userId)
+
+                    SyncStatus.PENDING_UPDATE ->
+                        transactionRepository.pushUpdate(transaction, userId)
+
+                    SyncStatus.PENDING_DELETE ->
+                        transactionRepository.pushDelete(transaction)
+
+                    SyncStatus.SYNCED -> {}
+                }
+            }
+        }.onFailure { Timber.e(it, "push pending transactions failed") }
+
         val syncResults = listOf(
             async {
                 runCatching { transactionRepository.syncFromRemote() }
@@ -40,7 +59,7 @@ class SyncAllUserDataUseCase @Inject constructor(
             }
         ).awaitAll()
 
-        val firstError = listOf(categoriesResult, *syncResults.toTypedArray())
+        val firstError = listOf(categoriesResult, pushResult, *syncResults.toTypedArray())
             .firstNotNullOfOrNull { it.exceptionOrNull() }
 
         syncStateHolder.onSyncCompleted(firstError)
