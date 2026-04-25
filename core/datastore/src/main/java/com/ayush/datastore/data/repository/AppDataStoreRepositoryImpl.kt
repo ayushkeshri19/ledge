@@ -79,4 +79,32 @@ class AppDataStoreRepositoryImpl @Inject constructor(
             value = true
         )
     }
+
+    override fun observeSmsAutoDetectEnabled(): Flow<Boolean> {
+        return dataStore.getValue(
+            key = AppDataStore.PreferencesKey.SMS_AUTO_DETECT_ENABLED,
+            defaultValue = false
+        )
+    }
+
+    override suspend fun setSmsAutoDetectEnabled(enabled: Boolean) {
+        dataStore.putValue(
+            key = AppDataStore.PreferencesKey.SMS_AUTO_DETECT_ENABLED,
+            value = enabled
+        )
+    }
+
+    override fun observeSmsPermissionAsked(): Flow<Boolean> {
+        return dataStore.getValue(
+            key = AppDataStore.PreferencesKey.SMS_PERMISSION_ASKED,
+            defaultValue = false
+        )
+    }
+
+    override suspend fun setSmsPermissionAsked() {
+        dataStore.putValue(
+            key = AppDataStore.PreferencesKey.SMS_PERMISSION_ASKED,
+            value = true
+        )
+    }
 }
