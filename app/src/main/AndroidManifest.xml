@@ -55,7 +55,7 @@
         </provider>
 
         <receiver
-            android:name=".data.receiver.SmsReceiver"
+            android:name="com.ayush.sms.data.receiver.SmsReceiver"
             android:exported="true"
             android:permission="android.permission.BROADCAST_SMS">
             <intent-filter android:priority="999">
