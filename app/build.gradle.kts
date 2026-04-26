@@ -63,6 +63,7 @@ dependencies {
     implementation(project(":core:security"))
     implementation(project(":core:datastore"))
 
+    implementation(project(":feature:sms"))
     implementation(project(":feature:auth"))
     implementation(project(":feature:profile"))
     implementation(project(":feature:dashboard"))
