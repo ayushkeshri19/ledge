@@ -17,4 +17,10 @@ interface AppDataStoreRepository {
 
     fun observeHasSeenOnboarding(): Flow<Boolean>
     suspend fun setOnboardingSeen()
+
+    fun observeSmsAutoDetectEnabled(): Flow<Boolean>
+    suspend fun setSmsAutoDetectEnabled(enabled: Boolean)
+
+    fun observeSmsPermissionAsked(): Flow<Boolean>
+    suspend fun setSmsPermissionAsked()
 }

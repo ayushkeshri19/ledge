@@ -8,7 +8,8 @@ import com.ayush.security.domain.models.BiometricStatus
 data class ProfileState(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val biometricEnabled: Boolean = false,
-    val biometricStatus: BiometricStatus = BiometricStatus.UNSUPPORTED
+    val biometricStatus: BiometricStatus = BiometricStatus.UNSUPPORTED,
+    val smsAutoDetectEnabled: Boolean = false
 )
 
 sealed interface ProfileEvent {
@@ -19,11 +20,13 @@ sealed interface ProfileEvent {
         val success: Boolean,
         val intendedEnable: Boolean
     ) : ProfileEvent
-
     data object Resumed : ProfileEvent
+    data class SmsAutoDetectToggled(val enable: Boolean) : ProfileEvent
+    data object SmsDialogDismissed : ProfileEvent
 }
 
 sealed interface ProfileSideEffect {
     data class RequestBiometricAuth(val intendedEnable: Boolean) : ProfileSideEffect
     data object OpenBiometricEnrollment : ProfileSideEffect
+    data object ShowSmsPermissionDialog : ProfileSideEffect
 }

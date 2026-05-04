@@ -16,8 +16,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,9 +36,11 @@ import com.ayush.profile.presentation.components.ProfileTopBar
 import com.ayush.profile.presentation.components.SectionCard
 import com.ayush.profile.presentation.components.SectionHeader
 import com.ayush.profile.presentation.components.SignOut
+import com.ayush.profile.presentation.components.SmsAutoDetectToggleRow
 import com.ayush.profile.presentation.components.ThemeModeRow
 import com.ayush.security.data.di.BiometricAuthenticatorEntryPoint
 import com.ayush.security.domain.models.BiometricResult
+import com.ayush.sms.presentation.SmsPermissionDialog
 import com.ayush.ui.theme.LedgeTheme
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.launch
@@ -53,6 +57,8 @@ fun UserProfileScreen(
     val activity = context as FragmentActivity
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
+
+    var showSmsPermissionDialog by remember { mutableStateOf(false) }
 
     val authenticator = remember(context) {
         EntryPointAccessors
@@ -98,11 +104,23 @@ fun UserProfileScreen(
                                 activity.startActivity(Intent(Settings.ACTION_SECURITY_SETTINGS))
                             }
                     }
+
+                    ProfileSideEffect.ShowSmsPermissionDialog ->
+                        showSmsPermissionDialog = true
                 }
             }
         }
 
         ProfileContent(state = state, onBack = onBack, onSignOut = onSignOut)
+
+        if (showSmsPermissionDialog) {
+            SmsPermissionDialog(
+                onDismiss = {
+                    showSmsPermissionDialog = false
+                    viewModel.onEvent(ProfileEvent.SmsDialogDismissed)
+                }
+            )
+        }
     }
 }
 
@@ -148,6 +166,19 @@ private fun ProfileContent(
                         enabled = state.biometricEnabled,
                         onToggle = { onEvent(ProfileEvent.BiometricToggleRequested(it)) },
                         onEnrollClick = { onEvent(ProfileEvent.EnrollmentRequested) }
+                    )
+                }
+                Spacer(Modifier.height(24.dp))
+            }
+
+            stickyHeader {
+                SectionHeader(title = "AUTO-READ SMS", background = colors.bgDeep)
+            }
+            item {
+                SectionCard {
+                    SmsAutoDetectToggleRow(
+                        enabled = state.smsAutoDetectEnabled,
+                        onToggle = { onEvent(ProfileEvent.SmsAutoDetectToggled(it)) }
                     )
                 }
                 Spacer(Modifier.height(24.dp))

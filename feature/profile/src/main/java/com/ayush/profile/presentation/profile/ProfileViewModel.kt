@@ -3,10 +3,13 @@ package com.ayush.profile.presentation.profile
 import androidx.lifecycle.viewModelScope
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
 import com.ayush.datastore.domain.usecase.ObserveBiometricsEnabledUseCase
+import com.ayush.datastore.domain.usecase.ObserveSmsAutoDetectEnabledUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
+import com.ayush.datastore.domain.usecase.SetSmsAutoDetectEnabledUseCase
 import com.ayush.datastore.domain.usecase.SetThemeModeUseCase
 import com.ayush.security.data.repository.BiometricAvailability
 import com.ayush.security.domain.repository.AppLockManager
+import com.ayush.sms.domain.permission.SmsPermissionManager
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -16,10 +19,13 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     getThemeModeUseCase: GetThemeModeUseCase,
     observeBiometricsEnabled: ObserveBiometricsEnabledUseCase,
+    observeSmsAutoDetectEnabled: ObserveSmsAutoDetectEnabledUseCase,
     private val setThemeModeUseCase: SetThemeModeUseCase,
     private val setBiometricsEnabled: SetBiometricsEnabledUseCase,
+    private val setSmsAutoDetectEnabled: SetSmsAutoDetectEnabledUseCase,
     private val biometricAvailability: BiometricAvailability,
-    private val appLockManager: AppLockManager
+    private val appLockManager: AppLockManager,
+    private val smsPermissionManager: SmsPermissionManager
 ) : BaseMviViewModel<ProfileEvent, ProfileState, ProfileSideEffect>(
     initialState = ProfileState()
 ) {
@@ -35,6 +41,11 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             observeBiometricsEnabled().collect { enabled ->
                 setState { copy(biometricEnabled = enabled) }
+            }
+        }
+        viewModelScope.launch {
+            observeSmsAutoDetectEnabled().collect { enabled ->
+                setState { copy(smsAutoDetectEnabled = enabled) }
             }
         }
     }
@@ -63,6 +74,24 @@ class ProfileViewModel @Inject constructor(
 
             ProfileEvent.Resumed ->
                 setState { copy(biometricStatus = biometricAvailability.status()) }
+
+            is ProfileEvent.SmsAutoDetectToggled -> {
+                if (event.enable) {
+                    if (smsPermissionManager.isGranted()) {
+                        viewModelScope.launch { setSmsAutoDetectEnabled(true) }
+                    } else {
+                        sendSideEffect(ProfileSideEffect.ShowSmsPermissionDialog)
+                    }
+                } else {
+                    viewModelScope.launch { setSmsAutoDetectEnabled(false) }
+                }
+            }
+
+            ProfileEvent.SmsDialogDismissed -> {
+                if (smsPermissionManager.isGranted()) {
+                    viewModelScope.launch { setSmsAutoDetectEnabled(true) }
+                }
+            }
         }
     }
 }

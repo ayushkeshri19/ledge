@@ -29,6 +29,8 @@ class AppDataStore @Inject constructor(
         val BIOMETRICS_ENABLED = booleanPreferencesKey("BIOMETRICS")
         val PASSWORD_RECOVERY_PENDING = booleanPreferencesKey("PASSWORD_RECOVERY_PENDING")
         val HAS_SEEN_ONBOARDING = booleanPreferencesKey("HAS_SEEN_ONBOARDING")
+        val SMS_AUTO_DETECT_ENABLED = booleanPreferencesKey("SMS_AUTO_DETECT_ENABLED")
+        val SMS_PERMISSION_ASKED = booleanPreferencesKey("SMS_PERMISSION_ASKED")
     }
 
     suspend fun <T> putValue(

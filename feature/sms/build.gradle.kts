@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.ayush.profile"
+    namespace = "com.ayush.sms"
     compileSdk {
         version = release(36)
     }
@@ -34,9 +34,7 @@ dependencies {
 
     implementation(project(":core:ui"))
     implementation(project(":core:common"))
-    implementation(project(":core:security"))
     implementation(project(":core:datastore"))
-    implementation(project(":feature:sms"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
@@ -47,6 +45,19 @@ dependencies {
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
+
     implementation(libs.timber)
 
     implementation(platform(libs.androidx.compose.bom))
