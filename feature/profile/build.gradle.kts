@@ -36,6 +36,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":core:security"))
     implementation(project(":core:datastore"))
+    implementation(project(":feature:sms"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
