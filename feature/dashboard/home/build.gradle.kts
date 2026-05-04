@@ -42,6 +42,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:network"))
     implementation(project(":core:database"))
+    implementation(project(":feature:sms"))
 
 
     implementation(libs.hilt.android)

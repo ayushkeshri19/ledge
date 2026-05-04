@@ -18,5 +18,5 @@ data class SmsPermissionState(
 sealed interface SmsPermissionSideEffect {
     data object RequestPermission : SmsPermissionSideEffect
     data object OpenAppSettings : SmsPermissionSideEffect
-    data object Complete : SmsPermissionSideEffect
+    data object Dismiss : SmsPermissionSideEffect
 }

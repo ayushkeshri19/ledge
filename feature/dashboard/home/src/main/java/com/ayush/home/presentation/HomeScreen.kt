@@ -42,11 +42,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.common.models.TimePeriod
 import com.ayush.common.utils.formatAmount
 import com.ayush.home.domain.models.RecentTransaction
+import com.ayush.sms.presentation.SmsPermissionPromptHost
 import com.ayush.ui.animation.OneShotAnimationTracker
 import com.ayush.ui.animation.rememberOneShotAnimationTracker
 import com.ayush.ui.components.AnimatedAmount
@@ -84,6 +85,7 @@ fun HomeScreen(
         }
 
         HomeContent(state)
+        SmsPermissionPromptHost()
     }
 
 }

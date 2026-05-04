@@ -10,13 +10,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -31,15 +32,19 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.sms.domain.model.SmsPermissionStatus
+import com.ayush.ui.components.LedgePrimaryButton
+import com.ayush.ui.theme.LedgeTextStyle
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SmsPermissionRationaleScreen(
-    onComplete: () -> Unit
+fun SmsPermissionDialog(
+    onDismiss: () -> Unit
 ) {
     val viewModel = hiltViewModel<SmsPermissionViewModel>()
     val context = LocalContext.current
     val activity = context as Activity
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val launcher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -70,60 +75,53 @@ fun SmsPermissionRationaleScreen(
                         )
                     )
                 }
-
                 SmsPermissionSideEffect.OpenAppSettings -> {
                     val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                         data = Uri.fromParts("package", activity.packageName, null)
                     }
                     runCatching { activity.startActivity(intent) }
                 }
-
-                SmsPermissionSideEffect.Complete -> onComplete()
+                SmsPermissionSideEffect.Dismiss -> onDismiss()
             }
         }
     }
 
-    SmsPermissionContent(
-        status = state.status,
-        onAllow = { viewModel.onEvent(SmsPermissionEvent.AllowClicked(activity)) },
-        onOpenSettings = { viewModel.onEvent(SmsPermissionEvent.OpenAppSettingsClicked) },
-        onSkip = { viewModel.onEvent(SmsPermissionEvent.SkipClicked) }
-    )
-}
-
-@Composable
-private fun SmsPermissionContent(
-    status: SmsPermissionStatus,
-    onAllow: () -> Unit,
-    onOpenSettings: () -> Unit,
-    onSkip: () -> Unit
-) {
-    Scaffold(modifier = Modifier.fillMaxSize()) { paddingValues ->
+    ModalBottomSheet(
+        onDismissRequest = { viewModel.onEvent(SmsPermissionEvent.SkipClicked) },
+        sheetState = sheetState
+    ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Auto-detect transactions")
-            Spacer(Modifier.height(12.dp))
-            Text(text = bodyCopyFor(status))
-            Spacer(Modifier.height(32.dp))
+            Text(text = "Auto-detect transactions", style = LedgeTextStyle.HeadingScreen)
+            Text(text = bodyCopyFor(state.status))
+            Spacer(Modifier.height(16.dp))
 
-            when (status) {
+            when (state.status) {
                 SmsPermissionStatus.PermanentlyDenied -> {
-                    Button(onClick = onOpenSettings) { Text("Open settings") }
+                    LedgePrimaryButton(
+                        text = "Open settings",
+                        onClick = { viewModel.onEvent(SmsPermissionEvent.OpenAppSettingsClicked) }
+                    )
                 }
-
                 else -> {
-                    Button(onClick = onAllow) { Text("Allow") }
+                    LedgePrimaryButton(
+                        text = "Allow",
+                        onClick = { viewModel.onEvent(SmsPermissionEvent.AllowClicked(activity)) }
+                    )
                 }
             }
 
+            TextButton(
+                onClick = { viewModel.onEvent(SmsPermissionEvent.SkipClicked) },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Not now") }
+
             Spacer(Modifier.height(8.dp))
-            TextButton(onClick = onSkip) { Text("Not now") }
         }
     }
 }
@@ -133,11 +131,9 @@ private fun bodyCopyFor(status: SmsPermissionStatus): String = when (status) {
     SmsPermissionStatus.Granted ->
         "Ledge reads incoming bank SMS to auto-detect transactions. " +
                 "Nothing is sent to any server."
-
     SmsPermissionStatus.Denied ->
         "We need SMS access to detect transactions automatically. " +
                 "Without it, you can still add transactions manually."
-
     SmsPermissionStatus.PermanentlyDenied ->
         "SMS permission is blocked. Open settings to grant it manually, " +
                 "or skip — you can always enable this later."

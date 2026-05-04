@@ -33,7 +33,7 @@ class SmsPermissionViewModel @Inject constructor(
             val status = smsPermissionManager.computeStatus(activity)
             setState { copy(status = status) }
             if (status == SmsPermissionStatus.Granted) {
-                sendSideEffect(SmsPermissionSideEffect.Complete)
+                sendSideEffect(SmsPermissionSideEffect.Dismiss)
             }
         }
     }
@@ -45,7 +45,7 @@ class SmsPermissionViewModel @Inject constructor(
                 SmsPermissionStatus.Denied -> sendSideEffect(SmsPermissionSideEffect.RequestPermission)
 
                 SmsPermissionStatus.PermanentlyDenied -> sendSideEffect(SmsPermissionSideEffect.OpenAppSettings)
-                SmsPermissionStatus.Granted -> sendSideEffect(SmsPermissionSideEffect.Complete)
+                SmsPermissionStatus.Granted -> sendSideEffect(SmsPermissionSideEffect.Dismiss)
             }
         }
     }
@@ -55,14 +55,14 @@ class SmsPermissionViewModel @Inject constructor(
             smsPermissionManager.markAsked()
             val status = smsPermissionManager.computeStatus(activity)
             setState { copy(status = status) }
-            if (granted) sendSideEffect(SmsPermissionSideEffect.Complete)
+            if (granted) sendSideEffect(SmsPermissionSideEffect.Dismiss)
         }
     }
 
     private fun handleSkip() {
         viewModelScope.launch {
             smsPermissionManager.markAsked()
-            sendSideEffect(SmsPermissionSideEffect.Complete)
+            sendSideEffect(SmsPermissionSideEffect.Dismiss)
         }
     }
 }
