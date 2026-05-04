@@ -299,9 +299,6 @@ private fun TransactionsContent(
             modifier = Modifier.fillMaxSize()
         ) {
         when {
-            // Paging's own initial-load signal. Don't also gate on state.isSyncing
-            // or the list would disappear every time the user pulls to refresh —
-            // PullToRefreshBox already shows its own top indicator for that case.
             isInitialLoad -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),

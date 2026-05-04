@@ -7,6 +7,13 @@ object MerchantExtractors {
             .find(body)?.groupValues?.get(1)?.trim()
     }
 
+    fun atThenOn(): MerchantExtractor = MerchantExtractor { body ->
+        Regex(
+            """\bat\s+([A-Z0-9 .\-&*/]{3,60}?)(?:\s+on|\s+ref|\.|,|$)""",
+            RegexOption.IGNORE_CASE
+        ).find(body)?.groupValues?.get(1)?.trim()
+    }
+
     fun trfToRefno(): MerchantExtractor = MerchantExtractor { body ->
         Regex("""\btrf\s+to\s+([A-Z0-9 .\-&*/]{3,60}?)\s+(?:refno|ref)""", RegexOption.IGNORE_CASE)
             .find(body)?.groupValues?.get(1)?.trim()

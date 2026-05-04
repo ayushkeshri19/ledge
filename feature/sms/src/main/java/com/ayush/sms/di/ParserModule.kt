@@ -9,6 +9,7 @@ import com.ayush.sms.domain.parser.rules.IciciRule
 import com.ayush.sms.domain.parser.rules.IndusIndRule
 import com.ayush.sms.domain.parser.rules.KotakRule
 import com.ayush.sms.domain.parser.rules.PnbRule
+import com.ayush.sms.domain.parser.rules.SbiCardRule
 import com.ayush.sms.domain.parser.rules.SbiRule
 import com.ayush.sms.domain.parser.rules.UpiCreditRule
 import com.ayush.sms.domain.parser.rules.UpiDebitRule
@@ -24,7 +25,7 @@ object ParserModule {
 
     @Provides
     fun provideParserRules(): List<ParserRule> = listOf(
-        HdfcRule, IciciRule, SbiRule, AxisRule, KotakRule,
+        HdfcRule, IciciRule, SbiCardRule, SbiRule, AxisRule, KotakRule,
         PnbRule, BobRule, YesBankRule, IndusIndRule, CanaraRule,
         UpiCreditRule, UpiDebitRule
     )

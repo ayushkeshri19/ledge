@@ -38,7 +38,10 @@ object StandardTypeExtractor : TypeExtractor {
 }
 
 object StandardAccountExtractor : AccountExtractor {
-    private val regex = Regex("""(?:a/c|acct|account)\s?\*{0,4}([0-9X*]{4,})""", RegexOption.IGNORE_CASE)
+    private val regex = Regex(
+        """(?:a/c|acct|account|card|cc)\s?(?:no\.?\s?)?(?:ending\s?)?\*{0,4}([0-9X*]{4,})""",
+        RegexOption.IGNORE_CASE
+    )
     override fun extract(body: String): String? =
         regex.find(body)?.groupValues?.get(1)?.takeLast(4)
 }
