@@ -20,7 +20,7 @@ class SmsPermissionViewModel @Inject constructor(
 
             is SmsPermissionEvent.AllowClicked -> handleAllow(event.activity)
 
-            is SmsPermissionEvent.PermissionResult -> handleResult(event.activity, event.granted)
+            is SmsPermissionEvent.PermissionResult -> handleResult()
 
             SmsPermissionEvent.OpenAppSettingsClicked -> sendSideEffect(SmsPermissionSideEffect.OpenAppSettings)
 
@@ -50,12 +50,10 @@ class SmsPermissionViewModel @Inject constructor(
         }
     }
 
-    private fun handleResult(activity: Activity, granted: Boolean) {
+    private fun handleResult() {
         viewModelScope.launch {
             smsPermissionManager.markAsked()
-            val status = smsPermissionManager.computeStatus(activity)
-            setState { copy(status = status) }
-            if (granted) sendSideEffect(SmsPermissionSideEffect.Dismiss)
+            sendSideEffect(SmsPermissionSideEffect.Dismiss)
         }
     }
 
