@@ -3,7 +3,7 @@ package com.ayush.sms.presentation
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ayush.datastore.domain.usecase.ObserveSmsPermissionAskedUseCase
-import com.ayush.sms.data.permission.SmsPermissionManager
+import com.ayush.sms.domain.permission.SmsPermissionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

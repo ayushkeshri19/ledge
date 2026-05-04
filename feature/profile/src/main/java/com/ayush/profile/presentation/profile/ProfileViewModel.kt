@@ -9,7 +9,7 @@ import com.ayush.datastore.domain.usecase.SetSmsAutoDetectEnabledUseCase
 import com.ayush.datastore.domain.usecase.SetThemeModeUseCase
 import com.ayush.security.data.repository.BiometricAvailability
 import com.ayush.security.domain.repository.AppLockManager
-import com.ayush.sms.data.permission.SmsPermissionManager
+import com.ayush.sms.domain.permission.SmsPermissionManager
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

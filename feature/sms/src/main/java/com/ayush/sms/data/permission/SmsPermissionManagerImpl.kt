@@ -9,19 +9,20 @@ import androidx.core.content.ContextCompat
 import com.ayush.datastore.domain.usecase.ObserveSmsPermissionAskedUseCase
 import com.ayush.datastore.domain.usecase.SetSmsPermissionAskedUseCase
 import com.ayush.sms.domain.model.SmsPermissionStatus
+import com.ayush.sms.domain.permission.SmsPermissionManager
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class SmsPermissionManager @Inject constructor(
+class SmsPermissionManagerImpl @Inject constructor(
     @param:ApplicationContext private val appContext: Context,
     private val observeAsked: ObserveSmsPermissionAskedUseCase,
     private val setAsked: SetSmsPermissionAskedUseCase
-) {
+) : SmsPermissionManager {
 
-    fun isGranted(): Boolean {
+    override fun isGranted(): Boolean {
         val read = ContextCompat.checkSelfPermission(
             appContext, Manifest.permission.READ_SMS
         ) == PackageManager.PERMISSION_GRANTED
@@ -31,7 +32,7 @@ class SmsPermissionManager @Inject constructor(
         return read && receive
     }
 
-    suspend fun computeStatus(activity: Activity): SmsPermissionStatus {
+    override suspend fun computeStatus(activity: Activity): SmsPermissionStatus {
         if (isGranted()) return SmsPermissionStatus.Granted
         val asked = observeAsked().first()
         if (!asked) return SmsPermissionStatus.NotAsked
@@ -42,5 +43,5 @@ class SmsPermissionManager @Inject constructor(
         else SmsPermissionStatus.PermanentlyDenied
     }
 
-    suspend fun markAsked() = setAsked()
+    override suspend fun markAsked() = setAsked()
 }

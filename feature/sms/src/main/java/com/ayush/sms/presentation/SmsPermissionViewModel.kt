@@ -2,8 +2,8 @@ package com.ayush.sms.presentation
 
 import android.app.Activity
 import androidx.lifecycle.viewModelScope
-import com.ayush.sms.data.permission.SmsPermissionManager
 import com.ayush.sms.domain.model.SmsPermissionStatus
+import com.ayush.sms.domain.permission.SmsPermissionManager
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
