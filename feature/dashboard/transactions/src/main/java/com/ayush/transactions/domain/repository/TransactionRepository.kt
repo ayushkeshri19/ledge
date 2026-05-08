@@ -27,6 +27,7 @@ interface TransactionRepository {
         date: Long,
         isRecurring: Boolean = false,
         recurrenceType: String? = null,
+        isAutoDetected: Boolean = false
     ): Long
     suspend fun updateTransaction(
         id: Long,

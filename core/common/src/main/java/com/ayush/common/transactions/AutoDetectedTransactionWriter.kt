@@ -6,9 +6,11 @@ interface AutoDetectedTransactionWriter {
 
 data class AutoDetectedTransactionInput(
     val amount: Double,
-    val type: String,
-    val categoryId: String?,
+    val type: AutoDetectedType,
+    val categoryId: Long?,
     val merchant: String?,
     val date: Long,
     val note: String?
 )
+
+enum class AutoDetectedType { DEBIT, CREDIT }

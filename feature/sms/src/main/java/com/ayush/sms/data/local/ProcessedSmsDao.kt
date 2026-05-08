@@ -12,12 +12,10 @@ interface ProcessedSmsDao {
     suspend fun exists(smsId: String): Boolean
 
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(smsId: String)
+    suspend fun insert(row: ProcessedSmsEntity)
 }
 
 object SmsIdKey {
-    fun forLive(sender: String, body: String, smsTimestamp: Long): String =
-        "live:${(sender + body + smsTimestamp).hashCode()}"
-
-    fun forImport(contentResolverId: Long): String = "import:$contentResolverId"
+    fun of(sender: String, body: String, smsTimestamp: Long): String =
+        (sender + body + smsTimestamp).hashCode().toString()
 }
