@@ -1,6 +1,8 @@
 package com.ayush.transactions.di
 
+import com.ayush.common.transactions.AutoDetectedTransactionWriter
 import com.ayush.transactions.data.repository.TransactionRepositoryImpl
+import com.ayush.transactions.domain.AutoDetectedTransactionWriterImpl
 import com.ayush.transactions.domain.repository.TransactionRepository
 import dagger.Binds
 import dagger.Module
@@ -15,4 +17,9 @@ abstract class TransactionModule {
     abstract fun bindTransactionRepository(
         impl: TransactionRepositoryImpl,
     ): TransactionRepository
+
+    @Binds
+    abstract fun bindAutoDetectedTransactionWriter(
+        impl: AutoDetectedTransactionWriterImpl,
+    ): AutoDetectedTransactionWriter
 }

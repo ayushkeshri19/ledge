@@ -6,29 +6,24 @@ import com.ayush.transactions.domain.repository.TransactionRepository
 import javax.inject.Inject
 
 class AddTransactionUseCase @Inject constructor(
-    private val repository: TransactionRepository,
+    private val repository: TransactionRepository
 ) {
     suspend operator fun invoke(
-        amount: Double,
-        type: TransactionType,
-        categoryId: Long?,
-        note: String,
-        date: Long,
-        isRecurring: Boolean = false,
-        recurrenceType: String? = null,
+        params: AddTransactionParams
     ): ApiResult<Long> {
-        if (amount <= 0) return ApiResult.Error("Amount must be greater than 0")
-        if (note.isBlank()) return ApiResult.Error("Note cannot be empty")
+        if (params.amount <= 0) return ApiResult.Error("Amount must be greater than 0")
+        if (params.note.isBlank()) return ApiResult.Error("Note cannot be empty")
 
         return try {
             val id = repository.addTransaction(
-                amount = amount,
-                type = type,
-                categoryId = categoryId,
-                note = note,
-                date = date,
-                isRecurring = isRecurring,
-                recurrenceType = recurrenceType,
+                amount = params.amount,
+                type = params.type,
+                categoryId = params.categoryId,
+                note = params.note,
+                date = params.date,
+                isRecurring = params.isRecurring,
+                recurrenceType = params.recurrenceType,
+                isAutoDetected = params.isAutoDetected
             )
             ApiResult.Success(id)
         } catch (e: Exception) {
@@ -36,3 +31,14 @@ class AddTransactionUseCase @Inject constructor(
         }
     }
 }
+
+data class AddTransactionParams(
+    val amount: Double,
+    val type: TransactionType,
+    val categoryId: Long?,
+    val note: String,
+    val date: Long,
+    val isRecurring: Boolean = false,
+    val recurrenceType: String? = null,
+    val isAutoDetected: Boolean = false
+)

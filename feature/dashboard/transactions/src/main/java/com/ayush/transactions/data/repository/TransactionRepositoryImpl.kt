@@ -123,7 +123,8 @@ class TransactionRepositoryImpl @Inject constructor(
         note: String,
         date: Long,
         isRecurring: Boolean,
-        recurrenceType: String?
+        recurrenceType: String?,
+        isAutoDetected: Boolean
     ): Long = withContext(Dispatchers.IO) {
         val localId = transactionDao.insert(
             TransactionEntity(
@@ -136,6 +137,7 @@ class TransactionRepositoryImpl @Inject constructor(
                 recurrenceType = recurrenceType,
                 userId = currentUserId().orEmpty(),
                 syncStatus = SyncStatus.PENDING_CREATE,
+                isAutoDetected = isAutoDetected
             )
         )
         enqueueSync()

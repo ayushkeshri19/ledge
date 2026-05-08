@@ -6,6 +6,7 @@ import com.ayush.common.result.ApiResult
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.TransactionType
+import com.ayush.transactions.domain.usecase.AddTransactionParams
 import com.ayush.transactions.domain.usecase.AddTransactionUseCase
 import com.ayush.transactions.domain.usecase.GetCategoriesUseCase
 import com.ayush.ui.base.BaseMviViewModel
@@ -91,13 +92,15 @@ class AddTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             setState { copy(isSubmitting = true) }
             val result = addTransactionUseCase(
-                amount = amountValue,
-                type = state.type,
-                categoryId = state.selectedCategory?.id,
-                note = state.note.trim(),
-                date = state.combinedDateTimeMillis(),
-                isRecurring = state.isRecurring,
-                recurrenceType = state.recurrenceType?.value,
+                params = AddTransactionParams(
+                    amount = amountValue,
+                    type = state.type,
+                    categoryId = state.selectedCategory?.id,
+                    note = state.note.trim(),
+                    date = state.combinedDateTimeMillis(),
+                    isRecurring = state.isRecurring,
+                    recurrenceType = state.recurrenceType?.value,
+                )
             )
             when (result) {
                 is ApiResult.Success -> {

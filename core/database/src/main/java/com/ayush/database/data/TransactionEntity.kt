@@ -36,5 +36,6 @@ data class TransactionEntity(
     val userId: String = "",
     val syncStatus: SyncStatus = SyncStatus.SYNCED,
     val parentId: Long? = null,
-    val lastExecutedDate: Long? = null
+    val lastExecutedDate: Long? = null,
+    val isAutoDetected: Boolean = false
 )
