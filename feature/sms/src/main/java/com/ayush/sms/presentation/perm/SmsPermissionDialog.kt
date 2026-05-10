@@ -1,4 +1,4 @@
-package com.ayush.sms.presentation
+package com.ayush.sms.presentation.perm
 
 import android.Manifest
 import android.app.Activity

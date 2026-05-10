@@ -1,4 +1,4 @@
-package com.ayush.sms.presentation
+package com.ayush.sms.presentation.perm
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
