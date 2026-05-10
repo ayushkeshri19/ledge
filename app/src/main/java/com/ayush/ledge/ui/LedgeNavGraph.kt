@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -14,9 +13,10 @@ import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.RecoveryState
 import com.ayush.onboarding.presentation.OnboardingScreen
 import com.ayush.profile.presentation.profile.UserProfileScreen
+import com.ayush.sms.presentation.review.SmsReviewScreen
 
 @Composable
-internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
+internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
 
     val authState by mainViewModel.authState.collectAsState()
     val recoveryState by mainViewModel.recoveryState.collectAsState()
@@ -110,6 +110,15 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
                     backStack.clear()
                     backStack.add(AuthRoute.Auth)
                 }
+            }
+
+            entry<LedgeRoute.SmsReview> {
+                SmsReviewScreen(
+                    onBack = { backStack.remove(LedgeRoute.SmsReview) },
+                    onEditPending = { id ->
+
+                    }
+                )
             }
         },
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }

@@ -6,6 +6,9 @@ import kotlinx.serialization.Serializable
 sealed interface LedgeRoute : NavKey {
     @Serializable
     data object Profile : LedgeRoute
+
+    @Serializable
+    data object SmsReview : LedgeRoute
 }
 
 sealed interface AuthRoute : LedgeRoute {
