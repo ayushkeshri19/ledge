@@ -47,7 +47,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ayush.common.models.TimePeriod
 import com.ayush.common.utils.formatAmount
 import com.ayush.home.domain.models.RecentTransaction
-import com.ayush.sms.presentation.SmsPermissionPromptHost
+import com.ayush.sms.presentation.perm.SmsPermissionPromptHost
 import com.ayush.ui.animation.OneShotAnimationTracker
 import com.ayush.ui.animation.rememberOneShotAnimationTracker
 import com.ayush.ui.components.AnimatedAmount

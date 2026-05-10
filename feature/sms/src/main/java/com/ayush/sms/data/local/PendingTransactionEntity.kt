@@ -2,6 +2,24 @@ package com.ayush.sms.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.ayush.common.utils.formatAmount
+import com.ayush.sms.domain.parser.PendingTransaction
+import com.ayush.sms.domain.parser.TransactionType
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+private val dateFormat = SimpleDateFormat("d MMM, h:mm a", Locale.getDefault())
+
+private val slugDisplayNames = mapOf(
+    "FOOD" to "Food & Dining",
+    "TRANSPORT" to "Transport",
+    "ENTERTAINMENT" to "Entertainment",
+    "SHOPPING" to "Shopping",
+    "HEALTH" to "Healthcare",
+    "BILLS" to "Utilities"
+)
+
 
 @Entity(tableName = "pending_transactions")
 data class PendingTransactionEntity(
@@ -19,4 +37,24 @@ data class PendingTransactionEntity(
     val createdAt: Long = System.currentTimeMillis()
 ) {
     enum class State { PENDING, CONFIRMED, DISMISSED }
+
+    fun toDomain(): PendingTransaction {
+        return PendingTransaction(
+            id = id,
+            amount = amount,
+            type = TransactionType.valueOf(type),
+            merchant = merchant?.takeIf { it.isNotBlank() } ?: "Unknown merchant",
+            suggestedCategoryId = suggestedCategoryId,
+            accountLastFour = accountLastFour,
+            smsTimestamp = smsTimestamp,
+            rawSnippet = rawSnippet,
+            sender = sender,
+            finalConfidence = finalConfidence,
+            state = PendingTransaction.State.valueOf(state),
+            amountFormatted = "₹${formatAmount(amount)}",
+            categoryLabel = suggestedCategoryId?.let { slugDisplayNames[it] },
+            accountLabel = accountLastFour?.let { "•• $it" },
+            dateFormatted = dateFormat.format(Date(smsTimestamp))
+        )
+    }
 }
