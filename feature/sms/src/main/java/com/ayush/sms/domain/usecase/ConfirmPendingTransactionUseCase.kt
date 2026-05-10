@@ -3,27 +3,27 @@ package com.ayush.sms.domain.usecase
 import com.ayush.common.transactions.AutoDetectedTransactionInput
 import com.ayush.common.transactions.AutoDetectedTransactionWriter
 import com.ayush.common.transactions.AutoDetectedType
-import com.ayush.sms.data.local.PendingTransactionDao
-import com.ayush.sms.data.local.PendingTransactionEntity
 import com.ayush.sms.domain.classifier.CategorySlugResolver
+import com.ayush.sms.domain.parser.PendingTransaction
 import com.ayush.sms.domain.parser.TransactionType
+import com.ayush.sms.domain.repository.SmsRepository
 import javax.inject.Inject
 
 class ConfirmPendingTransactionUseCase @Inject constructor(
-    private val pendingDao: PendingTransactionDao,
+    private val repository: SmsRepository,
     private val writer: AutoDetectedTransactionWriter,
     private val categoryResolver: CategorySlugResolver
 ) {
     suspend operator fun invoke(id: Long): Result<Unit> {
-        val pending = pendingDao.getById(id)
+        val pending = repository.getPendingById(id)
             ?: return Result.failure(IllegalStateException("Pending transaction $id not found"))
 
-        if (pending.state != PendingTransactionEntity.State.PENDING.name) {
+        if (pending.state != PendingTransaction.State.PENDING) {
             return Result.failure(IllegalStateException("Pending transaction $id is not in PENDING state"))
         }
 
         val resolvedCategoryId = categoryResolver.resolve(pending.suggestedCategoryId)
-        val type = when (TransactionType.valueOf(pending.type)) {
+        val type = when (pending.type) {
             TransactionType.DEBIT -> AutoDetectedType.DEBIT
             TransactionType.CREDIT -> AutoDetectedType.CREDIT
         }
@@ -40,7 +40,7 @@ class ConfirmPendingTransactionUseCase @Inject constructor(
         )
 
         return writeResult.onSuccess {
-            pendingDao.updateState(id, PendingTransactionEntity.State.CONFIRMED.name)
+            repository.updatePendingState(id, PendingTransaction.State.CONFIRMED)
         }
     }
 }
