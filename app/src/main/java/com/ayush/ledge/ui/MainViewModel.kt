@@ -1,6 +1,5 @@
 package com.ayush.ledge.ui
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -19,12 +18,25 @@ import com.ayush.datastore.domain.usecase.ObserveHasSeenOnboardingUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
 import com.ayush.sms.domain.usecase.RefreshClassifierRulesUseCase
 import com.ayush.transactions.data.sync.RecurringTransactionWorker
+import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class MainState(
+    val authState: AuthState = AuthState.Loading,
+    val recoveryState: RecoveryState = RecoveryState.Loading,
+    val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val hasSeenOnboarding: Boolean? = null,
+    val pendingReviewCount: Int = 0
+)
+
+sealed interface MainEvent {
+    data object SignOut : MainEvent
+    data object DisableBiometric : MainEvent
+}
+
+sealed interface MainSideEffect
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -38,49 +50,16 @@ class MainViewModel @Inject constructor(
     passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
     pendingReviewCountSource: PendingReviewCountSource,
     refreshClassifierRulesUseCase: RefreshClassifierRulesUseCase
-) : ViewModel() {
+) : BaseMviViewModel<MainEvent, MainState, MainSideEffect>(MainState()) {
 
     init {
-        viewModelScope.launch {
-            refreshClassifierRulesUseCase()
-        }
-    }
+        viewModelScope.launch { refreshClassifierRulesUseCase() }
 
-    val pendingReviewCount: StateFlow<Int> = pendingReviewCountSource.observe()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = 0
-        )
-
-    val authState: StateFlow<AuthState> = authStateProvider.authState
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = AuthState.Loading
-        )
-
-    val recoveryState: StateFlow<RecoveryState> = passwordRecoveryStateHolder.state
-
-    val themeMode: StateFlow<ThemeMode> = getThemeModeUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = ThemeMode.SYSTEM
-        )
-
-    val hasSeenOnboarding: StateFlow<Boolean?> = observeHasSeenOnboardingUseCase()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.Eagerly,
-            initialValue = null
-        )
-
-    init {
         viewModelScope.launch {
             var syncedForSession = false
-            authStateProvider.authState.collect { state ->
-                when (state) {
+            authStateProvider.authState.collect { authState ->
+                setState { copy(authState = authState) }
+                when (authState) {
                     AuthState.Authenticated -> {
                         if (!syncedForSession) {
                             syncedForSession = true
@@ -94,22 +73,41 @@ class MainViewModel @Inject constructor(
                             }
                         }
                     }
-
                     AuthState.NotAuthenticated -> syncedForSession = false
-
                     else -> {}
                 }
             }
         }
-    }
 
-    fun signOut() {
-        viewModelScope.launch { signOutUseCase.invoke() }
-    }
-
-    fun disableBiometric() {
         viewModelScope.launch {
-            setBiometricsEnabledUseCase(false)
+            passwordRecoveryStateHolder.state.collect { recoveryState ->
+                setState { copy(recoveryState = recoveryState) }
+            }
+        }
+
+        viewModelScope.launch {
+            getThemeModeUseCase().collect { themeMode ->
+                setState { copy(themeMode = themeMode) }
+            }
+        }
+
+        viewModelScope.launch {
+            observeHasSeenOnboardingUseCase().collect { hasSeenOnboarding ->
+                setState { copy(hasSeenOnboarding = hasSeenOnboarding) }
+            }
+        }
+
+        viewModelScope.launch {
+            pendingReviewCountSource.observe().collect { count ->
+                setState { copy(pendingReviewCount = count) }
+            }
+        }
+    }
+
+    override fun onEvent(event: MainEvent) {
+        when (event) {
+            MainEvent.SignOut -> viewModelScope.launch { signOutUseCase.invoke() }
+            MainEvent.DisableBiometric -> viewModelScope.launch { setBiometricsEnabledUseCase(false) }
         }
     }
 }

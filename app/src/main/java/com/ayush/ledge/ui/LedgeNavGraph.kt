@@ -2,7 +2,6 @@ package com.ayush.ledge.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -21,30 +20,27 @@ import com.ayush.sms.presentation.review.SmsReviewScreen
 @Composable
 internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
 
-    val authState by mainViewModel.authState.collectAsState()
-    val recoveryState by mainViewModel.recoveryState.collectAsState()
-    val hasSeenOnboarding by mainViewModel.hasSeenOnboarding.collectAsStateWithLifecycle()
+    val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
 
-    if (authState == AuthState.Loading || recoveryState == RecoveryState.Loading || hasSeenOnboarding == null) {
+    if (uiState.authState == AuthState.Loading || uiState.recoveryState == RecoveryState.Loading || uiState.hasSeenOnboarding == null) {
         return
     }
 
     val startDestination: LedgeRoute = when {
-        recoveryState == RecoveryState.Active -> AuthRoute.SetNewPassword
-        authState == AuthState.Authenticated -> DashboardRoute.Dashboard
-        hasSeenOnboarding == false -> AuthRoute.Onboarding
+        uiState.recoveryState == RecoveryState.Active -> AuthRoute.SetNewPassword
+        uiState.authState == AuthState.Authenticated -> DashboardRoute.Dashboard
+        uiState.hasSeenOnboarding == false -> AuthRoute.Onboarding
         else -> AuthRoute.Auth
     }
 
     val backStack = rememberNavBackStack(startDestination)
 
-    val pendingReviewCount by mainViewModel.pendingReviewCount.collectAsStateWithLifecycle()
     var hasAutoNavigatedToReview by rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(authState, pendingReviewCount, hasAutoNavigatedToReview) {
+    LaunchedEffect(uiState.authState, uiState.pendingReviewCount, hasAutoNavigatedToReview) {
         if (!hasAutoNavigatedToReview &&
-            authState == AuthState.Authenticated &&
-            pendingReviewCount > 0 &&
+            uiState.authState == AuthState.Authenticated &&
+            uiState.pendingReviewCount > 0 &&
             backStack.lastOrNull() != LedgeRoute.SmsReview
         ) {
             hasAutoNavigatedToReview = true
@@ -52,23 +48,23 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
         }
     }
 
-    LaunchedEffect(authState, recoveryState) {
+    LaunchedEffect(uiState.authState, uiState.recoveryState) {
         when {
-            recoveryState == RecoveryState.Active -> {
+            uiState.recoveryState == RecoveryState.Active -> {
                 if (backStack.lastOrNull() !is AuthRoute.SetNewPassword) {
                     backStack.clear()
                     backStack.add(AuthRoute.SetNewPassword)
                 }
             }
 
-            authState == AuthState.Authenticated -> {
+            uiState.authState == AuthState.Authenticated -> {
                 if (backStack.lastOrNull() !is DashboardRoute) {
                     backStack.clear()
                     backStack.add(DashboardRoute.Dashboard)
                 }
             }
 
-            authState == AuthState.NotAuthenticated -> {
+            uiState.authState == AuthState.NotAuthenticated -> {
                 if (backStack.lastOrNull() !is AuthRoute) {
                     backStack.clear()
                     backStack.add(AuthRoute.Auth)
@@ -103,7 +99,7 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
                     onSignOut = {
                         backStack.clear()
                         backStack.add(AuthRoute.Auth)
-                        mainViewModel.signOut()
+                        mainViewModel.onEvent(MainEvent.SignOut)
                     },
                     onNavigateToProfile = {
                         backStack.add(LedgeRoute.Profile)
@@ -113,7 +109,7 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
                             backStack.add(LedgeRoute.SmsReview)
                         }
                     },
-                    pendingReviewCount = pendingReviewCount
+                    pendingReviewCount = uiState.pendingReviewCount
                 )
             }
 
@@ -123,7 +119,7 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
                     onSignOut = {
                         backStack.clear()
                         backStack.add(AuthRoute.Auth)
-                        mainViewModel.signOut()
+                        mainViewModel.onEvent(MainEvent.SignOut)
                     }
                 )
             }

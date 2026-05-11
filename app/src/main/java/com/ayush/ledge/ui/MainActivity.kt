@@ -54,9 +54,11 @@ class MainActivity : FragmentActivity() {
 
         val splashScreen = installSplashScreen()
         splashScreen.setKeepOnScreenCondition {
-            mainViewModel.authState.value == AuthState.Loading ||
-                    mainViewModel.recoveryState.value == RecoveryState.Loading ||
-                    mainViewModel.hasSeenOnboarding.value == null
+            with(mainViewModel.uiState.value) {
+                authState == AuthState.Loading ||
+                        recoveryState == RecoveryState.Loading ||
+                        hasSeenOnboarding == null
+            }
         }
 
         super.onCreate(savedInstanceState)
@@ -74,7 +76,8 @@ class MainActivity : FragmentActivity() {
         deepLinkHandler.handle(intent)
         requestNotificationPermission()
         setContent {
-            val themeMode by mainViewModel.themeMode.collectAsStateWithLifecycle()
+            val uiState by mainViewModel.uiState.collectAsStateWithLifecycle()
+            val themeMode = uiState.themeMode
 
             val isLocked by appLockManager.locked.collectAsStateWithLifecycle()
 
@@ -94,10 +97,8 @@ class MainActivity : FragmentActivity() {
 
     private fun disableBiometricAndSignOut() {
         appLockManager.onBiometricDisabled()
-        with(mainViewModel) {
-            disableBiometric()
-            signOut()
-        }
+        mainViewModel.onEvent(MainEvent.DisableBiometric)
+        mainViewModel.onEvent(MainEvent.SignOut)
     }
 
     private fun requestNotificationPermission() {
