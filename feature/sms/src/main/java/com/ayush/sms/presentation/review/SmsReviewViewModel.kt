@@ -12,6 +12,7 @@ import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -33,15 +34,18 @@ class SmsReviewViewModel @Inject constructor(
     private val pendingJobs = mutableMapOf<Set<Long>, Job>()
 
     init {
-        observePendingUseCase()
-            .onEach { txns ->
-                setState { copy(items = txns, isLoading = false) }
-            }
-            .launchIn(viewModelScope)
-
-        observeCategoriesUseCase()
-            .onEach { categories ->
-                setState { copy(categories = categories) }
+        combine(
+            observePendingUseCase(),
+            observeCategoriesUseCase()
+        ) { transactions, categories -> transactions to categories }
+            .onEach { (transactions, categories) ->
+                setState {
+                    copy(
+                        items = transactions,
+                        categories = categories,
+                        isLoading = false
+                    )
+                }
             }
             .launchIn(viewModelScope)
     }
