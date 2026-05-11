@@ -1,15 +1,15 @@
-package com.ayush.sms.data.local
+package com.ayush.sms.data.local.rawSms
 
 import com.ayush.sms.domain.model.RawSms
 
-internal fun RawSmsEntity.toDomain(): RawSms = RawSms(
+fun RawSmsEntity.toDomain(): RawSms = RawSms(
     sender = sender,
     body = body,
     timestamp = timestamp,
     receivedAt = receivedAt
 )
 
-internal fun RawSms.toEntity(): RawSmsEntity = RawSmsEntity(
+fun RawSms.toEntity(): RawSmsEntity = RawSmsEntity(
     sender = sender,
     body = body,
     timestamp = timestamp,

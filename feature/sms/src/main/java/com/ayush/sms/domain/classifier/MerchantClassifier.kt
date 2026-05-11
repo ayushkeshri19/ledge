@@ -1,27 +1,47 @@
 package com.ayush.sms.domain.classifier
 
+import com.ayush.sms.domain.repository.ClassifierRulesRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MerchantClassifier @Inject constructor() {
-    private val mapping = listOf(
-        listOf("swiggy", "zomato", "eatfit") to "FOOD",
-        listOf("amazon", "flipkart", "meesho") to "SHOPPING",
-        listOf("uber", "ola", "rapido") to "TRANSPORT",
-        listOf("netflix", "spotify", "prime", "jiohotstar") to "ENTERTAINMENT",
-        listOf("apollo", "medplus", "pharmeasy", "1mg") to "HEALTH",
-        listOf("bescom", "tata power", "jio", "airtel", "wbsedcl") to "BILLS"
-    )
+class MerchantClassifier @Inject constructor(
+    private val rulesRepository: ClassifierRulesRepository
+) {
+    suspend fun classify(merchant: String?, body: String? = null): Classification {
+        val rules = rulesRepository.getCached()
 
-    fun classify(merchant: String?): Classification {
-        if (merchant.isNullOrBlank()) return Classification(null, 0.0f)
-        val lower = merchant.lowercase()
-        for ((keywords, category) in mapping) {
-            if (keywords.any { it == lower }) return Classification(category, 1.0f)
-            if (keywords.any { it in lower }) return Classification(category, 0.6f)
+        merchant?.takeIf { it.isNotBlank() }?.lowercase()?.let { m ->
+            val byMerchant = matchInText(m, rules)
+            if (byMerchant.categoryId != null) return byMerchant
         }
-        return Classification(null, 0.0f)
+
+        body?.takeIf { it.isNotBlank() }?.lowercase()?.let { b ->
+            val byBody = matchInText(b, rules)
+            if (byBody.categoryId != null) {
+                return byBody.copy(classifierConfidence = byBody.classifierConfidence * 0.7f)
+            }
+        }
+
+        return Classification(null, 0f)
+    }
+
+    private fun matchInText(lower: String, rules: List<ClassifierRule>): Classification {
+        for (rule in rules) {
+            val matches = when (rule.matchType) {
+                MatchType.EXACT -> lower == rule.keyword.lowercase()
+                MatchType.SUBSTRING -> rule.keyword.lowercase() in lower
+            }
+            if (matches) {
+                val confidence = when (rule.source) {
+                    Source.CURATED -> 1.0f
+                    Source.AGGREGATOR_DEFAULT -> 0.6f
+                    Source.USER_CORRECTION -> 0.9f
+                }
+                return Classification(rule.categorySlug, confidence)
+            }
+        }
+        return Classification(null, 0f)
     }
 }
 

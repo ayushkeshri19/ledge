@@ -17,6 +17,7 @@ import com.ayush.common.utils.Workers
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
 import com.ayush.datastore.domain.usecase.ObserveHasSeenOnboardingUseCase
 import com.ayush.datastore.domain.usecase.SetBiometricsEnabledUseCase
+import com.ayush.sms.domain.usecase.RefreshClassifierRulesUseCase
 import com.ayush.transactions.data.sync.RecurringTransactionWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,8 +36,15 @@ class MainViewModel @Inject constructor(
     observeHasSeenOnboardingUseCase: ObserveHasSeenOnboardingUseCase,
     getThemeModeUseCase: GetThemeModeUseCase,
     passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
-    pendingReviewCountSource: PendingReviewCountSource
+    pendingReviewCountSource: PendingReviewCountSource,
+    refreshClassifierRulesUseCase: RefreshClassifierRulesUseCase
 ) : ViewModel() {
+
+    init {
+        viewModelScope.launch {
+            refreshClassifierRulesUseCase()
+        }
+    }
 
     val pendingReviewCount: StateFlow<Int> = pendingReviewCountSource.observe()
         .stateIn(

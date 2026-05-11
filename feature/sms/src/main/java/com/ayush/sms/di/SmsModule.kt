@@ -2,11 +2,12 @@ package com.ayush.sms.di
 
 import android.content.Context
 import androidx.room.Room
-import com.ayush.sms.data.local.ParserMissDao
-import com.ayush.sms.data.local.PendingTransactionDao
-import com.ayush.sms.data.local.ProcessedSmsDao
-import com.ayush.sms.data.local.RawSmsDao
 import com.ayush.sms.data.local.SmsDatabase
+import com.ayush.sms.data.local.classifier.ClassifierRuleDao
+import com.ayush.sms.data.local.parserMiss.ParserMissDao
+import com.ayush.sms.data.local.pending.PendingTransactionDao
+import com.ayush.sms.data.local.processedSms.ProcessedSmsDao
+import com.ayush.sms.data.local.rawSms.RawSmsDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -41,4 +42,7 @@ object SmsModule {
 
     @Provides
     fun provideParserMissDao(database: SmsDatabase): ParserMissDao = database.parserMissDao()
+
+    @Provides
+    fun providesClassifierRuleDao(database: SmsDatabase): ClassifierRuleDao = database.classifierRuleDao()
 }

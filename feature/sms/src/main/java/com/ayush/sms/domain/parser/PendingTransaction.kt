@@ -1,6 +1,6 @@
 package com.ayush.sms.domain.parser
 
-import com.ayush.sms.data.local.PendingTransactionEntity
+import com.ayush.sms.data.local.pending.PendingTransactionEntity
 
 data class PendingTransaction(
     val id: Long,

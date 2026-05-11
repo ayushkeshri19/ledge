@@ -1,10 +1,10 @@
 package com.ayush.sms.domain.usecase
 
-import com.ayush.sms.data.local.ParserMissDao
-import com.ayush.sms.data.local.ParserMissEntity
-import com.ayush.sms.data.local.ProcessedSmsDao
-import com.ayush.sms.data.local.ProcessedSmsEntity
-import com.ayush.sms.data.local.SmsIdKey
+import com.ayush.sms.data.local.parserMiss.ParserMissDao
+import com.ayush.sms.data.local.parserMiss.ParserMissEntity
+import com.ayush.sms.data.local.processedSms.ProcessedSmsDao
+import com.ayush.sms.data.local.processedSms.ProcessedSmsEntity
+import com.ayush.sms.data.local.processedSms.SmsIdKey
 import com.ayush.sms.domain.classifier.MerchantClassifier
 import com.ayush.sms.domain.model.RawSms
 import com.ayush.sms.domain.parser.ParseResult
@@ -28,7 +28,7 @@ class ProcessIncomingSmsUseCase @Inject constructor(
         when (val result = parser.parse(sms.sender, sms.body, sms.timestamp)) {
             is ParseResult.Success -> {
                 val parsed = result.parsedTransaction
-                val classification = classifier.classify(parsed.merchant)
+                val classification = classifier.classify(parsed.merchant, sms.body)
                 val finalConfidence = (parsed.parserConfidence + classification.classifierConfidence) / 2f
                 repository.savePending(
                     PendingTransaction(

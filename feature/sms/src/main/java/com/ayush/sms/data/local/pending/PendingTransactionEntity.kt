@@ -1,4 +1,4 @@
-package com.ayush.sms.data.local
+package com.ayush.sms.data.local.pending
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

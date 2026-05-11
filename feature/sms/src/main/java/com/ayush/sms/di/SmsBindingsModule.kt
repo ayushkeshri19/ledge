@@ -3,8 +3,10 @@ package com.ayush.sms.di
 import com.ayush.common.transactions.PendingReviewCountSource
 import com.ayush.sms.data.PendingReviewCountSourceImpl
 import com.ayush.sms.data.permission.SmsPermissionManagerImpl
+import com.ayush.sms.data.repository.ClassifierRulesRepositoryImpl
 import com.ayush.sms.data.repository.SmsRepositoryImpl
 import com.ayush.sms.domain.permission.SmsPermissionManager
+import com.ayush.sms.domain.repository.ClassifierRulesRepository
 import com.ayush.sms.domain.repository.SmsRepository
 import dagger.Binds
 import dagger.Module
@@ -23,4 +25,7 @@ abstract class SmsBindingsModule {
 
     @Binds
     internal abstract fun bindSmsReviewCountSourceImpl(impl: PendingReviewCountSourceImpl): PendingReviewCountSource
+
+    @Binds
+    internal abstract fun bindClassifierRulesRepository(impl: ClassifierRulesRepositoryImpl): ClassifierRulesRepository
 }
