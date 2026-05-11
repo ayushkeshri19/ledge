@@ -1,4 +1,4 @@
-package com.ayush.sms.presentation
+package com.ayush.sms.presentation.perm
 
 import android.app.Activity
 import androidx.lifecycle.viewModelScope

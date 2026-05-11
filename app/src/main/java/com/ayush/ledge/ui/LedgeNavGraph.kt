@@ -1,10 +1,14 @@
 package com.ayush.ledge.ui
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -14,9 +18,10 @@ import com.ayush.common.auth.AuthState
 import com.ayush.common.auth.RecoveryState
 import com.ayush.onboarding.presentation.OnboardingScreen
 import com.ayush.profile.presentation.profile.UserProfileScreen
+import com.ayush.sms.presentation.review.SmsReviewScreen
 
 @Composable
-internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
+internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
 
     val authState by mainViewModel.authState.collectAsState()
     val recoveryState by mainViewModel.recoveryState.collectAsState()
@@ -34,6 +39,22 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
     }
 
     val backStack = rememberNavBackStack(startDestination)
+
+    val context = LocalContext.current
+
+    val pendingReviewCount by mainViewModel.pendingReviewCount.collectAsStateWithLifecycle()
+    var hasAutoNavigatedToReview by rememberSaveable { mutableStateOf(false) }
+
+    LaunchedEffect(authState, pendingReviewCount, hasAutoNavigatedToReview) {
+        if (!hasAutoNavigatedToReview &&
+            authState == AuthState.Authenticated &&
+            pendingReviewCount > 0 &&
+            backStack.lastOrNull() != LedgeRoute.SmsReview
+        ) {
+            hasAutoNavigatedToReview = true
+            backStack.add(LedgeRoute.SmsReview)
+        }
+    }
 
     LaunchedEffect(authState, recoveryState) {
         when {
@@ -90,7 +111,13 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
                     },
                     onNavigateToProfile = {
                         backStack.add(LedgeRoute.Profile)
-                    }
+                    },
+                    onNavigateToSmsReview = {
+                        if (backStack.lastOrNull() != LedgeRoute.SmsReview) {
+                            backStack.add(LedgeRoute.SmsReview)
+                        }
+                    },
+                    pendingReviewCount = pendingReviewCount
                 )
             }
 
@@ -110,6 +137,15 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel = hiltViewModel()) {
                     backStack.clear()
                     backStack.add(AuthRoute.Auth)
                 }
+            }
+
+            entry<LedgeRoute.SmsReview> {
+                SmsReviewScreen(
+                    onBack = { backStack.remove(LedgeRoute.SmsReview) },
+                    onEditPending = {
+                        Toast.makeText(context, "Edit coming soon", Toast.LENGTH_SHORT).show()
+                    }
+                )
             }
         },
         onBack = { if (backStack.size > 1) backStack.removeAt(backStack.lastIndex) }

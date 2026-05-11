@@ -91,7 +91,9 @@ sealed interface DashboardBottomNavItems {
 @Composable
 internal fun DashboardNavGraph(
     onSignOut: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToSmsReview: () -> Unit,
+    pendingReviewCount: Int
 ) {
     val backStack = rememberNavBackStack(DashboardRoute.Home)
 
@@ -125,6 +127,7 @@ internal fun DashboardNavGraph(
                     selectedTab = selectedTab,
                     onTabSelected = ::selectTab,
                     onFabClick = { backStack.add(DashboardRoute.AddTransaction) },
+                    pendingReviewCount = pendingReviewCount
                 )
             }
         },
@@ -145,7 +148,9 @@ internal fun DashboardNavGraph(
                             }
                         )
                     }
-                    entry<DashboardRoute.Transactions> { TransactionsListScreen() }
+                    entry<DashboardRoute.Transactions> {
+                        TransactionsListScreen(onNavigateToReview = onNavigateToSmsReview)
+                    }
                     entry<DashboardRoute.Budget> { BudgetScreen() }
                     entry<DashboardRoute.Insights> { InsightsScreen() }
                     entry<DashboardRoute.AddTransaction> {
@@ -163,6 +168,7 @@ private fun LedgeBottomBar(
     selectedTab: DashboardBottomNavItems,
     onTabSelected: (DashboardBottomNavItems) -> Unit,
     onFabClick: () -> Unit,
+    pendingReviewCount: Int,
     modifier: Modifier = Modifier
 ) {
     val leftTabs = DashboardBottomNavItems.items.take(2)
@@ -194,6 +200,7 @@ private fun LedgeBottomBar(
                             tab = tab,
                             isSelected = selectedTab == tab,
                             onClick = { onTabSelected(tab) },
+                            badgeCount = if (tab == DashboardBottomNavItems.Transactions) pendingReviewCount else 0,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -210,6 +217,7 @@ private fun LedgeBottomBar(
                             tab = tab,
                             isSelected = selectedTab == tab,
                             onClick = { onTabSelected(tab) },
+                            badgeCount = if (tab == DashboardBottomNavItems.Transactions) pendingReviewCount else 0,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -224,6 +232,7 @@ private fun BottomNavItem(
     tab: DashboardBottomNavItems,
     isSelected: Boolean,
     onClick: () -> Unit,
+    badgeCount: Int,
     modifier: Modifier = Modifier
 ) {
     val colors = LedgeTheme.colors
@@ -247,12 +256,24 @@ private fun BottomNavItem(
                 )
         )
 
-        Icon(
-            painter = painterResource(id = tab.icon),
-            contentDescription = tab.label,
-            tint = tintColor,
-            modifier = Modifier.size(22.dp)
-        )
+        Box {
+            Icon(
+                painter = painterResource(id = tab.icon),
+                contentDescription = tab.label,
+                tint = tintColor,
+                modifier = Modifier.size(22.dp)
+            )
+            if (badgeCount > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 6.dp, y = (-4).dp)
+                        .size(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(colors.gold)
+                )
+            }
+        }
 
         Text(
             text = tab.label.uppercase(),

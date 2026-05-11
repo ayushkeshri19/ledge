@@ -19,13 +19,27 @@ fun interface AccountExtractor {
 }
 
 object StandardAmountExtractor : AmountExtractor {
-    private val regex = Regex("""(?:Rs\.?|INR|₹)\s?([0-9,]+(?:\.[0-9]{1,2})?)""", RegexOption.IGNORE_CASE)
-    override fun extract(body: String): Double? =
-        regex.find(body)?.groupValues?.get(1)?.replace(",", "")?.toDoubleOrNull()
+    private val withCurrency = Regex(
+        """(?:Rs\.?|INR|₹)\s?([0-9,]+(?:\.[0-9]{1,2})?)""",
+        RegexOption.IGNORE_CASE
+    )
+    private val verbPrefixed = Regex(
+        """(?:debited|credited|paid|spent|received|sent)\s+(?:by|with|for)\s+([0-9,]+(?:\.[0-9]{1,2})?)""",
+        RegexOption.IGNORE_CASE
+    )
+
+    override fun extract(body: String): Double? {
+        val raw = withCurrency.find(body)?.groupValues?.get(1)
+            ?: verbPrefixed.find(body)?.groupValues?.get(1)
+            ?: return null
+        return raw.replace(",", "").toDoubleOrNull()
+    }
 }
 
 object StandardTypeExtractor : TypeExtractor {
-    private val debitVerbs = listOf("debited", "spent", "paid", "withdrawn", "purchase")
+    private val debitVerbs = listOf(
+        "debited", "spent", "paid", "withdrawn", "purchase", "sent", "using", "used"
+    )
     private val creditVerbs = listOf("credited", "received", "deposited", "refund")
     override fun extract(body: String): TransactionType? {
         val lower = body.lowercase()

@@ -40,7 +40,7 @@ import com.ayush.profile.presentation.components.SmsAutoDetectToggleRow
 import com.ayush.profile.presentation.components.ThemeModeRow
 import com.ayush.security.data.di.BiometricAuthenticatorEntryPoint
 import com.ayush.security.domain.models.BiometricResult
-import com.ayush.sms.presentation.SmsPermissionDialog
+import com.ayush.sms.presentation.perm.SmsPermissionDialog
 import com.ayush.ui.theme.LedgeTheme
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.launch

@@ -12,6 +12,7 @@ import com.ayush.common.auth.PasswordRecoveryStateHolder
 import com.ayush.common.auth.RecoveryState
 import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.theme.ThemeMode
+import com.ayush.common.transactions.PendingReviewCountSource
 import com.ayush.common.utils.Workers
 import com.ayush.datastore.domain.usecase.GetThemeModeUseCase
 import com.ayush.datastore.domain.usecase.ObserveHasSeenOnboardingUseCase
@@ -34,7 +35,15 @@ class MainViewModel @Inject constructor(
     observeHasSeenOnboardingUseCase: ObserveHasSeenOnboardingUseCase,
     getThemeModeUseCase: GetThemeModeUseCase,
     passwordRecoveryStateHolder: PasswordRecoveryStateHolder,
+    pendingReviewCountSource: PendingReviewCountSource
 ) : ViewModel() {
+
+    val pendingReviewCount: StateFlow<Int> = pendingReviewCountSource.observe()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = 0
+        )
 
     val authState: StateFlow<AuthState> = authStateProvider.authState
         .stateIn(
