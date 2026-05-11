@@ -2,8 +2,8 @@ package com.ayush.transactions.presentation
 
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
+import com.ayush.common.models.Category
 import com.ayush.common.result.ApiResult
-import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.transactions.domain.usecase.AddTransactionParams

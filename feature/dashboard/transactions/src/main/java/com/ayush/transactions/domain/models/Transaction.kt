@@ -1,6 +1,8 @@
 package com.ayush.transactions.domain.models
 
+import com.ayush.common.models.Category
 import com.ayush.database.data.TransactionWithCategory
+import com.ayush.database.data.toDomain
 
 data class Transaction(
     val id: Long,

@@ -11,6 +11,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
+import com.ayush.common.models.Category
 import com.ayush.common.notification.BudgetNotificationHelper
 import com.ayush.common.utils.Workers
 import com.ayush.common.utils.endOfDay
@@ -21,10 +22,10 @@ import com.ayush.database.dao.TransactionDao
 import com.ayush.database.data.DefaultCategories
 import com.ayush.database.data.SyncStatus
 import com.ayush.database.data.TransactionEntity
+import com.ayush.database.data.toDomain
 import com.ayush.transactions.data.remote.SupabaseTransactionDataSource
 import com.ayush.transactions.data.remote.SupabaseTransactionDto
 import com.ayush.transactions.data.sync.TransactionSyncWorker
-import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.RecurrenceType
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType

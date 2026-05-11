@@ -1,8 +1,8 @@
 package com.ayush.transactions.domain.repository
 
 import androidx.paging.PagingData
+import com.ayush.common.models.Category
 import com.ayush.database.data.TransactionEntity
-import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.Transaction
 import com.ayush.transactions.domain.models.TransactionType
 import kotlinx.coroutines.flow.Flow

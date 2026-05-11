@@ -24,13 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.ayush.budget.domain.models.BudgetWithSpent
-import com.ayush.budget.domain.models.Category
+import com.ayush.common.models.Category
 import com.ayush.ui.components.LedgePrimaryButton
 import com.ayush.ui.components.LedgeSecondaryButton
 import com.ayush.ui.components.LedgeSegmentedToggle
 import com.ayush.ui.components.LedgeSelectableChip
 import com.ayush.ui.components.LedgeTextField
 import com.ayush.ui.components.SegmentOption
+import com.ayush.ui.extension.color
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme
 

@@ -8,17 +8,8 @@ import javax.inject.Singleton
 class CategorySlugResolver @Inject constructor(
     private val categoryDao: CategoryDao
 ) {
-    private val slugToName = mapOf(
-        "FOOD" to "Food & Dining",
-        "TRANSPORT" to "Transport",
-        "ENTERTAINMENT" to "Entertainment",
-        "SHOPPING" to "Shopping",
-        "HEALTH" to "Healthcare",
-        "BILLS" to "Utilities"
-    )
-
     suspend fun resolve(slug: String?): Long? {
-        val name = slug?.let { slugToName[it] } ?: return null
+        val name = SmsCategorySlugs.nameFor(slug) ?: return null
         return categoryDao.getCategoryByName(name)?.id
     }
 }

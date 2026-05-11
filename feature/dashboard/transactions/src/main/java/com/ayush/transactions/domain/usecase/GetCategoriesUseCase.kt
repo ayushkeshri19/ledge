@@ -1,6 +1,6 @@
 package com.ayush.transactions.domain.usecase
 
-import com.ayush.transactions.domain.models.Category
+import com.ayush.common.models.Category
 import com.ayush.transactions.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
