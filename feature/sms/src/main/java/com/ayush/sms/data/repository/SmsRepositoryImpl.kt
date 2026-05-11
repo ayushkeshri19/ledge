@@ -1,9 +1,9 @@
 package com.ayush.sms.data.repository
 
-import com.ayush.sms.data.local.PendingTransactionDao
-import com.ayush.sms.data.local.RawSmsDao
-import com.ayush.sms.data.local.toDomain
-import com.ayush.sms.data.local.toEntity
+import com.ayush.sms.data.local.pending.PendingTransactionDao
+import com.ayush.sms.data.local.rawSms.RawSmsDao
+import com.ayush.sms.data.local.rawSms.toDomain
+import com.ayush.sms.data.local.rawSms.toEntity
 import com.ayush.sms.domain.model.RawSms
 import com.ayush.sms.domain.parser.PendingTransaction
 import com.ayush.sms.domain.repository.SmsRepository
