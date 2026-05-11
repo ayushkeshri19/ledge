@@ -37,10 +37,13 @@ sealed interface DashboardRoute : LedgeRoute {
 
     @Serializable
     data object Home : DashboardRoute
+
     @Serializable
     data object Transactions : DashboardRoute
+
     @Serializable
     data object Budget : DashboardRoute
+
     @Serializable
     data object Insights : DashboardRoute
 

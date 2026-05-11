@@ -10,6 +10,7 @@ interface SmsRepository {
     suspend fun clearAll()
 
     fun observePending(): Flow<List<PendingTransaction>>
+    fun observePendingCount(): Flow<Int>
     suspend fun getPendingById(id: Long): PendingTransaction?
     suspend fun savePending(record: PendingTransaction): Long
     suspend fun updatePendingState(id: Long, state: PendingTransaction.State)

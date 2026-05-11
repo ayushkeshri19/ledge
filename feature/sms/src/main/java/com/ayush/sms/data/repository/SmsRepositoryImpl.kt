@@ -26,6 +26,9 @@ internal class SmsRepositoryImpl @Inject constructor(
     override fun observePending(): Flow<List<PendingTransaction>> =
         pendingTransactionDao.observePending().map { list -> list.map { it.toDomain() } }
 
+    override fun observePendingCount(): Flow<Int> =
+        pendingTransactionDao.observePendingCount()
+
     override suspend fun getPendingById(id: Long): PendingTransaction? =
         pendingTransactionDao.getById(id)?.toDomain()
 

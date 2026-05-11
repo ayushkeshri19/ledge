@@ -25,6 +25,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
@@ -82,7 +83,9 @@ import kotlinx.coroutines.launch
 private val LocalEventSink = staticCompositionLocalOf<(TransactionsEvent) -> Unit> { error { } }
 
 @Composable
-fun TransactionsScreen() {
+fun TransactionsScreen(
+    onNavigateToReview: () -> Unit = {}
+) {
     val viewModel: TransactionsViewModel = hiltViewModel()
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val lazyPagingItems = viewModel.transactionsPagingFlow.collectAsLazyPagingItems()
@@ -106,7 +109,8 @@ fun TransactionsScreen() {
             state = state,
             lazyPagingItems = lazyPagingItems,
             stopSeriesParentId = stopSeriesParentId,
-            onStopSeriesDismiss = { stopSeriesParentId = null }
+            onStopSeriesDismiss = { stopSeriesParentId = null },
+            onNavigateToReview = onNavigateToReview
         )
     }
 }
@@ -117,7 +121,8 @@ private fun TransactionsContent(
     state: TransactionsState,
     lazyPagingItems: LazyPagingItems<TransactionListItem>,
     stopSeriesParentId: Long?,
-    onStopSeriesDismiss: () -> Unit
+    onStopSeriesDismiss: () -> Unit,
+    onNavigateToReview: () -> Unit
 ) {
     var transactionToDelete by remember { mutableStateOf<Transaction?>(null) }
     var transactionToEdit by remember { mutableStateOf<Transaction?>(null) }
@@ -188,6 +193,17 @@ private fun TransactionsContent(
                     }
                 }
             }
+        }
+
+        if (state.pendingReviewCount > 0) {
+            ReviewPendingPill(
+                count = state.pendingReviewCount,
+                onClick = onNavigateToReview,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 4.dp)
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
 
         LedgeTextField(
@@ -712,5 +728,43 @@ private fun TransactionItem(transaction: Transaction) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun ReviewPendingPill(
+    count: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = LedgeTheme.colors
+    Row(
+        modifier = modifier
+            .clip(RoundedCornerShape(LedgeRadius.medium))
+            .background(colors.goldDim)
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "REVIEW QUEUE",
+                style = LedgeTextStyle.LabelCaps,
+                color = colors.goldAccent
+            )
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = if (count == 1) "1 transaction to review"
+                else "$count transactions to review",
+                style = LedgeTextStyle.HeadingCard,
+                color = colors.textPrimary
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+            tint = colors.goldAccent,
+            modifier = Modifier.size(22.dp)
+        )
     }
 }

@@ -10,6 +10,7 @@ import com.ayush.common.result.ApiResult
 import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.sync.SyncState
 import com.ayush.common.sync.SyncStateHolder
+import com.ayush.common.transactions.PendingReviewCountSource
 import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
@@ -41,7 +42,8 @@ class TransactionsViewModel @Inject constructor(
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val syncStateHolder: SyncStateHolder,
     private val syncOrchestrator: SyncOrchestrator,
-    private val stopRecurringSeriesUseCase: StopRecurringSeriesUseCase
+    private val stopRecurringSeriesUseCase: StopRecurringSeriesUseCase,
+    private val pendingReviewCountSource: PendingReviewCountSource
 ) : BaseMviViewModel<TransactionsEvent, TransactionsState, TransactionsSideEffect>(
     initialState = TransactionsState()
 ) {
@@ -51,6 +53,15 @@ class TransactionsViewModel @Inject constructor(
     init {
         loadCategories()
         observeSyncState()
+        observePendingReviewCount()
+    }
+
+    private fun observePendingReviewCount() {
+        viewModelScope.launch {
+            pendingReviewCountSource.observe().collect { count ->
+                setState { copy(pendingReviewCount = count) }
+            }
+        }
     }
 
     private fun observeSyncState() {
@@ -224,7 +235,8 @@ data class TransactionsState(
     val filterState: FilterState = FilterState(),
     val searchQuery: String = "",
     val isSyncing: Boolean = false,
-    val hasSyncError: Boolean = false
+    val hasSyncError: Boolean = false,
+    val pendingReviewCount: Int = 0
 )
 
 sealed interface TransactionsEvent {
