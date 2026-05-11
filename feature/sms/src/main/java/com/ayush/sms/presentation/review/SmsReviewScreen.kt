@@ -49,7 +49,6 @@ import com.ayush.ui.theme.LedgeTheme
 
 @Composable
 fun SmsReviewScreen(
-    onEditPending: (Long) -> Unit,
     onBack: () -> Unit
 ) {
     val viewModel: SmsReviewViewModel = hiltViewModel()
@@ -64,9 +63,6 @@ fun SmsReviewScreen(
                 is SmsReviewSideEffect.ShowError ->
                     snackbarHost.showSnackbar(effect.message)
 
-                is SmsReviewSideEffect.NavigateToEdit ->
-                    onEditPending(effect.pendingId)
-
                 is SmsReviewSideEffect.ShowBulkUndo ->
                     showUndo(snackbarHost, label(effect.action, effect.ids.size)) {
                         viewModel.onEvent(SmsReviewEvent.Undo(effect.ids))
@@ -78,6 +74,16 @@ fun SmsReviewScreen(
                     }
             }
         }
+    }
+
+    val editingItem = uiState.editingItem
+    if (editingItem != null) {
+        EditPendingTransactionSheet(
+            item = editingItem,
+            categories = uiState.categories,
+            onConfirm = { event -> viewModel.onEvent(event) },
+            onDismiss = { viewModel.onEvent(SmsReviewEvent.EditDismissed) }
+        )
     }
 
     Scaffold(

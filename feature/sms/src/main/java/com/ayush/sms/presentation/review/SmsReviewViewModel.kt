@@ -1,8 +1,12 @@
 package com.ayush.sms.presentation.review
 
 import androidx.lifecycle.viewModelScope
+import com.ayush.common.transactions.AutoDetectedType
+import com.ayush.sms.domain.parser.TransactionType
+import com.ayush.sms.domain.usecase.ConfirmEditedPendingTransactionUseCase
 import com.ayush.sms.domain.usecase.ConfirmPendingTransactionUseCase
 import com.ayush.sms.domain.usecase.DismissPendingTransactionUseCase
+import com.ayush.sms.domain.usecase.ObserveCategoriesUseCase
 import com.ayush.sms.domain.usecase.ObservePendingTransactionsUseCase
 import com.ayush.ui.base.BaseMviViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,7 +22,9 @@ private const val UNDO_WINDOW_MS: Long = 4_500L
 @HiltViewModel
 class SmsReviewViewModel @Inject constructor(
     observePendingUseCase: ObservePendingTransactionsUseCase,
+    observeCategoriesUseCase: ObserveCategoriesUseCase,
     private val confirmUseCase: ConfirmPendingTransactionUseCase,
+    private val confirmEditedUseCase: ConfirmEditedPendingTransactionUseCase,
     private val dismissUseCase: DismissPendingTransactionUseCase
 ) : BaseMviViewModel<SmsReviewEvent, SmsReviewState, SmsReviewSideEffect>(
     initialState = SmsReviewState()
@@ -32,13 +38,21 @@ class SmsReviewViewModel @Inject constructor(
                 setState { copy(items = txns, isLoading = false) }
             }
             .launchIn(viewModelScope)
+
+        observeCategoriesUseCase()
+            .onEach { categories ->
+                setState { copy(categories = categories) }
+            }
+            .launchIn(viewModelScope)
     }
 
     override fun onEvent(event: SmsReviewEvent) {
         when (event) {
-            is SmsReviewEvent.Confirm -> scheduleSingle(id = event.id, action = PendingAction.CONFIRM)
-            is SmsReviewEvent.Dismiss -> scheduleSingle(id = event.id, action = PendingAction.DISMISS)
-            is SmsReviewEvent.Edit -> sendSideEffect(SmsReviewSideEffect.NavigateToEdit(event.id))
+            is SmsReviewEvent.Confirm -> scheduleSingle(event.id, PendingAction.CONFIRM)
+            is SmsReviewEvent.Dismiss -> scheduleSingle(event.id, PendingAction.DISMISS)
+            is SmsReviewEvent.Edit -> setState { copy(editingPendingId = event.id) }
+            SmsReviewEvent.EditDismissed -> setState { copy(editingPendingId = null) }
+            is SmsReviewEvent.ConfirmEdit -> commitEdit(event)
             is SmsReviewEvent.Undo -> undo(event.ids)
             SmsReviewEvent.ConfirmAll -> scheduleBulk(PendingAction.CONFIRM)
             SmsReviewEvent.DismissAll -> scheduleBulk(PendingAction.DISMISS)
@@ -58,6 +72,27 @@ class SmsReviewViewModel @Inject constructor(
         veil(ids, action)
         sendSideEffect(SmsReviewSideEffect.ShowBulkUndo(ids, action))
         startCommitJob(ids, action)
+    }
+
+    private fun commitEdit(event: SmsReviewEvent.ConfirmEdit) {
+        viewModelScope.launch {
+            setState { copy(editingPendingId = null) }
+            val type = when (event.type) {
+                TransactionType.DEBIT -> AutoDetectedType.DEBIT
+                TransactionType.CREDIT -> AutoDetectedType.CREDIT
+            }
+            val result = confirmEditedUseCase(
+                id = event.id,
+                amount = event.amount,
+                type = type,
+                categoryId = event.categoryId,
+                note = event.note,
+                date = event.date
+            )
+            if (result.isFailure) {
+                sendSideEffect(SmsReviewSideEffect.ShowError("Couldn't save edit"))
+            }
+        }
     }
 
     private fun veil(ids: Set<Long>, action: PendingAction) {

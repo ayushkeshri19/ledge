@@ -75,6 +75,7 @@ import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.ui.components.LedgeFilterChip
 import com.ayush.ui.components.LedgeSyncErrorBanner
 import com.ayush.ui.components.LedgeTextField
+import com.ayush.ui.extension.color
 import com.ayush.ui.theme.LedgeRadius
 import com.ayush.ui.theme.LedgeTextStyle
 import com.ayush.ui.theme.LedgeTheme

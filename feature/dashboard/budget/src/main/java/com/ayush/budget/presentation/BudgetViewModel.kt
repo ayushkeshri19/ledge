@@ -3,11 +3,11 @@ package com.ayush.budget.presentation
 import androidx.compose.runtime.Stable
 import androidx.lifecycle.viewModelScope
 import com.ayush.budget.domain.models.BudgetWithSpent
-import com.ayush.budget.domain.models.Category
 import com.ayush.budget.domain.usecase.DeleteBudgetUseCase
 import com.ayush.budget.domain.usecase.GetBudgetsUseCase
 import com.ayush.budget.domain.usecase.GetCategoriesUseCase
 import com.ayush.budget.domain.usecase.SaveBudgetUseCase
+import com.ayush.common.models.Category
 import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.sync.SyncState
 import com.ayush.common.sync.SyncStateHolder

@@ -1,6 +1,5 @@
 package com.ayush.ledge.ui
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -8,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -39,8 +37,6 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
     }
 
     val backStack = rememberNavBackStack(startDestination)
-
-    val context = LocalContext.current
 
     val pendingReviewCount by mainViewModel.pendingReviewCount.collectAsStateWithLifecycle()
     var hasAutoNavigatedToReview by rememberSaveable { mutableStateOf(false) }
@@ -141,10 +137,7 @@ internal fun LedgeNavGraph(mainViewModel: MainViewModel) {
 
             entry<LedgeRoute.SmsReview> {
                 SmsReviewScreen(
-                    onBack = { backStack.remove(LedgeRoute.SmsReview) },
-                    onEditPending = {
-                        Toast.makeText(context, "Edit coming soon", Toast.LENGTH_SHORT).show()
-                    }
+                    onBack = { backStack.remove(LedgeRoute.SmsReview) }
                 )
             }
         },

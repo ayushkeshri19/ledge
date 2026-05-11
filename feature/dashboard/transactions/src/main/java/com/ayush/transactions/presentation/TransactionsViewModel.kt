@@ -6,12 +6,12 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.insertSeparators
 import androidx.paging.map
+import com.ayush.common.models.Category
 import com.ayush.common.result.ApiResult
 import com.ayush.common.sync.SyncOrchestrator
 import com.ayush.common.sync.SyncState
 import com.ayush.common.sync.SyncStateHolder
 import com.ayush.common.transactions.PendingReviewCountSource
-import com.ayush.transactions.domain.models.Category
 import com.ayush.transactions.domain.models.TransactionListItem
 import com.ayush.transactions.domain.models.TransactionType
 import com.ayush.transactions.domain.usecase.DeleteTransactionUseCase
