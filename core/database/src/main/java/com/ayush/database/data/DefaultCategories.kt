@@ -8,6 +8,7 @@ object DefaultCategories {
         CategoryEntity(name = "Shopping", icon = "shopping", colorHex = "#5B8DEF"),
         CategoryEntity(name = "Housing", icon = "housing", colorHex = "#E8C97A"),
         CategoryEntity(name = "Utilities", icon = "utilities", colorHex = "#FF9F43"),
+        CategoryEntity(name = "Bills & EMI", icon = "bills_emi", colorHex = "#2BCBBA"),
         CategoryEntity(name = "Healthcare", icon = "healthcare", colorHex = "#E05A5A"),
         CategoryEntity(name = "Education", icon = "education", colorHex = "#45AAF2"),
         CategoryEntity(name = "Personal Care", icon = "personal_care", colorHex = "#FDA7DF"),
@@ -16,6 +17,6 @@ object DefaultCategories {
         CategoryEntity(name = "Insurance", icon = "insurance", colorHex = "#778CA3"),
         CategoryEntity(name = "Gifts & Donations", icon = "gifts", colorHex = "#FC5C65"),
         CategoryEntity(name = "Subscriptions", icon = "subscriptions", colorHex = "#A55EEA"),
-        CategoryEntity(name = "Other", icon = "other", colorHex = "#D1D8E0"),
+        CategoryEntity(name = "Other", icon = "other", colorHex = "#D1D8E0")
     )
 }
