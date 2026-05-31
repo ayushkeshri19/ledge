@@ -4,9 +4,7 @@ plugins {
 
 android {
     namespace = "com.ayush.dashboard"
-    compileSdk {
-        version = release(36)
-    }
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 30
@@ -17,13 +15,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-
-        debug {
             isMinifyEnabled = false
-            isShrinkResources = false
         }
     }
     compileOptions {

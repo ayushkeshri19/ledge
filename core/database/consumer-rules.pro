@@ -1,0 +1,2 @@
+-keep @androidx.room.Entity class * { *; }
+-keep @androidx.room.Dao class * { *; }

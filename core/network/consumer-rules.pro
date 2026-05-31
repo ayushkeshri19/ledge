@@ -1,0 +1,3 @@
+-keep class io.github.jan.supabase.** { *; }
+-keepnames @kotlinx.serialization.Serializable class *
+-keepclassmembers @kotlinx.serialization.Serializable class * { *; }

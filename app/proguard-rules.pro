@@ -12,13 +12,16 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# Preserve source file and line numbers for crash stack traces
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Kotlin annotations needed by serialization and reflection
+-keepattributes RuntimeVisibleAnnotations, RuntimeVisibleParameterAnnotations
+
+# Navigation3 route NavKey classes and all other @Serializable classes
+-keepnames @kotlinx.serialization.Serializable class *
+-keepclassmembers @kotlinx.serialization.Serializable class * { *; }
 
 # Credential Manager (native Google Sign-In)
 -if class androidx.credentials.CredentialManager
